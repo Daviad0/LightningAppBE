@@ -1,0 +1,16 @@
+{
+  "name": "lightningappbe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "David Reeves, Aditya Tambe",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.3.2"
+  }
+}

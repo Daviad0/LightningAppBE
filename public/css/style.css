@@ -1,0 +1,145 @@
+body{
+    background-color: #ffffff;
+    font-family: 'Open Sans', sans-serif;
+    padding:0;
+    user-select: none;
+}
+
+
+.container{
+    padding: 10px;
+    background-color: #ffffff;
+    display: inline-block;
+    transition: .4s ease all; 
+    color: #2b047a;
+}
+
+.text{
+    font-size: 20px;
+    font-weight: 600;
+    color: #4708c4;
+}
+
+.input{
+    border-radius: 60px;
+    border: 1px solid #2b047a;
+    padding: 10px;
+    transition: .4s ease all; 
+}
+
+.header{
+    position: absolute;
+    height:50px;
+    padding:20px;
+    top:0;
+    left:0;
+    background-color: #ffffff;
+    width:100%
+}
+
+.c-border{
+    border: 2px solid #4708c4;
+    border-radius: 60px;
+    box-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+
+}
+
+.c-border-gray{
+    border: 2px solid #555555;
+    border-radius: 60px;
+    box-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+
+}
+
+.c-slightborder{
+    border-radius: 40px;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
+
+.c-hover:hover{
+    background-color: #4708c4;
+    cursor: pointer;
+    color: #ffffff;
+}
+.c-hover:active{
+    background-color: #2b047a;
+    border: 2px solid #2b047a;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.c-hover-gray:hover{
+    background-color: #555555;
+    cursor: pointer;
+    color: #ffffff;
+}
+.c-hover-gray:active{
+    background-color: #333333;
+    border: 2px solid #333333;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.color-m{
+    color:#4708c4;
+}
+.color-s{
+    color:#d324e3;
+}
+.color-d{
+    color:#2b047a;
+}
+.color-g{
+    color:#333333;
+}
+
+.color-w{
+    color:#ffffff;
+}
+
+.bounce{
+    transition: 0.4s ease all;
+    cursor: pointer;
+}
+.bounce-on{
+    animation-name: turnbounce;
+    animation-duration: .5s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
+}
+
+.transition{
+    transition: 0.4s ease all;
+}
+
+@keyframes turnbounce {
+    0% {
+        transform: rotate(0deg);
+    }
+    20% {
+        transform: rotate(10deg);
+    }
+    40% {
+        transform: rotate(-10deg);
+    }
+    60% {
+        transform: rotate(10deg);
+    }
+    80% {
+        transform: rotate(-10deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+    
+}
+
+/*
+
+COLORS:
+
+#4708c4
+#2b047a
+#d324e3
+
+*/

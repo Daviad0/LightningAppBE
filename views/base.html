@@ -1,0 +1,326 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="css/style.css"/>
+        <link rel="stylesheet" href="https://fonts.sandbox.google.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <link rel="preconnect" href="https://fonts.googleapis.com"> 
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        <style>
+            .material-symbols-rounded {
+                pointer-events: none;
+              font-variation-settings:
+              'FILL' 1,
+              'wght' 500,
+              'GRAD' 200,
+              'opsz' 48
+            }
+            *{
+                font-family: 'Inter', sans-serif;
+            
+            }
+
+            </style>
+    </head>
+    <body>
+        <div class="header">
+            <div style="height:100%;width:100%;display:flex;align-items:center;justify-content:space-between">
+                <div style="display: inline-flex;align-items:center">
+                    <span style="display: inline-flex;margin:0px 20px 0px 20px" class="text">Club Mgmt</span>
+                    <div class="container c-border c-hover goToPage" data-page="home" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                        Home
+                    </div>
+                    <div class="container c-border c-hover goToPage" data-page="about" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                        About
+                    </div>
+                    <div class="container c-border c-hover" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                        Contact
+                    </div>
+                    <div class="container c-border c-hover goToPage" data-page="group/manage" style="display: none;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                        Manage
+                    </div>
+                </div>
+                <div style="display: inline-flex;align-items:center;padding-right:30px">
+                    <span style="display: inline-flex;margin:0px 20px 0px 20px;font-size:14px" class="text" id="account_username"><i>Not Signed In</i></span>
+                    <div id="account_login" class="container c-border c-hover color-m triggerDisplay" data-action="show hide hide" data-target="accountC_login accountC_me accountC_create" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                        <span class="material-symbols-rounded">login</span>
+                    </div>
+                    <div id="account_create" class="container c-border c-hover color-m goToPage" data-page="create" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                        <span class="material-symbols-rounded">person_add</span>
+                    </div>
+                    <div id="account_me" class="container c-border c-hover color-m triggerDisplay" data-action="show hide hide" data-target="accountC_me accountC_create accountC_login" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px;display:none">
+                        <span class="material-symbols-rounded">face</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="container c-slightborder" style="position:absolute;top:100px;right:10px;padding:40px;text-align:center;display:none;z-index:5" id="accountC_create">
+            <span class="text color-d" style="display: block;margin-bottom:10px">Create Account</span>
+            
+            <div>
+                <div style="width:80px;display:inline-block">
+                    <span class="text color-m" style="font-size:12px;font-weight:500;margin-right:5px;width:80px">Group</span>
+                </div>
+                <input type="text" placeholder="group123" class="input color-m" style="width:200px;margin-top:10px;border:1px solid #4708c4"/>
+            </div>
+            <br/>
+            <div class="container c-border c-hover goToPage triggerDisplay" data-page="create" data-action="hide" data-target="accountC_create" style="padding:10px 20px 10px 20px">
+                Create
+            </div>
+            <div class="container c-border-gray c-hover-gray color-g triggerDisplay" data-action="hide" data-target="accountC_create" style="padding:10px 20px 10px 20px">
+                Cancel
+            </div>
+            
+            
+            
+            
+        </div>
+
+        <div class="container c-slightborder" style="position:absolute;top:100px;right:10px;padding:40px;text-align:center;display:none;z-index:5" id="accountC_login">
+            <span class="text color-d" style="display: block;margin-bottom:10px">Login</span>
+            
+            <div>
+                <div style="width:80px;display:inline-block">
+                    <span class="text color-d" style="font-size:12px;font-weight:500;margin-right:5px;">Username</span>
+                </div>
+                <input type="text" placeholder="johndoe1" class="input color-d" id="login_username" style="width:200px;margin-top:10px"/>
+            </div>
+            <div>
+                <div style="width:80px;display:inline-block">
+                    <span class="text color-d" style="font-size:12px;font-weight:500;margin-right:5px">Password</span>
+                </div>
+                <input type="password" placeholder="password1" class="input color-d" id="login_password" style="width:200px;margin-top:10px"/>
+            </div>
+            <div>
+                <div style="width:80px;display:inline-block">
+                    <span class="text color-m" style="font-size:12px;font-weight:500;margin-right:5px;width:80px">Group</span>
+                </div>
+                <input type="text" placeholder="group123" class="input color-m" id="login_group" style="width:200px;margin-top:10px;border:1px solid #4708c4"/>
+            </div>
+            <br/>
+            <div class="container c-border c-hover baseaction" data-action="login" style="padding:10px 20px 10px 20px">
+                Login
+            </div>
+            <div class="container c-border-gray c-hover-gray color-g triggerDisplay" data-action="hide" data-target="accountC_login" style="padding:10px 20px 10px 20px">
+                Cancel
+            </div>
+            
+            
+            
+            
+        </div>
+
+        <div class="container c-slightborder" style="position:absolute;top:100px;right:10px;padding:40px;text-align:center;display:none;z-index:5" id="accountC_me">
+            <span class="text color-d" style="display: block;margin-bottom:10px" id="ca_username">[ME]</span>
+            <span class="text color-d" style="display: block;margin-bottom:10px;font-size:14px" id="ca_group"><i>Part of [group]</i></span>
+            
+            
+            <br/>
+            <div class="container c-border c-hover" style="padding:10px 20px 10px 20px">
+                My Account
+            </div>
+            <div class="container c-border-gray c-hover-gray color-g baseaction" data-action="logout" style="padding:10px 20px 10px 20px">
+                Logout
+            </div>
+            
+            
+            
+            
+        </div>
+        <div style="position:absolute;top: 100px;left:-10px;width:100%;text-align:center" id="contents">
+
+        </div>
+    </body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+    <script>
+
+        var authId = "";
+
+        function load(page){
+            window.history.pushState("hiya", "Club Mgmt", page);
+            
+            $.ajax({
+                url: page,
+                headers : {partial : "YES", authorization : authId},
+                success: function(data){
+                    
+                    $("#contents").html(data);
+                    reloadAllBaseEvents();
+                }
+            });
+        }
+        try{
+
+            
+            var cookies = document.cookie.split(";");
+            cookies.forEach(c => {
+                var parts = c.split("=");
+                if(parts[0] == "session"){
+                    authId = parts[1];
+                    $.ajax({
+                        url: "/acc/verify",
+                        headers : {authorization : parts[1]},
+                        success: function(data){
+                            data = JSON.parse(data);
+                            if(data["successful"]){
+                                document.getElementById("account_login").style.display = "none";
+                                document.getElementById("account_create").style.display = "none";
+                                document.getElementById("account_me").style.display = "";
+                                document.getElementById("account_username").innerHTML = data["user"]["username"];
+                                document.getElementById("accountC_login").style.display = "none";
+                                document.getElementById("accountC_me").style.display = "none";
+                                document.getElementById("accountC_create").style.display = "none";
+                                document.getElementById("ca_username").innerHTML = data["user"]["username"];
+                                document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
+                                document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
+                            }
+                        }
+                    });
+                }
+            });
+        }catch(e){
+
+        }
+
+
+        function reloadAllBaseEvents(){
+            Array.from(document.getElementsByClassName("baseaction")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    switch(evt.srcElement.dataset.action){
+                        case "login":
+                            $.post("/acc/login", {
+                                username: $("#login_username").val(),
+                                password: $("#login_password").val(),
+                                group: $("#login_group").val()
+                            }, function(data){
+                                console.log(data);
+                                data = JSON.parse(data);
+                                if(data["successful"] == false){
+                                    flashFormError(3000, document.getElementById("login_username"));
+                                    flashFormError(3000, document.getElementById("login_password"));
+                                    flashFormError(3000, document.getElementById("login_group"));
+                                }else{
+                                    document.cookie = "session=" + data["token"];
+                                    authId = data["token"];
+                                    document.getElementById("account_login").style.display = "none";
+                                    document.getElementById("account_create").style.display = "none";
+                                    document.getElementById("account_me").style.display = "";
+                                    document.getElementById("account_username").innerHTML = data["user"]["username"];
+                                    document.getElementById("accountC_login").style.display = "none";
+                                    document.getElementById("ca_username").innerHTML = data["user"]["username"];
+                                    document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
+                                    document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
+                                    load("/home");
+                                }
+                            });
+                            
+                            break;
+                        case "create":
+                        $.post("/acc/create", {
+                            username: $("#create_username").val(),
+                            password: $("#create_password").val(),
+                            group: $("#create_groupid").val(),
+                            email: $("#create_email").val()
+                        }, function(data){
+                            console.log(data);
+                            data = JSON.parse(data);
+                            if(data["successful"] == false){
+                                if(data["error"] == "username"){
+                                    flashFormError(3000, document.getElementById("create_username"));
+                                }else if(data["error"] == "password"){
+                                    flashFormError(3000, document.getElementById("create_password"));
+                                }else if(data["error"] == "group"){
+                                    flashFormError(3000, document.getElementById("create_groupid"));
+                                }else if(data["error"] == "email"){
+                                    flashFormError(3000, document.getElementById("create_email"));
+                                }
+                            }else{
+                                authId = data["token"];
+                                document.cookie = "session=" + data["token"];
+                                document.getElementById("account_login").style.display = "none";
+                                document.getElementById("account_create").style.display = "none";
+                                document.getElementById("account_me").style.display = "";
+                                document.getElementById("account_username").innerHTML = data["user"]["username"];
+                                document.getElementById("accountC_login").style.display = "none";
+                                document.getElementById("ca_username").innerHTML = data["user"]["username"];
+                                document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
+                                document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
+                                load("/home");
+                            }
+                        });
+                            break;
+                        case "logout":
+                            document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                            authId = "";
+                            document.getElementById("account_login").style.display = "";
+                            document.getElementById("account_create").style.display = "";
+                            document.getElementById("account_me").style.display = "none";
+                            document.getElementById("accountC_login").style.display = "none";
+                            document.getElementById("accountC_me").style.display = "none";
+                            document.getElementById("account_username").innerHTML = "";
+                            document.getElementById("ca_username").innerHTML = "";
+                            document.getElementById("ca_group").innerHTML = "";
+                            document.querySelector('div[data-page="group/manage"]').style.display = "none";
+                            load("/home");
+                            break;
+                    }
+                });
+            });
+    
+            Array.from(document.getElementsByClassName("goToPage")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    load("/" + evt.srcElement.dataset.page);
+                });
+            });
+    
+            Array.from(document.getElementsByClassName("triggerDisplay")).forEach(e => {
+                e.addEventListener("click", (evt) => {
+                    var action = evt.srcElement.dataset.action.split(" ");
+                    var targets = evt.srcElement.dataset.target.split(" ");
+    
+                    for(var i = 0; i < action.length; i++) {
+                        if(action[i] == "show") {
+                            document.getElementById(targets[i]).style.display = "block";
+                        } else if(action[i] == "hide") {
+                            document.getElementById(targets[i]).style.display = "none";
+                        }
+                    }
+                });
+            })
+            Array.from(document.getElementsByClassName("bounce")).forEach(e => {
+                e.addEventListener("click", function() {
+                    if(!e.classList.contains("bounce-on")){
+                        e.classList.add("bounce-on");
+                        setTimeout(function() {
+                            e.classList.remove("bounce-on");
+                        }, 600);
+                    }
+                    
+                });
+            });
+        }
+
+        $(document).ready(function(){
+            reloadAllBaseEvents();
+            let loc = window.location.pathname;
+            if(loc == "" || loc == "/" || loc == undefined){
+                loc = "/home";
+            }
+            load(loc);
+        });
+
+        function flashFormError(timeout, element){
+            element.style.borderColor = "#ff0000";
+            element.style.color = "#ff0000";
+            setTimeout(function(){
+                element.style.borderColor = "";
+                element.style.color = "";
+            },timeout);
+        }
+
+        
+    </script>
+</html>

@@ -1,0 +1,189 @@
+<div class="transition" style="display: inline-block;padding-top:60px;width:100%;opacity:0" id="contentToShow">
+    <span class="text color-d" style="font-size: 100px;display:block" id="welcomeH">Manage</span>
+    
+    <br/>
+    <br/>
+    <div id="items" style="width:100%">
+
+    </div>
+</div>
+<script>
+    var currentItems = [];
+    try{
+        var cookies = document.cookie.split(";");
+        cookies.forEach(c => {
+            var parts = c.split("=");
+            if(parts[0] == "session"){
+                $.ajax({
+                    url: "/group/items",
+                    headers: {authorization : parts[1]},
+                    success: function(data){
+                        data = JSON.parse(data);
+                        if(data["successful"]){
+                            document.getElementById("items").innerHTML = "";
+                            var id = 0;
+                            currentItems = data["items"];
+                            data["items"].forEach(i => {
+                                
+                                document.getElementById('items').innerHTML += `
+                                <div class="container c-slightborder item" style="width:50%;padding:20px">
+                                    <div class="blockitem" data-partof="${id}c" data-num="0">
+                                        <div style="width:14%;display:inline-block;vertical-align:middle">
+                                            <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:4.5vw;height:4.5vw;display:inline-block">
+                                                <span class="material-symbols-rounded color-w" style="width:50%;margin-top:24%;font-size:2.3vw">group</span>
+                                            </div>
+                                            ${
+                                                (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                                    `<br/>
+                                                    <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
+                                                        <span class="color-w" style="font-size:1vw">3 days</span>
+                                                    </div>` : ``
+                                            }
+                                            
+                                        </div>
+                                        <div style="width:84%;display:inline-block;vertical-align:middle">
+                                            <span class="text color-d" style="display:block;font-size:30px;margin:10px">${i["title"]}</span>
+                                            <span class="text color-d" style="display:block;font-weight:500;margin:10px;font-size:16px">${i["contents"]}</span>
+                                            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px" data-partof="${id}c" data-num="1">
+                                                Edit
+                                            </div>
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="blockitem" data-partof="${id}c" data-num="1" style="display:none">
+                                        <div style="width:14%;display:inline-block;vertical-align:middle">
+                                            <div class="c-border bounce blockcontrol" data-partof="${id}" data-num="0" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:4.5vw;height:4.5vw;display:inline-block;margin-bottom:10px;margin-top:20px">
+                                                <span class="material-symbols-rounded color-w" style="width:50%;margin-top:24%;font-size:2.3vw">article</span>
+                                            </div>
+                                            <div class="c-border bounce blockcontrol" data-partof="${id}" data-num="1" style="border-radius: 60px;border-width:4px;background-color:transparent;width:4.5vw;height:4.5vw;display:inline-block;margin-bottom:10px">
+                                                <span class="material-symbols-rounded color-m" style="width:50%;margin-top:24%;font-size:2.3vw">auto_awesome</span>
+                                            </div>
+                                            <div class="c-border bounce blockcontrol" data-partof="${id}" data-num="2" style="border-radius: 60px;border-width:4px;background-color:transparent;width:4.5vw;height:4.5vw;display:inline-block;margin-bottom:20px">
+                                                <span class="material-symbols-rounded color-m" style="width:50%;margin-top:24%;font-size:2.3vw">bolt</span>
+                                            </div>
+                                            ${
+                                                (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                                    `<br/>
+                                                    <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
+                                                        <span class="color-w" style="font-size:1vw">3 days</span>
+                                                    </div>` : ``
+                                            }
+                                            
+                                        </div>
+                                        <div style="width:84%;display:inline-block;vertical-align:middle">
+                                            <div class="blockitem" data-partof="${id}" data-num="0" style="display:block">
+                                                <input type="text" class="text color-d input form_title" style="display:block;font-size:30px;margin:10px;width:100%;padding:14px" value="${i["title"]}" placeholder="Title" data-partof="${id}">
+                                                <textarea type="text" class="text color-d input form_contents" style="display:block;font-size:16px;margin:10px;width:100%;font-weight:500;resize:none;height:100px;border-radius:30px;padding:14px" placeholder="Contents" data-partof="${id}">
+                                                    ${i["contents"]}
+                                                </textarea>
+                                            </div>
+                                            <div class="blockitem" data-partof="${id}" data-num="1" style="display:none">
+                                                <span class="material-symbols-rounded iconshow" data-partof="${id}" style="font-size:28px;vertical-align:middle">${i["icon"]}</span>
+                                                <input type="text" class="text color-d input iconedit" data-partof="${id}" style="display:inline-block;font-size:20px;margin:10px;width:50%;padding:14px;vertical-align:middle" value="${i["icon"]}" placeholder="Icon">
+                                            </div>
+                                            <div class="blockitem" data-partof="${id}" data-num="2" style="display:none">
+                                                <div>
+                                                    <select class="input form_actiontype" style="width:30%;display:inline-block" data-partof="${id}">
+                                                        <option value="link">Link</option>
+                                                        <option value="link">Action</option>
+                                                        <option value="link">Popup</option>
+                                                        <option value="link">Vote</option>
+                                                    </select>
+                                                    <input type="text" class="text color-d input form_actionto" style="display:inline-block;font-size:14px;margin:10px;width:40%" value="${i["result"]["data"]}" placeholder="To..." data-partof="${id}">
+                                                </div>
+                                            </div>
+                                            <div class="container c-border c-hover blockcontrol save" data-partof="${id}c" data-num="0" style="padding:10px 50px 10px 50px;margin:10px" data-partof="${id}">
+                                                Save
+                                            </div>
+                                            <div class="container c-border-gray c-hover-gray blockcontrol color-g" data-partof="${id}c" data-num="0" style="padding:10px 50px 10px 50px;margin:10px" data-partof="${id}">
+                                                Cancel
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    
+                                </div>
+                                
+                                `
+                                id+=1;
+                            });
+                            Array.from(document.getElementsByClassName("bounce")).forEach(e => {
+                                e.addEventListener("click", function() {
+                                    if(!e.classList.contains("bounce-on")){
+                                        e.classList.add("bounce-on");
+                                        setTimeout(function() {
+                                            e.classList.remove("bounce-on");
+                                        }, 600);
+                                    }
+                                    
+                                });
+                            });
+
+                            Array.from(document.getElementsByClassName("link")).forEach(e => {
+                                e.addEventListener("click", function(evt) {
+                                    window.open(evt.srcElement.dataset.link, '_blank');
+                                });
+                            });
+
+                            
+
+                            document.getElementById("contentToShow").style.opacity = 1;
+
+                            Array.from(document.getElementsByClassName("iconedit")).forEach(e => {
+                                e.addEventListener("change", function(evt) {
+                                    var partof = evt.srcElement.dataset.partof;
+                                    document.querySelector(".iconshow[data-partof='" + partof + "']").innerHTML = evt.srcElement.value;
+                                });
+                            });
+
+                            Array.from(document.getElementsByClassName("save")).forEach(e => {
+                                e.addEventListener("click", function(evt){
+                                    var partof = evt.srcElement.dataset.partof.substring(0, evt.srcElement.dataset.partof.length - 1);
+                                    var item = data["items"][parseInt(partof)];
+                                    item["title"] = document.querySelector(".form_title[data-partof='" + partof + "']").value;
+                                    item["contents"] = document.querySelector(".form_contents[data-partof='" + partof + "']").value;
+                                    item["icon"] = document.querySelector(".iconedit[data-partof='" + partof + "']").value;
+                                    item["result"]["data"] = document.querySelector(".form_actionto[data-partof='" + partof + "']").value;
+                                    item["result"]["to"] = document.querySelector(".form_actiontype[data-partof='" + partof + "']").value;
+                                    console.log(item);
+
+                                });
+                            });
+
+                            Array.from(document.getElementsByClassName("blockcontrol")).forEach(e => {
+                                e.addEventListener("click", function(evt) {
+                                    var num = evt.srcElement.dataset.num;
+                                    var partof = evt.srcElement.dataset.partof;
+
+                                    Array.from(document.querySelectorAll(".blockitem[data-partof='" + partof + "']")).forEach(e => {
+                                        if(e.dataset.num == num){
+                                            e.style.display = "block";
+                                        }else{
+                                            e.style.display = "none";
+                                        }
+                                    });
+
+                                    Array.from(document.querySelectorAll(".blockcontrol[data-partof='" + partof + "']")).forEach(e => {
+                                        if(e.dataset.num == num){
+                                            e.style.backgroundColor = "#4708c4";
+                                            e.children[0].style.color = "white";
+                                        }else{
+                                            e.style.backgroundColor = "transparent";
+                                            e.children[0].style.color = "#4708c4";
+                                        }
+                                    });
+                                });
+                            });
+                        }
+                    }
+                })
+            }
+        });
+    }catch(e){
+
+    }
+    
+</script>

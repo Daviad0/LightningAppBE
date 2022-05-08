@@ -1,0 +1,92 @@
+<div class="transition" style="display: inline-block;padding-top:60px;width:100%;opacity:0" id="contentToShow">
+    <span class="text color-d" style="font-size: 100px;display:block" id="welcomeH">Welcome to </span>
+    <span class="text" style="font-size: 24px;display:block;font-weight:500;margin-top:10px" id="welcomeM">Your clubs are right here, where you need them most</span>
+    <br/>
+    <br/>
+    <div id="items" style="width:100%">
+
+    </div>
+</div>
+<script>
+    try{
+        var cookies = document.cookie.split(";");
+        cookies.forEach(c => {
+            var parts = c.split("=");
+            if(parts[0] == "session"){
+                $.ajax({
+                    url: "/acc/verify",
+                    headers : {authorization : parts[1]},
+                    success: function(data){
+                        data = JSON.parse(data);
+                        if(data["successful"]){
+                            document.getElementById("welcomeH").innerHTML = data["user"]["group"];
+                        }
+                    }
+                });
+                $.ajax({
+                    url: "/group/items",
+                    headers: {authorization : parts[1]},
+                    success: function(data){
+                        data = JSON.parse(data);
+                        if(data["successful"]){
+                            document.getElementById("items").innerHTML = "";
+                            data["items"].forEach(i => {
+                                document.getElementById('items').innerHTML += `
+                                <div class="container c-slightborder item" style="width:50%;padding:20px">
+                                    <div style="width:14%;display:inline-block;vertical-align:middle">
+                                        <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:4.5vw;height:4.5vw;display:inline-block">
+                                            <span class="material-symbols-rounded color-w" style="width:50%;margin-top:24%;font-size:2.3vw">group</span>
+                                        </div>
+                                        ${
+                                            (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                                `<br/>
+                                                <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
+                                                    <span class="color-w" style="font-size:1vw">3 days</span>
+                                                </div>` : ``
+                                        }
+                                        
+                                    </div>
+                                    <div style="width:84%;display:inline-block;vertical-align:middle">
+                                        <span class="text color-d" style="display:block;font-size:30px;margin:10px">${i["title"]}</span>
+                                        <span class="text color-d" style="display:block;font-weight:500;margin:10px;font-size:16px">${i["contents"]}</span>
+                                        ${
+                                            i["result"]["to"] == "link" ?
+                                                `<div class="container c-border c-hover link" style="padding:10px 50px 10px 50px;margin:10px" data-link="${i["result"]["data"]}">
+                                                    Open Link
+                                                </div>` : ``
+                                        }
+                                        
+                                    </div>
+                                    
+                                </div>
+                                
+                                `
+                            });
+                            Array.from(document.getElementsByClassName("bounce")).forEach(e => {
+                                e.addEventListener("click", function() {
+                                    if(!e.classList.contains("bounce-on")){
+                                        e.classList.add("bounce-on");
+                                        setTimeout(function() {
+                                            e.classList.remove("bounce-on");
+                                        }, 600);
+                                    }
+                                    
+                                });
+                            });
+
+                            Array.from(document.getElementsByClassName("link")).forEach(e => {
+                                e.addEventListener("click", function(evt) {
+                                    window.open(evt.srcElement.dataset.link, '_blank');
+                                });
+                            });
+                            document.getElementById("contentToShow").style.opacity = 1;
+                        }
+                    }
+                })
+            }
+        });
+    }catch(e){
+
+    }
+    
+</script>
