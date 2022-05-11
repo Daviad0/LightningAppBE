@@ -3,6 +3,7 @@ var express = require('express');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
+var mongoose = require('mongoose');
 var m = require('./scripts/database.js');
 var app = express();
 m.init();
@@ -102,7 +103,7 @@ app.post('/acc/login', function (req, res){
                     }, 'secret', {
                         expiresIn: '2h'
                     });
-                    res.send(JSON.stringify({successful: true, user: docs[0], token: token}));
+                    res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0]), token: token}));
                 }else{
                     res.send(JSON.stringify({successful: false}));
                 }
@@ -113,6 +114,19 @@ app.post('/acc/login', function (req, res){
     
 });
 
+function createSafeUser(u){
+    var safeUser = {
+        username: u.username,
+        group: u.group,
+        id: u._id,
+        attendance: u.attendance
+
+
+    }
+    return safeUser;
+}
+
+
 app.get('/acc/verify', function(req, res){
     var token = req.headers['authorization'];
     try{
@@ -121,7 +135,8 @@ app.get('/acc/verify', function(req, res){
             if(docs.length == 0){
                 res.send(JSON.stringify({successful: false}));
             }else{
-                res.send(JSON.stringify({successful: true, user: docs[0]}));
+
+                res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0])}));
             }
         });
     }catch(e){
@@ -174,7 +189,7 @@ app.post('/acc/create', function (req, res){
                             expiresIn: '2h'
                         });
                         d.token = token;
-                        res.send(JSON.stringify({successful: true, user: d, token: token}));
+                        res.send(JSON.stringify({successful: true, user: createSafeUser(d), token: token}));
                     });
 
                     
@@ -200,6 +215,84 @@ app.get("/group/items", function(req, res){
                 res.send(JSON.stringify({successful:true, items: docs}));
             });
 
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+
+function getTodaysEvent(docs){
+    var today = new Date();
+    var closestToNow = null;
+    docs.forEach(d => {
+        if(today.getDay() == d.datetime.getDay() && today.getMonth() == d.datetime.getMonth() && today.getFullYear() == d.datetime.getFullYear()){
+            // this is TODAY
+            if(closestToNow == null){
+                closestToNow = d;
+            }else{
+                if(d.datetime.getTime() < closestToNow.datetime.getTime()){
+                    closestToNow = d;
+                }
+            }
+        }
+    });
+    return closestToNow;
+}
+
+app.get("/group/today", async function(req, res){
+    isAuthenticated(req, async function(status, user){
+        if(status){
+            user = await m.getDocs('Account', {_id: user.id});
+            user = user[0];
+        
+            var docs = await m.getDocs('AttendanceItem', {group: user.group});
+            var closestToNow = getTodaysEvent(docs);
+
+            
+            
+            res.send(JSON.stringify({successful:true, today: closestToNow == null ? undefined : {
+                id: closestToNow._id,
+                datetime: closestToNow.datetime,
+                title: closestToNow.title,
+                description: closestToNow.description,
+                group: closestToNow.group,
+                logged : (user.attendance == undefined || user.attendance.filter(a => a.event == closestToNow._id).length == 0) ? false : true
+
+            }}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+})
+app.post("/group/today", async function(req, res){
+    isAuthenticated(req, async function(status, user){
+        if(status){
+
+            user = await m.getDocs('Account', {_id: user.id});
+            user = user[0];
+            //console.log(user);
+
+            var docs = await m.getDocs('AttendanceItem', {group: user.group});
+            var closestToNow = getTodaysEvent(docs);
+            
+
+            if(user.attendance == undefined || user.attendance.filter(a => a.event == closestToNow._id).length == 0){
+                // add attendance record
+                var toUpdate = {
+                    attendance : user.attendance == undefined ? [] : user.attendance
+                };
+                toUpdate.attendance.push({
+                    event: closestToNow._id,
+                    status: "ATTEND",
+                    overriddenstatus: "",
+                    datetime: new Date()
+                });
+                
+                console.log(toUpdate);
+                await m.updateDoc('Account', {_id: user._id}, toUpdate);
+            }
+            res.send(JSON.stringify({successful: true}));
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }

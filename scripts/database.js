@@ -15,7 +15,13 @@ const models = {
             restricted: Boolean,
             elevated: Boolean
         },
-        connections:[String]
+        connections:[String],
+        attendance:[{
+            event: String,
+            status: String,
+            overriddenstatus: String,
+            datetime: Date
+        }]
     })),
     'Group' : mongoose.model('Group', new mongoose.Schema({
         name: String,
@@ -38,6 +44,14 @@ const models = {
             end: Date
         },
         show: Boolean
+    })),
+    'AttendanceItem' : mongoose.model('AttendanceItem', new mongoose.Schema({
+        group: String,
+        title: String,
+        description: String,
+        datetime: Date,
+        length: Number,
+        code: String
     }))
 }
 
@@ -56,6 +70,11 @@ async function init(){
         await createDoc('ModuleItem', {group: 'testing-env', title: 'Test Item', contents: 'Here are some contents...', icon: 'favorite', image: '', result: {to: 'link', data: 'https://bit.ly/LRLanding'}, show: true});
     }
 
+    var items = await getDocs('AttendanceItem', {group: 'testing-env'});
+    if(items.length == 0){
+        await createDoc('AttendanceItem', {group: 'testing-env', title: 'Very Important Meeting', description: 'Must Attend or Die', datetime: new Date(), length: 2, code: '12345'});
+    }
+
 }
 
 async function createDoc(type, data){
@@ -68,6 +87,11 @@ async function getDocs(type, query){
     return await models[type].find(query);
 }
 
+async function updateDoc(type, query, data){
+    await models[type].updateOne(query, {$set: data});
+    return await getDocs(type, query);
+}
+
 module.exports = {
-    init,createDoc,getDocs
+    init,createDoc,getDocs,updateDoc
 }

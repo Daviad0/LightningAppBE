@@ -138,6 +138,7 @@
     <script>
 
         var authId = "";
+        var group = "";
 
         function load(page){
             window.history.pushState("hiya", "Club Mgmt", page);
@@ -166,6 +167,7 @@
                         success: function(data){
                             data = JSON.parse(data);
                             if(data["successful"]){
+                                group = data["user"]["group"];
                                 document.getElementById("account_login").style.display = "none";
                                 document.getElementById("account_create").style.display = "none";
                                 document.getElementById("account_me").style.display = "";
@@ -196,7 +198,7 @@
                                 password: $("#login_password").val(),
                                 group: $("#login_group").val()
                             }, function(data){
-                                console.log(data);
+                                //console.log(data);
                                 data = JSON.parse(data);
                                 if(data["successful"] == false){
                                     flashFormError(3000, document.getElementById("login_username"));
@@ -225,7 +227,7 @@
                             group: $("#create_groupid").val(),
                             email: $("#create_email").val()
                         }, function(data){
-                            console.log(data);
+                            //console.log(data);
                             data = JSON.parse(data);
                             if(data["successful"] == false){
                                 if(data["error"] == "username"){
@@ -265,6 +267,23 @@
                             document.getElementById("ca_group").innerHTML = "";
                             document.querySelector('div[data-page="group/manage"]').style.display = "none";
                             load("/home");
+                            break;
+                        case "logattendance":
+                            $.ajax({
+                                url: "/group/today",
+                                type: "POST",
+                                data: {
+                                    group: group
+                                },
+                                headers: {authorization: authId},
+                                success: function(data){
+                                    console.log(data);
+                                    data = JSON.parse(data);
+                                    if(data["successful"] == true){
+                                        load("/home");
+                                    }
+                                }
+                            })
                             break;
                     }
                 });
