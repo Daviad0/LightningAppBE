@@ -220,6 +220,30 @@ app.get("/group/items", function(req, res){
         }
     });
 });
+app.post("/group/item", async function(req, res){
+    isAuthenticated(req, async function(status,user){
+        // must have edit main page access
+        if(status){
+            var id = req.body._id;
+            await m.updateDoc('ModuleItem', {_id: id}, {
+                title: req.body.title,
+                contents: req.body.contents,
+                icon: req.body.icon,
+                result: req.body.result,
+                show: req.body.show
+            });
+
+            var items = await m.getDocs('ModuleItem', {group: user.group});
+            console.log(items);
+            res.send(JSON.stringify({successful: true, items : items}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+        
+
+
+    })
+});
 
 
 function getTodaysEvent(docs){
