@@ -58,7 +58,8 @@ const models = {
         name: String,
         to: String,
         from: String,
-        restricted: Boolean
+        restricted: Boolean,
+        visitors: [String]
     }))
 }
 

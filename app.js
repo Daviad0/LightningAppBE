@@ -6,6 +6,9 @@ const crypto = require('crypto');
 var mongoose = require('mongoose');
 var m = require('./scripts/database.js');
 var app = express();
+var cookies = require("cookie-parser");
+
+app.use(cookies());
 m.init();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
@@ -25,10 +28,10 @@ function hashPassword(password, callback) {
     
 }
 
-function isAuthenticated(req, callback) {
-    if (req.headers.authorization) {
+function isAuthenticated(req, method, callback) {
+    if (req.headers.authorization || req.cookies.session) {
         
-        var token = req.headers.authorization;
+        var token = req.headers.authorization || req.cookies.session;
         jwt.verify(token, 'secret', function (err, decoded) {
             if (err) {
                 callback(false, undefined);
@@ -45,11 +48,12 @@ function isAuthenticated(req, callback) {
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + "/views/base.html");
+    
     //res.end();
 });
 
 app.get('/home', function (req, res) {
-    isAuthenticated(req, function(status, user){
+    isAuthenticated(req, "cookie", function(status, user){
         if(status){
             if(req.headers["partial"] == "YES"){
                 res.sendFile(__dirname + "/views/a_home.html");
@@ -128,8 +132,9 @@ function createSafeUser(u){
 
 
 app.get('/acc/verify', function(req, res){
-    var token = req.headers['authorization'];
+    
     try{
+        var token = req.cookies.session;
         var decoded = jwt.verify(token, 'secret');
         m.getDocs('Account', {_id: decoded.id}).then(function(docs){
             if(docs.length == 0){
@@ -208,8 +213,48 @@ app.post('/acc/create', function (req, res){
     
 });
 
+app.get("/group/links", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status, user){
+        if(status){
+            var links = await m.getDocs("QuickLink", {group: user.group});
+            res.send(JSON.stringify({successful: true, items: links}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+app.post("/group/link", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status, user){
+        if(status){
+            var id = req.body._id;
+            if(req.body.action == "edit"){
+                await m.updateDoc("QuickLink", {_id: id}, {
+                    name: req.body.name,
+                    from: req.body.from,
+                    to: req.body.to,
+                    restricted: req.body.restricted
+                });
+            }else if(req.body.action == "create"){
+                await m.createDoc("QuickLink", {
+                    name: req.body.name,
+                    from: req.body.from,
+                    to: req.body.to,
+                    restricted: req.body.restricted,
+                    group: user.group
+                });
+            }else if(req.body.action == "delete"){
+                await m.deleteDoc("QuickLink", {_id: id});
+            }
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
 app.get("/group/items", function(req, res){
-    isAuthenticated(req, function(status, user){
+    isAuthenticated(req, "cookie", function(status, user){
         if(status){
             m.getDocs('ModuleItem', {group: user.group}).then(function(docs){
                 res.send(JSON.stringify({successful:true, items: docs}));
@@ -221,7 +266,7 @@ app.get("/group/items", function(req, res){
     });
 });
 app.post("/group/item", async function(req, res){
-    isAuthenticated(req, async function(status,user){
+    isAuthenticated(req, "cookie", async function(status,user){
         // must have edit main page access
         if(status){
             var id = req.body._id;
@@ -248,8 +293,7 @@ app.post("/group/item", async function(req, res){
             }
             
 
-            var items = await m.getDocs('ModuleItem', {group: user.group});
-            res.send(JSON.stringify({successful: true, items : items}));
+            res.send(JSON.stringify({successful: true}));
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }
@@ -279,7 +323,7 @@ function getTodaysEvent(docs){
 }
 
 app.get("/group/today", async function(req, res){
-    isAuthenticated(req, async function(status, user){
+    isAuthenticated(req, "cookie", async function(status, user){
         if(status){
             user = await m.getDocs('Account', {_id: user.id});
             user = user[0];
@@ -304,7 +348,7 @@ app.get("/group/today", async function(req, res){
     });
 })
 app.post("/group/today", async function(req, res){
-    isAuthenticated(req, async function(status, user){
+    isAuthenticated(req, "cookie", async function(status, user){
         if(status){
 
             user = await m.getDocs('Account', {_id: user.id});
@@ -338,7 +382,7 @@ app.post("/group/today", async function(req, res){
 });
 
 app.get("/group/manage", function(req, res){
-    isAuthenticated(req, function(status, user){
+    isAuthenticated(req, "cookie", function(status, user){
         if(status){
             if(req.headers["partial"] == "YES"){
                 res.sendFile(__dirname + "/views/manage.html");
@@ -354,14 +398,46 @@ app.get("/group/manage", function(req, res){
 app.use(async function(req, res, next) {
     // this is the 404 route
     var quickLinks = await m.getDocs('QuickLink', {});
+    var sent = false;
     quickLinks.forEach(e => {
+        console.log(e.from);
+        console.log(req.originalUrl)
         if(req.originalUrl == "/ql/" + e.from){
             console.log("QUICK LINK");
-            res.redirect(e.to);
+            
+
+            isAuthenticated(req, "cookie", async function(status, user){
+                console.log(user)
+                if(status){
+                    if(e.visitors == undefined){
+                        e.visitors = [user.id];
+                    }else if(!e.visitors.includes(user.id)){
+                        e.visitors.push(user.id);
+                    }
+                    res.redirect(e.to);
+                    sent = true;
+                    
+                    await m.updateDoc('QuickLink', {_id: e._id}, {visitors: e.visitors});
+                }else{
+                    console.log("Not authenticated")
+                    if(e.restricted == false){
+                        res.setHeader("to", e.to);
+                        res.setHeader("group", e.group);
+                        res.sendFile(__dirname + "/views/tolink.html");
+                        
+                        sent = true;
+                    }
+                }
+                console.log(e.visitors);
+            });
+            
+            
         }
     });
+    if(!sent){
+        res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)");
+    }
     
-    res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)");
 });
 
 // start the server in the port 3000 !
