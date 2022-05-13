@@ -101,7 +101,7 @@ app.post('/acc/login', function (req, res){
                         group: req.body.group,
                         id: docs[0]._id
                     }, 'secret', {
-                        expiresIn: '2h'
+                        expiresIn: '24h'
                     });
                     res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0]), token: token}));
                 }else{
@@ -225,16 +225,30 @@ app.post("/group/item", async function(req, res){
         // must have edit main page access
         if(status){
             var id = req.body._id;
-            await m.updateDoc('ModuleItem', {_id: id}, {
-                title: req.body.title,
-                contents: req.body.contents,
-                icon: req.body.icon,
-                result: req.body.result,
-                show: req.body.show
-            });
+            if(req.body.action == "edit"){
+                await m.updateDoc('ModuleItem', {_id: id}, {
+                    title: req.body.title,
+                    contents: req.body.contents,
+                    icon: req.body.icon,
+                    result: req.body.result,
+                    show: req.body.show
+                });
+            }else if(req.body.action == "create"){
+                await m.createDoc('ModuleItem', {
+                    title: req.body.title,
+                    contents: req.body.contents,
+                    icon: req.body.icon,
+                    result: req.body.result,
+                    show: req.body.show,
+                    group: user.group
+                })
+            }else if(req.body.action == "delete"){
+                console.log("deleting");
+                await m.deleteDoc('ModuleItem', {_id: id});
+            }
+            
 
             var items = await m.getDocs('ModuleItem', {group: user.group});
-            console.log(items);
             res.send(JSON.stringify({successful: true, items : items}));
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
@@ -337,7 +351,16 @@ app.get("/group/manage", function(req, res){
     });
 });
 
-app.use(function(req, res, next) {
+app.use(async function(req, res, next) {
+    // this is the 404 route
+    var quickLinks = await m.getDocs('QuickLink', {});
+    quickLinks.forEach(e => {
+        if(req.originalUrl == "/ql/" + e.from){
+            console.log("QUICK LINK");
+            res.redirect(e.to);
+        }
+    });
+    
     res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)");
 });
 

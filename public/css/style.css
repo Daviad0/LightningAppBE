@@ -5,6 +5,18 @@ body{
     user-select: none;
 }
 
+.dropdown_option_show{
+    background-color: #ffffff;
+}
+.dropdown_option_show:hover{
+    background-color: #4708c4;
+    color:white;
+}
+.dropdown_option_show:active{
+    background-color: #4708c4;
+    color:white;
+}
+
 
 .container{
     padding: 10px;

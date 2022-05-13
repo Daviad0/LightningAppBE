@@ -52,6 +52,13 @@ const models = {
         datetime: Date,
         length: Number,
         code: String
+    })),
+    'QuickLink' : mongoose.model('QuickLink', new mongoose.Schema({
+        group: String,
+        name: String,
+        to: String,
+        from: String,
+        restricted: Boolean
     }))
 }
 
@@ -75,6 +82,11 @@ async function init(){
         await createDoc('AttendanceItem', {group: 'testing-env', title: 'Very Important Meeting', description: 'Must Attend or Die', datetime: new Date(), length: 2, code: '12345'});
     }
 
+    var items = await getDocs('QuickLink', {group: 'testing-env'});
+    if(items.length == 0){
+        await createDoc('QuickLink', {group: 'testing-env', name: 'Test Link',from: "landing", to: 'https://bit.ly/LRLanding', restricted: false});
+    }
+
 }
 
 async function createDoc(type, data){
@@ -92,6 +104,11 @@ async function updateDoc(type, query, data){
     return await getDocs(type, query);
 }
 
+async function deleteDoc(type, query){
+    await models[type].deleteOne(query);
+    return true;
+}
+
 module.exports = {
-    init,createDoc,getDocs,updateDoc
+    init,createDoc,getDocs,updateDoc,deleteDoc
 }
