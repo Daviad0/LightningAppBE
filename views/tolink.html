@@ -23,10 +23,37 @@
             </style>
     </head>
     <body>
-        <div style="position:absolute;top:50%;left:50%;transform:translateX(-50%)">
-            <div class="container c-slightborder" style="width: 50%;padding:20px">
-                <span class="text">Are You Sure?</span>
+        <div style="width:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
+            
+            <div class="container c-slightborder" style="width: 100%;padding:20px;text-align: center;">
+                <div style="width:14%;display:inline-block;vertical-align:middle">
+                    <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:4.5vw;height:4.5vw;display:inline-block">
+                        <span class="material-symbols-rounded color-w" style="width:50%;margin-top:24%;font-size:2.3vw">question_mark</span>
+                    </div>
+                    
+                </div>
+                <div style="width:84%;display:inline-block;vertical-align:middle">
+                    <span class="text" style="font-size: 30px;margin:10px;display:block">Are You Sure?</span>
+                    <span class="text color-d" style="font-size: 18px;margin:10px;display:block">This Quick Link from the group, [GROUP], leads to [LINK], an external website. Would you like to continue to this website?</span>
+                    <div class="container c-border c-hover link" style="padding:10px 50px 10px 50px;margin:10px">
+                        Open Link
+                    </div>
+                </div>
+                
             </div>
         </div>
     </body>
+    <script>
+        Array.from(document.getElementsByClassName("bounce")).forEach(e => {
+                e.addEventListener("click", function() {
+                    if(!e.classList.contains("bounce-on")){
+                        e.classList.add("bounce-on");
+                        setTimeout(function() {
+                            e.classList.remove("bounce-on");
+                        }, 600);
+                    }
+                    
+                });
+            });
+    </script>
 </html>
