@@ -46,25 +46,48 @@ function isAuthenticated(req, method, callback) {
     }
 }
 
+// focus on getting a specific part, and then redirecting
+app.get("/part*", function(req, res){
+    var path = req.originalUrl;
+    var part = path.substring(req.originalUrl.indexOf("/part") + 5);
+    res.redirect(part + "/?part=1");
+});
+
+
 app.get('/', function (req, res) {
     res.sendFile(__dirname + "/views/base.html");
     
     //res.end();
 });
 
-app.get('/home', function (req, res) {
+app.get('/home*', function (req, res) {
     isAuthenticated(req, "cookie", function(status, user){
         if(status){
-            if(req.headers["partial"] == "YES"){
+            
+            if(req.query.part != undefined){
+                res.setHeader("group", user.group);
                 res.sendFile(__dirname + "/views/a_home.html");
             }else{
                 res.sendFile(__dirname + "/views/base.html");
             }
         }else{
-            if(req.headers["partial"] == "YES"){
-                res.sendFile(__dirname + "/views/home.html");
+            if(req.originalUrl.split("/").length > 2 && !req.originalUrl.split("/")[2].startsWith("?")){
+                var group = req.originalUrl.split("/")[2];
+                // CHECK IF GROUP PUBLIC HERE
+                 
+                if(req.query.part != undefined){
+                    //res.setHeader("group", group);
+                    res.sendFile(__dirname + "/views/a_home.html");
+                }else{
+                    res.sendFile(__dirname + "/views/base.html");
+                }
             }else{
-                res.sendFile(__dirname + "/views/base.html");
+                if(req.query.part != undefined){
+                    res.sendFile(__dirname + "/views/home.html");
+                }else{
+                    
+                    res.sendFile(__dirname + "/views/base.html");
+                }
             }
         }
         
@@ -75,7 +98,7 @@ app.get('/home', function (req, res) {
 });
 
 app.get('/about', function (req, res) {
-    if(req.headers["partial"] == "YES"){
+    if(req.query.part != undefined){
         res.sendFile(__dirname + "/views/about.html");
     }else{
         res.sendFile(__dirname + "/views/base.html");
@@ -85,7 +108,7 @@ app.get('/about', function (req, res) {
 
 
 app.get('/create', function (req, res) {
-    if(req.headers["partial"] == "YES"){
+    if(req.query.part != undefined){
         res.sendFile(__dirname + "/views/create.html");
     }else{
         res.sendFile(__dirname + "/views/base.html");
@@ -255,11 +278,15 @@ app.post("/group/link", async function(req, res){
 });
 app.get("/group/items", function(req, res){
     isAuthenticated(req, "cookie", function(status, user){
+        var group = "";
         if(status){
-            m.getDocs('ModuleItem', {group: user.group}).then(function(docs){
-                res.send(JSON.stringify({successful:true, items: docs}));
+            group = user.group;
+        }
+        if((req.headers["group"] != undefined && req.headers["group"] != "") || group != ""){
+            group = req.headers["group"];
+            m.getDocs('ModuleItem', {group: group}).then(function(docs){
+                res.send(JSON.stringify({successful:true, items: docs, fromGroupId: group}));
             });
-
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }
@@ -308,7 +335,7 @@ function getTodaysEvent(docs){
     var today = new Date();
     var closestToNow = null;
     docs.forEach(d => {
-        if(today.getDay() == d.datetime.getDay() && today.getMonth() == d.datetime.getMonth() && today.getFullYear() == d.datetime.getFullYear()){
+        if(today.getDate() == d.datetime.getDate() && today.getMonth() == d.datetime.getMonth() && today.getFullYear() == d.datetime.getFullYear()){
             // this is TODAY
             if(closestToNow == null){
                 closestToNow = d;
@@ -328,20 +355,25 @@ app.get("/group/today", async function(req, res){
             user = await m.getDocs('Account', {_id: user.id});
             user = user[0];
         
-            var docs = await m.getDocs('AttendanceItem', {group: user.group});
-            var closestToNow = getTodaysEvent(docs);
+            if(req.headers["group"] != user.group){
+                var docs = await m.getDocs('AttendanceItem', {group: user.group});
+                var closestToNow = getTodaysEvent(docs);
 
-            
-            
-            res.send(JSON.stringify({successful:true, today: closestToNow == null ? undefined : {
-                id: closestToNow._id,
-                datetime: closestToNow.datetime,
-                title: closestToNow.title,
-                description: closestToNow.description,
-                group: closestToNow.group,
-                logged : (user.attendance == undefined || user.attendance.filter(a => a.event == closestToNow._id).length == 0) ? false : true
+                
+                
+                res.send(JSON.stringify({successful:true, today: closestToNow == null ? undefined : {
+                    id: closestToNow._id,
+                    datetime: closestToNow.datetime,
+                    title: closestToNow.title,
+                    description: closestToNow.description,
+                    group: closestToNow.group,
+                    logged : (user.attendance == undefined || user.attendance.filter(a => a.event == closestToNow._id).length == 0) ? false : true
 
-            }}));
+                }}));
+            }else{
+                res.status(401).send(JSON.stringify({successful: false}));
+            }
+            
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }
@@ -354,6 +386,7 @@ app.post("/group/today", async function(req, res){
             user = await m.getDocs('Account', {_id: user.id});
             user = user[0];
             //console.log(user);
+            
 
             var docs = await m.getDocs('AttendanceItem', {group: user.group});
             var closestToNow = getTodaysEvent(docs);
@@ -397,43 +430,56 @@ app.get("/group/manage", function(req, res){
 
 app.use(async function(req, res, next) {
     // this is the 404 route
-    var quickLinks = await m.getDocs('QuickLink', {});
-    var sent = false;
-    quickLinks.forEach(e => {
-        console.log(e.from);
-        console.log(req.originalUrl)
-        if(req.originalUrl == "/ql/" + e.from){
-            console.log("QUICK LINK");
-            
+    if(req.originalUrl.includes("/ql/")){
+        var quickLinks = await m.getDocs('QuickLink', {});
+        var sent = false;
+        
+        quickLinks.forEach(e => {
+            console.log(e.from);
+            console.log(req.originalUrl)
+            if(req.originalUrl == "/ql/" + e.from){
+                console.log("QUICK LINK");
+                
 
-            isAuthenticated(req, "cookie", async function(status, user){
-                console.log(user)
-                if(status){
-                    if(e.visitors == undefined){
-                        e.visitors = [user.id];
-                    }else if(!e.visitors.includes(user.id)){
-                        e.visitors.push(user.id);
-                    }
-                    res.redirect(e.to);
-                    sent = true;
-                    
-                    await m.updateDoc('QuickLink', {_id: e._id}, {visitors: e.visitors});
-                }else{
-                    console.log("Not authenticated")
-                    if(e.restricted == false){
-                        res.setHeader("to", e.to);
-                        res.setHeader("group", e.group);
-                        res.sendFile(__dirname + "/views/tolink.html");
-                        
+                isAuthenticated(req, "cookie", async function(status, user){
+                    console.log(user)
+                    if(status){
+                        if(e.visitors == undefined){
+                            e.visitors = [user.id];
+                        }else if(!e.visitors.includes(user.id)){
+                            e.visitors.push(user.id);
+                        }
+                        res.redirect(e.to);
                         sent = true;
+                        
+                        await m.updateDoc('QuickLink', {_id: e._id}, {visitors: e.visitors});
+                    }else{
+                        console.log("Not authenticated")
+                        if(e.restricted == false){
+                            res.setHeader("to", e.to);
+                            res.setHeader("group", e.group);
+                            res.sendFile(__dirname + "/views/tolink.html");
+                            
+                            sent = true;
+                        }
                     }
-                }
-                console.log(e.visitors);
-            });
-            
-            
-        }
-    });
+                    console.log(e.visitors);
+                });
+                
+                
+            }
+        });
+    }
+    // if(!sent && req.originalUrl.includes("/group/")){
+    //     var group = req.originalUrl.split("/")[2];
+    //     var groupItem = await m.getDocs('Group', {uniqueId: group});
+    //     if(groupItem.length > 0){
+    //         groupItem = groupItem[0];
+    //         sent = true;
+    //     }
+
+        
+    // }
     if(!sent){
         res.status(404).send("Sorry, that route doesn't exist. Have a nice day :)");
     }
@@ -441,6 +487,6 @@ app.use(async function(req, res, next) {
 });
 
 // start the server in the port 3000 !
-app.listen(80, function () {
+app.listen(8080, function () {
     console.log('Example app listening on port 3000.');
 });

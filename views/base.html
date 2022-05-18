@@ -1,6 +1,6 @@
 <html>
     <head>
-        <link rel="stylesheet" href="css/style.css"/>
+        <link rel="stylesheet" href="/css/style.css"/>
         <link rel="stylesheet" href="https://fonts.sandbox.google.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <link rel="preconnect" href="https://fonts.googleapis.com"> 
         
@@ -45,7 +45,7 @@
                     <div id="account_login" class="a container c-border c-hover color-m triggerDisplay" data-action="show hide hide" data-target="accountC_login accountC_me accountC_create" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
                         <span class="material-symbols-rounded">login</span>
                     </div>
-                    <div id="account_create" class="a container c-border c-hover color-m goToPage" data-page="create" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                    <div id="account_create" class="a container c-border c-hover color-m goToPage" data-page="create" style="display: none;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
                         <span class="material-symbols-rounded">person_add</span>
                     </div>
                     <div id="account_me" class="a container c-border c-hover color-m triggerDisplay" data-action="show hide hide" data-target="accountC_me accountC_create accountC_login" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px;display:none">
@@ -153,12 +153,15 @@
             window.history.pushState("hiya", "Club Mgmt", page);
             
             $.ajax({
-                url: page,
+                url: "/part" + page,
                 headers : {partial : "YES", authorization : authId},
                 success: function(data){
                     
                     $("#contents").html(data);
                     reloadAllBaseEvents();
+                },
+                error: function(data){
+                    load("/home");
                 }
             });
         }
@@ -257,7 +260,7 @@
                                 authId = data["token"];
                                 document.cookie = "session=" + data["token"];
                                 document.getElementById("account_login").style.display = "none";
-                                document.getElementById("account_create").style.display = "none";
+                                //document.getElementById("account_create").style.display = "none";
                                 document.getElementById("account_me").style.display = "";
                                 document.getElementById("account_username").innerHTML = data["user"]["username"];
                                 document.getElementById("accountC_login").style.display = "none";
@@ -272,7 +275,7 @@
                             document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
                             authId = "";
                             document.getElementById("account_login").style.display = "";
-                            document.getElementById("account_create").style.display = "";
+                            //document.getElementById("account_create").style.display = "";
                             document.getElementById("account_me").style.display = "none";
                             document.getElementById("accountC_login").style.display = "none";
                             document.getElementById("accountC_me").style.display = "none";
