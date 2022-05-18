@@ -282,8 +282,12 @@ app.get("/group/items", function(req, res){
         if(status){
             group = user.group;
         }
-        if((req.headers["group"] != undefined && req.headers["group"] != "") || group != ""){
+        if((req.headers["group"] != undefined && req.headers["group"] != "")){
             group = req.headers["group"];
+            
+        }
+        
+        if(group != ""){
             m.getDocs('ModuleItem', {group: group}).then(function(docs){
                 res.send(JSON.stringify({successful:true, items: docs, fromGroupId: group}));
             });

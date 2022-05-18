@@ -167,8 +167,9 @@
             e.addEventListener("click", function(evt){
                 //
                 var partof = evt.srcElement.dataset.partof;
+                var host = window.location.host;
                     QrCreator.render({
-                        text: 'HELLO WORLD',
+                        text: host + "/ql/" + document.querySelector('.form_from[data-partof="' + partof + '"]').value,
                         radius: 0.4, // 0.0 to 0.5
                         ecLevel: 'H', // L, M, Q, H
                         fill: '#ffffff', // foreground color
@@ -343,7 +344,7 @@
     function getMenuItems(){
         $.ajax({
             url: "/group/items",
-            headers: {authorization : authId},
+            headers: {authorization : authId, group: ""},
             success: function(data){
                 data = JSON.parse(data);
                 if(data["successful"]){

@@ -17,6 +17,19 @@ body{
     color:white;
 }
 
+.smallscreen{
+    display: none;
+}
+
+@media only screen and (max-width: 600px){
+    .bigscreen{
+        display: none;
+    }
+    .smallscreen{
+        display: block;
+    }
+}
+
 
 .container{
     padding: 10px;

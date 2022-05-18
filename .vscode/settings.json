@@ -2,5 +2,7 @@
     "appService.zipIgnorePattern": [
         "node_modules{,/**}",
         ".vscode{,/**}"
-    ]
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/050586bf-ce43-4a2e-a498-0298a25ad378/resourceGroups/SparkClub_group/providers/Microsoft.Web/sites/SparkClub",
+    "appService.deploySubpath": "."
 }
