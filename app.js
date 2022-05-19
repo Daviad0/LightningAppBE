@@ -352,6 +352,19 @@ function getTodaysEvent(docs){
     return closestToNow;
 }
 
+app.get("/group/meetings", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status, user){
+        if(status){
+            var group = user.group;
+            var docs = await m.getDocs("AttendanceItem", {group: group});
+            
+            res.send(JSON.stringify({successful: true, items: docs}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
 app.get("/group/today", async function(req, res){
     isAuthenticated(req, "cookie", async function(status, user){
         if(status){

@@ -102,28 +102,46 @@
 <script>
     var currentItems = [];
     var currentLinks = [];
+    var currentMeetings = [];
     var authId = "";
     var dropdowns = [];
     var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    var currentMonth = 0;
-    var currentYear = 2022;
+    let now = new Date();
+    var currentMonth = now.getMonth();
+    var currentYear = now.getFullYear();
 
     function setDateArray(){
         document.getElementById("currentMonthYear").innerHTML = months[currentMonth] + ", " + currentYear;
         var firstDay = new Date(currentYear, currentMonth, 1);
         var start = firstDay.getDay();
-        for(var i = 0; i < start; i++){
-            var row = 0;
-            var column = i;
-            document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML = ``;
+        for(var i = 0; i < 6; i++){
+            document.querySelector(".daterow[data-row='" + i + "']").style.display = "none";
+            for(var j = 0; j < 7; j++){
+                document.querySelector(".dateitem[data-row='"+i+"'][data-column='"+j+"']").innerHTML = ``;
+            }
         }
+
+
         for(var i = 1; i <= 30; i++){
             var row = Math.floor(start/7);
             var column = start%7;
-            console.log(row + ", " + column);
+            
             start+=1;
             document.querySelector(".daterow[data-row='" + row + "']").style.display = "inline-flex";
-            document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML = `<span class="text" style="font-size:12px;text-align:left">${i}</span>`;
+            document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML = `<span class="text" style="font-size:12px;text-align:left;display:block">${i}</span>
+                `;
+            if(currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i-1 && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear).length > 0){
+                var meeting = currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i-1 && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear)[0];
+                var time = (new Date(meeting["datetime"]).getHours() > 12 ? new Date(meeting["datetime"]).getHours()-12 : new Date(meeting["datetime"]).getHours()) + ":" + new Date(meeting["datetime"]).getMinutes().toString().padStart(2, "0");
+
+                
+                document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML += `
+                <div class="container c-border" style="margin:2px 2px;padding:4px;font-size:12px;width:80%;background-color:#4708c4;">
+                    <span style="pointer-events: none;color:white;font-size:12px">${time} (${meeting["length"]}h)</span>
+                </div>
+                `;
+            }
+            
         }
     }
     setDateArray();
@@ -344,6 +362,19 @@
                 });
             });
         });
+    }
+
+    function getMeetingItems(){
+        $.ajax({
+            url: "/group/meetings",
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    currentMeetings = data["items"];
+                    setDateArray();
+                }
+            }
+        })
     }
 
     function getLinkItems(){
@@ -612,5 +643,6 @@
     
     getLinkItems();
     getMenuItems();
+    getMeetingItems();
     
 </script>
