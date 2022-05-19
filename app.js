@@ -63,7 +63,6 @@ app.get('/', function (req, res) {
 app.get('/home*', function (req, res) {
     isAuthenticated(req, "cookie", function(status, user){
         if(status){
-            
             if(req.query.part != undefined){
                 res.setHeader("group", user.group);
                 res.sendFile(__dirname + "/views/a_home.html");

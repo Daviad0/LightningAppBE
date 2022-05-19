@@ -91,6 +91,10 @@ body{
     border-radius: 40px;
     box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
 }
+.c-slighterborder{
+    border-radius: 20px;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
 
 .c-hover:hover{
     background-color: #4708c4;
