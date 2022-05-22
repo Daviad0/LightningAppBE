@@ -23,6 +23,9 @@
             </style>
     </head>
     <body>
+        <div class="overlay_bg" id="overlay" style="display: none;">
+            <div class="container c-slightborder" style="position:absolute;width: 70%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:20px" id="overlayBox"></div>
+        </div>
         <div class="header">
             <div>
                 <div style="height:100%;width:100%;display:flex;align-items:center;justify-content:space-between">
@@ -138,9 +141,12 @@
             
             
         </div>
+        
         <div style="position:absolute;top: 100px;left:-10px;width:100%;text-align:center" id="contents">
 
         </div>
+
+        <div class="baseaction" data-action="none" style="display:none" id="externalClickAction"></div>
     </body>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -310,6 +316,21 @@
                                     }
                                 }
                             })
+                            break;
+                        case "overlay":
+                            switch(evt.srcElement.dataset.overlay){
+                                case "create_meeting":
+                                    document.getElementById('overlay').style.display = "";
+                                    document.getElementById('overlayBox').innerHTML = `
+                                    <span class="text color-d" style="font-size:28px">Create a Meeting</span>
+                                    <br/>
+                                    <div class="a container c-border c-hover" style="padding:10px 20px 10px 20px">
+                                        Exit
+                                    </div>
+                                    `;
+                                    break;
+                                
+                            }
                             break;
                     }
                 });

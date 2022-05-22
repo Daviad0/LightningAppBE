@@ -295,6 +295,44 @@ app.get("/group/items", function(req, res){
         }
     });
 });
+
+app.post("/group/meeting", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status,user){
+        // must have edit main page access
+        if(status){
+            var id = req.body._id;
+            if(req.body.action == "edit"){
+                await m.updateDoc('AttendanceItem', {_id: id}, {
+                    title: req.body.title,
+                    datetime: req.body.datetime,
+                    length: req.body.length,
+                    description: req.body.description,
+                    code: req.body.code
+                });
+            }else if(req.body.action == "create"){
+                await m.createDoc('AttendanceItem', {
+                    title: req.body.title,
+                    datetime: req.body.datetime,
+                    length: req.body.length,
+                    description: req.body.description,
+                    code: req.body.code,
+                    group: user.group
+                })
+            }else if(req.body.action == "delete"){
+                await m.deleteDoc('AttendanceItem', {_id: id});
+            }
+            
+
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+        
+
+
+    })
+});
+
 app.post("/group/item", async function(req, res){
     isAuthenticated(req, "cookie", async function(status,user){
         // must have edit main page access

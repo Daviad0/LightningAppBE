@@ -73,6 +73,16 @@ body{
     width:100%
 }
 
+.overlay_bg{
+    position: absolute;
+    height:100%;
+    width:100%;
+    background-color: rgba(0,0,0,0.4);
+    top:0;
+    left:0;
+    z-index: 5;
+}
+
 .c-border{
     border: 2px solid #4708c4;
     border-radius: 60px;

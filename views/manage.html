@@ -364,14 +364,27 @@
         });
     }
 
+    Array.from(document.getElementsByClassName("dateitem")).forEach(di => {
+        di.addEventListener("click", function(evt){
+            document.getElementById("externalClickAction").dataset.action = "overlay";
+            document.getElementById("externalClickAction").dataset.overlay = "create_meeting";
+            document.getElementById("externalClickAction").click();
+        })
+    })
+
     function getMeetingItems(){
         $.ajax({
             url: "/group/meetings",
             success: function(data){
                 data = JSON.parse(data);
                 if(data["successful"]){
+                    
                     currentMeetings = data["items"];
                     setDateArray();
+
+                    Array.from(document.getElementsByClassName("dateitem")).forEach(di => {
+
+                    });
                 }
             }
         })
