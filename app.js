@@ -105,6 +105,23 @@ app.get('/about', function (req, res) {
     //res.end();
 });
 
+app.get('/present', function (req, res) {
+    if(req.query.part != undefined){
+        res.sendFile(__dirname + "/views/present.html");
+    }else{
+        res.sendFile(__dirname + "/views/base.html");
+    }
+    //res.end();
+});
+app.get('/createpresent', function (req, res) {
+    if(req.query.part != undefined){
+        res.sendFile(__dirname + "/views/createpresent.html");
+    }else{
+        res.sendFile(__dirname + "/views/base.html");
+    }
+    //res.end();
+});
+
 
 app.get('/create', function (req, res) {
     if(req.query.part != undefined){
@@ -240,6 +257,19 @@ app.get("/group/links", async function(req, res){
         if(status){
             var links = await m.getDocs("QuickLink", {group: user.group});
             res.send(JSON.stringify({successful: true, items: links}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+app.get("/group/presentation", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status, user){
+        if(status){
+            var pres = await m.getDocs("Presentation", {group: user.group});
+            console.log(pres);
+            res.send(JSON.stringify({successful: true, presentation: pres[0]}));
 
         }else{
             res.status(401).send(JSON.stringify({successful: false}));

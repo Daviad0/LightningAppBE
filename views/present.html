@@ -1,0 +1,93 @@
+<link rel="stylesheet" href="/reveal.js/dist/reveal.css">
+<link rel="stylesheet" href="/reveal.js/dist/theme/white.css">
+<div class="transition" style="display: inline-block;width:100%;z-index:20;height:100%" id="contentToShow">
+    <div class="reveal">
+        <div class="slides">
+          
+        </div>
+    </div>
+    <div class="container c-border c-hover" style="padding:10px 20px 10px 20px" id="fullscreen">
+        Enable Fullscreen
+    </div>
+    <script src="/reveal.js/dist/reveal.js"></script>
+    <script>
+        document.getElementById("fullscreen").addEventListener("click", function(evt){
+            var elem = evt.srcElement;
+            var fs = document.getElementsByClassName("reveal")[0];
+            if (elem.requestFullscreen) {
+                fs.requestFullscreen();
+              } else if (elem.webkitRequestFullscreen) { /* Safari */
+                fs.webkitRequestFullscreen();
+              } else if (elem.msRequestFullscreen) { /* IE11 */
+                fs.msRequestFullscreen();
+              }
+        });
+
+        $(document).ready(() => {
+            document.getElementById('contentToShow').style.opacity = 1;
+
+            $.ajax({
+                url: "/group/presentation",
+                // put presentation ID from link here
+                success: function(data){
+                    data = JSON.parse(data);
+                    console.log(data);
+                    if(data["successful"]){
+                        var slideNum = 0;
+                        data["presentation"]["slides"].forEach(i => {
+                            var slide = document.createElement("section");
+                            slide.style.width = "100%";
+                            slide.style.height = "100%";
+                            document.getElementsByClassName("slides")[0].appendChild(slide);
+                            if(i["overrideHTML"] != "" && i["overrideHTML"] != undefined){
+                                slide.innerHTML = i["overrideHTML"];
+                            }else{
+                                slide.innerHTML = `<div class="slidecon" data-num="${slideNum}" style="width:100%;height:100%;background-color:${i["background"]};display:flex;align-items:center;justify-content:center;">
+                                    <div class="slide" data-num="${slideNum}" style="display:inline-block;vertical-align:center;width:100%">
+
+                                    </div>
+                                </div>`;
+                                var inside = document.querySelector(".slide[data-num='" + slideNum + "']");
+                                var container = document.querySelector(".slidecon[data-num='" + slideNum + "']");
+                                switch(i["slidetype"]){
+                                    case "title":
+                                        container.style.display = "";
+                                        container.style.alignItems = "";
+                                        container.style.justifyContent = "";
+                                        container.style.textAlign = "left";
+
+                                        inside.innerHTML += `<div style="width:60%;border-radius:0px 100px 100px 0px;padding:40px;text-align:center;margin-top:60px;background-color:#ff0000">
+                                            <span class="text" style="color:white;font-size:80px;display:block;font-weight:700">${i["header"]}</span>
+                                        </div>`
+                                        i["data"].forEach(strings => {
+                                            inside.innerHTML += `<span class="text" style="color:white;font-size:40px;display:block">${strings}</span>`
+                                        
+                                        });
+                                        break;
+                                }
+                            }
+                            
+                            slideNum += 1;
+                        });
+                        Reveal.initialize({
+                            display: 'block',
+                            embedded:true,
+                            progress: false,
+                            controls:true,
+                            width:"100%",
+                            height:"100%",
+                            transition:"none",
+                            margin:0
+                        });
+                        //Reveal.sync();
+                    }
+                }
+            })
+
+            
+        });
+        
+
+
+    </script>
+</div>

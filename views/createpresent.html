@@ -1,0 +1,238 @@
+
+<div class="transition" style="display: inline-block;width:100%;z-index:20;height:100%" id="contentToShow">
+    <div style="display:flex;width:100%;justify-content:space-around">
+        <div class="showoptions" style="width:30%">
+            <div class="container c-slighterborder" style="padding:20px;width:100%" id="elementProperties">
+                <span class="text" style="padding-bottom: 10px">Properties</span></br>
+
+                <div style="margin: 3px;">
+                    <div style="display:inline-block;text-align:left;width:80px">
+                        <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Background</span>
+                    </div>
+                    <div style="width: 60%;display:inline-block;text-align:right">
+                        <input type="text" class="text color-d input propertyedit" data-property="backgroundColor" style="display:inline-block;font-size:16px;margin:3px;width:80%;padding:10px;vertical-align:middle;text-align:center" value="#000000" placeholder="HEX">
+                    </div>
+                    
+                </div>
+                <div style="margin: 3px;">
+                    <div style="display:inline-block;text-align:left;width:80px">
+                        <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Border</span>
+                    </div>
+                    <div style="width: 60%;display:inline-block;text-align:right">
+                        <input type="text" class="text color-d input propertyedit" data-property="borderWidth" style="display:inline-block;font-size:16px;margin:3px;width:20%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        <input type="text" class="text color-d input propertyedit" data-property="borderColor" style="display:inline-block;font-size:16px;margin:3px;width:50%;padding:10px;vertical-align:middle;text-align:center" value="#000000" placeholder="HEX">
+                    </div>
+                    
+                </div>
+                <div style="margin: 3px;">
+                    <div style="display:inline-block;text-align:left;width:100px">
+                        <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Corner Rad.</span>
+                    </div>
+                    <div style="width: 56%;display:inline-block;text-align:right">
+                        <input type="text" class="text color-d input propertyedit" data-property="borderTopLeftRadius" style="display:inline-block;font-size:12px;margin:3px;width:20%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        <input type="text" class="text color-d input propertyedit" data-property="borderTopRightRadius" style="display:inline-block;font-size:12px;margin:3px;width:20%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        <input type="text" class="text color-d input propertyedit" data-property="borderBottomRightRadius" style="display:inline-block;font-size:12px;margin:3px;width:20%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        <input type="text" class="text color-d input propertyedit" data-property="borderBottomLeftRadius" style="display:inline-block;font-size:12px;margin:3px;width:20%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        
+                    </div>
+                    
+                </div>
+                <div style="margin: 3px;">
+                    <div style="display:inline-block;text-align:left;width:80px">
+                        <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Size</span>
+                    </div>
+                    <div style="width: 60%;display:inline-block;text-align:right">
+                        <input type="text" class="text color-d input propertyedit" data-property="width" style="display:inline-block;font-size:16px;margin:3px;width:30%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        x
+                        <input type="text" class="text color-d input propertyedit" data-property="height" style="display:inline-block;font-size:16px;margin:3px;width:30%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                    </div>
+                    
+                </div>
+                <div style="margin: 3px;">
+                    <div style="display:inline-block;text-align:left;width:80px">
+                        <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Position</span>
+                    </div>
+                    <div style="width: 60%;display:inline-block;text-align:right">
+                        (
+                        <input type="text" class="text color-d input propertyedit" data-property="left" style="display:inline-block;font-size:16px;margin:3px;width:30%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        ,
+                        <input type="text" class="text color-d input propertyedit" data-property="top" style="display:inline-block;font-size:16px;margin:3px;width:30%;padding:10px;vertical-align:middle;text-align:center" value="0" placeholder="#">
+                        )
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="presentation" style="width:60%">
+            <div style="width:100%;border:2px solid black; border-radius:4px;height:60vh;overflow:hidden" id="currentSlide">
+
+            </div>
+            <div id="selectionbox" style="position:absolute;border:4px solid red;display:none;top:0;left:0"></div>
+        </div>
+    </div>
+    <div class="allItems" style="display:flex;justify-content:left;margin:10px;margin-top:20px;">
+        <div class="item" style="border: 6px solid black;width:60px;height:60px;margin:10px;background-color:black" data-border="6px solid black" data-background="black" draggable="true">
+            
+        </div>
+        <div class="item" style="border: 6px solid black;width:60px;height:60px;border-radius:8px;margin:10px;background-color:black" data-border="6px solid black" data-background="black" draggable="true">
+            
+        </div>
+    </div>
+</div>
+<script>
+    var offsetX = 10;
+    var offsetY = -90;
+    var mousePos = {
+        x: 0,
+        y: 0
+    };
+    var drag = {
+        x: 0,
+        y: 0,
+        valid: false,
+        offsetX: 0,
+        offsetY: 0,
+        item: null,
+        dragType : null
+
+    }
+
+    var selectedElement = null;
+    var selectionBox = document.getElementById("selectionbox");
+
+    function selectElement(el){
+        selectedElement = el;
+
+        var rect = el.getBoundingClientRect();
+        selectionBox.style.display = "";
+        selectionBox.style.left = rect.left + "px";
+        selectionBox.style.top = rect.top-10-100 + "px";
+        selectionBox.style.width = rect.width+10 + "px";
+        selectionBox.style.height = rect.height+10 + "px";
+
+        var computedElementStyle = getComputedStyle(el);
+        document.getElementById("elementProperties").style.opacity = "1";
+        Array.from(document.getElementsByClassName("propertyedit")).forEach(function(el){
+            el.value = computedElementStyle[el.dataset.property];
+            el.disabled = false;
+        });
+
+
+    }
+    function deselectElement(){
+        if(selectedElement != null){
+            selectionBox.style.display = "none";
+            selectedElement = null;
+            document.getElementById("elementProperties").style.opacity = "0.5";
+            Array.from(document.getElementsByClassName("propertyedit")).forEach(function(el){
+                el.disabled = true;
+            });
+        }
+    }
+    function refreshItemEvent(item){
+        item.addEventListener("dragstart", function(evt){
+            var elem = evt.srcElement;
+            var e = window.event;
+            var rect = elem.getBoundingClientRect();
+            var clickOffsetX = e.clientX - rect.left;
+            var clickOffsetY = e.clientY - rect.top;
+            drag.offsetX = clickOffsetX;
+            drag.offsetY = clickOffsetY;
+            drag.item = elem;
+            
+            
+            elem.style.opacity = "0.5";
+            if(evt.srcElement.dataset.loc != "slide"){
+                drag.dragType = "create";
+            }else{
+                drag.dragType = "move";
+                
+            }
+            
+        });
+        item.addEventListener("click", function(evt){
+            //console.log(evt.srcElement.dataset.loc);
+            if(evt.srcElement.dataset.loc == "slide"){
+                deselectElement();
+                selectElement(evt.srcElement);
+            }
+        });
+        
+    }
+    
+    Array.from(document.getElementsByClassName("item")).forEach(i => {
+        refreshItemEvent(i);
+        
+        
+    });
+
+    Array.from(document.getElementsByClassName("propertyedit")).forEach(i => {
+        i.addEventListener("change", function(evt){
+            var elem = evt.srcElement;
+            var property = elem.dataset.property;
+            var value = elem.value;
+            if(selectedElement != null){
+                selectedElement.style[property] = value;
+                selectElement(selectedElement);
+            }
+        });
+    });
+    document.getElementById("currentSlide").addEventListener("dragover", function(evt){
+        var e = window.event;
+        drag.x = e.pageX;
+        drag.y = e.pageY;
+        drag.valid = true;
+        event.preventDefault();
+    });
+    document.getElementById("currentSlide").addEventListener("dragleave", function(evt){
+        var e = window.event;
+        drag.x = e.pageX;
+        drag.y = e.pageY;
+        drag.valid = false;
+    });
+    document.getElementById("currentSlide").addEventListener("click", function(evt){
+        if(!evt.srcElement.classList.contains("item")){
+            deselectElement();
+        }
+    })
+
+
+
+    document.getElementById("currentSlide").addEventListener("drop", function(evt){
+        var e = window.event;
+        drag.x = e.pageX;
+        drag.y = e.pageY;
+        drag.valid = false;
+
+        drag.item.style.opacity = "1";
+        
+        if(drag.dragType == "create"){
+            let newElem = drag.item.cloneNode();
+            newElem.style.position = "absolute";
+            newElem.dataset.loc = "slide";
+            newElem.style.left = (drag.x-drag.offsetX) + "px";
+            newElem.style.top = (drag.y-110-drag.offsetY) + "px";
+            newElem.style.zIndex = "100";
+            evt.srcElement.appendChild(newElem);
+
+            refreshItemEvent(newElem);
+        }else if(drag.dragType == "move"){
+            
+
+            drag.item.style.left = (drag.x-drag.offsetX) + "px";
+            drag.item.style.top = (drag.y-110-drag.offsetY) + "px";
+
+            if(selectedElement == drag.item){
+                selectElement(drag.item);
+            }
+        }
+        
+    });
+    document.addEventListener("mousemove", function(evt){
+        mousePos.x = evt.screenX;
+        mousePos.y = evt.screenY;
+
+        
+    });
+
+</script>
