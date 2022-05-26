@@ -2,8 +2,22 @@
 <div class="transition" style="display: inline-block;width:100%;z-index:20;height:100%" id="contentToShow">
     <div style="display:flex;width:100%;justify-content:space-around">
         <div class="showoptions" style="width:30%">
-            <div class="container c-slighterborder" style="padding:20px;width:100%" id="elementProperties">
-                <span class="text" style="padding-bottom: 10px">Properties</span></br>
+            <div class="container c-slighterborder" style="padding:20px;width:100%" id="slideProperties">
+                <span class="text" style="padding-bottom: 10px">Slide Properties</span></br>
+
+                <div style="margin: 3px;">
+                    <div style="display:inline-block;text-align:left;width:80px">
+                        <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Background</span>
+                    </div>
+                    <div style="width: 60%;display:inline-block;text-align:right">
+                        <input type="text" class="text color-d input slideedit" data-property="backgroundColor" style="display:inline-block;font-size:16px;margin:3px;width:80%;padding:10px;vertical-align:middle;text-align:center" value="#000000" placeholder="HEX">
+                    </div>
+                    
+                </div>
+                
+            </div>
+            <div class="container c-slighterborder" style="padding:20px;width:100%;display:none" id="elementProperties">
+                <span class="text" style="margin-bottom: 10px">Selected Element</span></br>
 
                 <div style="margin: 3px;">
                     <div style="display:inline-block;text-align:left;width:80px">
@@ -64,10 +78,22 @@
             </div>
         </div>
         <div class="presentation" style="width:60%">
-            <div style="width:100%;border:2px solid black; border-radius:4px;height:60vh;overflow:hidden" id="currentSlide">
+            <div style="width:100%">
+                <div class="blockitem slide" data-partof="slides" data-num="1" style="width:100%;border:2px solid black; border-radius:4px;overflow:hidden;aspect-ratio:16 / 9">
 
+                </div>
+                <div class="blockitem slide" data-partof="slides" data-num="2" style="width:100%;border:2px solid black; border-radius:4px;overflow:hidden;aspect-ratio:16 / 9;display:none">
+
+                </div>
             </div>
-            <div id="selectionbox" style="position:absolute;border:4px solid red;display:none;top:0;left:0"></div>
+            
+            <div id="selectionbox" style="position:absolute;border:4px solid red;display:none;top:0;left:0" draggable="true"></div>
+            <div class="container c-border c-hover color-m blockcontrol" data-partof="slides" data-num="1" style="padding:10px 10px 10px 10px;margin:10px">
+                <span style="pointer-events: none">1</span>
+            </div>
+            <div class="container c-border c-hover color-m blockcontrol" data-partof="slides" data-num="2" style="padding:10px 10px 10px 10px;margin:10px">
+                <span style="pointer-events: none">2</span>
+            </div>
         </div>
     </div>
     <div class="allItems" style="display:flex;justify-content:left;margin:10px;margin-top:20px;">
@@ -96,6 +122,8 @@
         dragType : null
 
     }
+    var slidenum = 1;
+    var currentSlide = document.querySelector(".slide[data-num='" + slidenum + "']");
 
     var selectedElement = null;
     var selectionBox = document.getElementById("selectionbox");
@@ -111,7 +139,8 @@
         selectionBox.style.height = rect.height+10 + "px";
 
         var computedElementStyle = getComputedStyle(el);
-        document.getElementById("elementProperties").style.opacity = "1";
+        document.getElementById("elementProperties").style.display = "";
+        document.getElementById("slideProperties").style.display = "none";
         Array.from(document.getElementsByClassName("propertyedit")).forEach(function(el){
             el.value = computedElementStyle[el.dataset.property];
             el.disabled = false;
@@ -123,7 +152,8 @@
         if(selectedElement != null){
             selectionBox.style.display = "none";
             selectedElement = null;
-            document.getElementById("elementProperties").style.opacity = "0.5";
+            document.getElementById("elementProperties").style.display = "none";
+            document.getElementById("slideProperties").style.display = "";
             Array.from(document.getElementsByClassName("propertyedit")).forEach(function(el){
                 el.disabled = true;
             });
@@ -172,62 +202,175 @@
             var property = elem.dataset.property;
             var value = elem.value;
             if(selectedElement != null){
+                var divRect = currentSlide.getBoundingClientRect();
                 selectedElement.style[property] = value;
+                selectedElement.dataset.origWC = divRect.width;
+                selectedElement.dataset.origHC = divRect.height;
+                selectedElement.dataset.origW = parseInt(selectedElement.style.width);
+                selectedElement.dataset.origH = parseInt(selectedElement.style.height);
+                
+                selectedElement.dataset.origX = parseInt(selectedElement.style.left)-parseInt(divRect.left);
+                selectedElement.dataset.origY = parseInt(selectedElement.style.top)-parseInt(divRect.top);
                 selectElement(selectedElement);
             }
         });
     });
-    document.getElementById("currentSlide").addEventListener("dragover", function(evt){
-        var e = window.event;
-        drag.x = e.pageX;
-        drag.y = e.pageY;
-        drag.valid = true;
-        event.preventDefault();
+    Array.from(document.getElementsByClassName("slideedit")).forEach(i => {
+        i.addEventListener("change", function(evt){
+            var elem = evt.srcElement;
+            var property = elem.dataset.property;
+            var value = elem.value;
+            currentSlide.style[property] = value;
+        })
     });
-    document.getElementById("currentSlide").addEventListener("dragleave", function(evt){
-        var e = window.event;
-        drag.x = e.pageX;
-        drag.y = e.pageY;
-        drag.valid = false;
-    });
-    document.getElementById("currentSlide").addEventListener("click", function(evt){
-        if(!evt.srcElement.classList.contains("item")){
-            deselectElement();
-        }
-    })
+    
 
 
-
-    document.getElementById("currentSlide").addEventListener("drop", function(evt){
-        var e = window.event;
-        drag.x = e.pageX;
-        drag.y = e.pageY;
-        drag.valid = false;
-
-        drag.item.style.opacity = "1";
-        
-        if(drag.dragType == "create"){
-            let newElem = drag.item.cloneNode();
-            newElem.style.position = "absolute";
-            newElem.dataset.loc = "slide";
-            newElem.style.left = (drag.x-drag.offsetX) + "px";
-            newElem.style.top = (drag.y-110-drag.offsetY) + "px";
-            newElem.style.zIndex = "100";
-            evt.srcElement.appendChild(newElem);
-
-            refreshItemEvent(newElem);
-        }else if(drag.dragType == "move"){
-            
-
-            drag.item.style.left = (drag.x-drag.offsetX) + "px";
-            drag.item.style.top = (drag.y-110-drag.offsetY) + "px";
-
-            if(selectedElement == drag.item){
-                selectElement(drag.item);
+    // keys
+    document.addEventListener("keydown", function(evt){
+        if(evt.keyCode == 37){
+            if(selectedElement != null){
+                selectedElement.style.left = parseInt(selectedElement.style.left) - 1 + "px";
+                selectElement(selectedElement);
             }
         }
-        
+        else if(evt.keyCode == 39){
+            if(selectedElement != null){
+                selectedElement.style.left = parseInt(selectedElement.style.left) + 1 + "px";
+                selectElement(selectedElement);
+            }
+        }
+        else if(evt.keyCode == 38){
+            if(selectedElement != null){
+                selectedElement.style.top = parseInt(selectedElement.style.top) - 1 + "px";
+                selectElement(selectedElement);
+            }
+        }
+        else if(evt.keyCode == 40){
+            if(selectedElement != null){
+                selectedElement.style.top = parseInt(selectedElement.style.top) + 1 + "px";
+                selectElement(selectedElement);
+            }
+        }
+        else if(evt.keyCode == 8){
+            if(selectedElement != null && selectedElement == document.activeElement){
+                selectedElement.remove();
+                deselectElement();
+            }
+        }
+
     });
+
+    
+    Array.from(document.getElementsByClassName("blockcontrol")).forEach(e => {
+        e.addEventListener("click", function(evt) {
+            var num = evt.srcElement.dataset.num;
+            var partof = evt.srcElement.dataset.partof;
+
+            Array.from(document.querySelectorAll(".blockitem[data-partof='" + partof + "']")).forEach(e => {
+                if(e.dataset.num == num){
+                    e.style.display = "block";
+                }else{
+                    e.style.display = "none";
+                }
+            });
+
+            Array.from(document.querySelectorAll(".blockcontrol[data-partof='" + partof + "']")).forEach(e => {
+                if(e.dataset.num == num){
+                    e.style.backgroundColor = "#4708c4";
+                    e.children[0].style.color = "white";
+                }else{
+                    e.style.backgroundColor = "";
+                    e.children[0].style.color = "";
+                }
+            });
+        });
+    });
+
+
+    Array.from(document.getElementsByClassName("slide")).forEach(s => {
+        s.addEventListener("dragover", function(evt){
+            var e = window.event;
+            drag.x = e.pageX;
+            drag.y = e.pageY;
+            drag.valid = true;
+            event.preventDefault();
+        });
+        s.addEventListener("dragleave", function(evt){
+            var e = window.event;
+            drag.x = e.pageX;
+            drag.y = e.pageY;
+            drag.valid = false;
+        });
+        s.addEventListener("click", function(evt){
+            if(!evt.srcElement.classList.contains("item")){
+                deselectElement();
+            }
+        })
+        s.addEventListener("drop", function(evt){
+            var e = window.event;
+            drag.x = e.pageX;
+            drag.y = e.pageY;
+            drag.valid = false;
+    
+            drag.item.style.opacity = "1";
+            
+            if(drag.dragType == "create"){
+                let newElem = drag.item.cloneNode();
+
+                var divRect = currentSlide.getBoundingClientRect();
+
+                newElem.dataset.origWC = divRect.width;
+                newElem.dataset.origHC = divRect.height;
+                newElem.dataset.origW = parseInt(newElem.style.width);
+                newElem.dataset.origH = parseInt(newElem.style.height);
+                
+                newElem.style.position = "absolute";
+                newElem.dataset.loc = "slide";
+                newElem.style.left = (drag.x-drag.offsetX) + "px";
+                newElem.style.top = (drag.y-110-drag.offsetY) + "px";
+                //console.log(newElem.style.left + " " + divRect.left);
+                newElem.dataset.origX = parseInt(newElem.style.left)-parseInt(divRect.left);
+                newElem.dataset.origY = parseInt(drag.y-drag.offsetY)-parseInt(divRect.top);
+                newElem.style.zIndex = "100";
+                evt.srcElement.appendChild(newElem);
+    
+                refreshItemEvent(newElem);
+            }else if(drag.dragType == "move"){
+                var divRect = currentSlide.getBoundingClientRect();
+                drag.item.dataset.origWC = divRect.width;
+                drag.item.dataset.origHC = divRect.height;
+                drag.item.dataset.origW = parseInt(drag.item.style.width);
+                drag.item.dataset.origH = parseInt(drag.item.style.height);
+                
+                drag.item.style.left = (drag.x-drag.offsetX) + "px";
+                drag.item.style.top = (drag.y-110-drag.offsetY) + "px";
+                drag.item.dataset.origX = parseInt(drag.item.style.left)-parseInt(divRect.left);
+                drag.item.dataset.origY = parseInt(drag.y-drag.offsetY)-parseInt(divRect.top);
+                console.log(drag.item.style.top + " " + divRect.top);
+                if(selectedElement == drag.item){
+                    selectElement(drag.item);
+                }
+            }
+            
+        });
+    });
+
+    window.addEventListener("resize", function(evt){
+        var divRect = currentSlide.getBoundingClientRect();
+
+        Array.from(document.getElementsByClassName("item")).forEach(i => {
+            var ratioOfChangeX = (divRect.width/i.dataset.origWC);
+            var ratioOfChangeY = (divRect.height/i.dataset.origHC);
+            i.style.width = (i.dataset.origW*ratioOfChangeX) + "px";
+            i.style.height = (i.dataset.origH*ratioOfChangeY) + "px";
+            i.style.left = (divRect.left + i.dataset.origX*ratioOfChangeX) + "px";
+            i.style.top = (divRect.top-110 + i.dataset.origY*ratioOfChangeY) + "px";
+            console.log(divRect.top + " " + i.dataset.origY + " " + ratioOfChangeY)
+
+        });
+    });
+    
     document.addEventListener("mousemove", function(evt){
         mousePos.x = evt.screenX;
         mousePos.y = evt.screenY;
