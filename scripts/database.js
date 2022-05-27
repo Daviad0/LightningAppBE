@@ -67,11 +67,8 @@ const models = {
         title: String,
         public: Boolean,
         slides: [{
-            header: String,
-            slidetype: String,
-            data: [String],
-            background: String,
-            overrideHTML: String
+            HTML: String,
+            background: String
         }]
     }))
 }
@@ -101,12 +98,7 @@ async function init(){
         await createDoc('QuickLink', {group: 'testing-env', name: 'Test Link',from: "landing", to: 'https://bit.ly/LRLanding', restricted: false});
     }
 
-    var items = await getDocs('Presentation', {group: 'testing-env'});
-    if(items.length == 0){
-        await createDoc('Presentation', {group: 'testing-env', by: 'testing-env', title: 'Test Presentation', public: true, slides: [
-            {header: 'Test Header', slidetype: 'title', data: ['AAAA', 'BBBB'], overrideHTML: '', background: '#ff0000'}
-        ]});
-    }
+    
 
 }
 

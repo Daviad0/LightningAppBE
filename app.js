@@ -363,6 +363,40 @@ app.post("/group/meeting", async function(req, res){
     })
 });
 
+app.post("/group/present", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status,user){
+        // must have edit main page access
+        if(status){
+            var id = req.body._id;
+            if(req.body.action == "edit"){
+                await m.updateDoc('Presentation', {_id: id}, {
+                    title: req.body.title,
+                    public: req.body.public,
+                    slides: JSON.parse(req.body.slides)
+                });
+            }else if(req.body.action == "create"){
+                await m.createDoc('Presentation', {
+                    group: user.group,
+                    by: user.id,
+                    title: req.body.title,
+                    public: true,
+                    slides : JSON.parse(req.body.slides)
+                })
+            }else if(req.body.action == "delete"){
+                await m.deleteDoc('Presentation', {_id: id});
+            }
+            
+
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+        
+
+
+    })
+});
+
 app.post("/group/item", async function(req, res){
     isAuthenticated(req, "cookie", async function(status,user){
         // must have edit main page access
