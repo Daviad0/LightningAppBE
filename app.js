@@ -277,6 +277,45 @@ app.get("/group/presentation", async function(req, res){
     });
 });
 
+app.get("/group/users", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status, user){
+        if(status){
+            var users = await m.getDocs("Account", {group: user.group});
+            res.send(JSON.stringify({successful: true, items: users}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+app.get("/group/roles", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status, user){
+        if(status){
+            var group = await m.getDocs("Group", {uniqueId: user.group});
+            
+            res.send(JSON.stringify({successful: true, items: group[0].roles}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+app.get("/group/subgroups", async function(req, res){
+    isAuthenticated(req, "cookie", async function(status, user){
+        if(status){
+            var group = await m.getDocs("Group", {uniqueId: user.group});
+            
+            res.send(JSON.stringify({successful: true, items: group[0].subgroups}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+
 app.post("/group/link", async function(req, res){
     isAuthenticated(req, "cookie", async function(status, user){
         if(status){
@@ -532,6 +571,19 @@ app.post("/group/today", async function(req, res){
     });
 });
 
+app.get("/group/accounts", function(req, res){
+    isAuthenticated(req, "cookie", function(status, user){
+        if(status){
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/accounts.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }else{
+            res.sendFile(__dirname + "/views/base.html");
+        }
+    });
+});
 app.get("/group/manage", function(req, res){
     isAuthenticated(req, "cookie", function(status, user){
         if(status){

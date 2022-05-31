@@ -11,7 +11,9 @@ const models = {
         username: String,
         uuid: String,
         access: {
-            roles: [String],
+            role: String,
+            permissions: [String],
+            groups: [String],
             restricted: Boolean,
             elevated: Boolean
         },
@@ -27,7 +29,18 @@ const models = {
         name: String,
         uniqueId: String,
         locked: Boolean,
-        affiliations: [String]
+        affiliations: [String],
+        subgroups:[{
+            name: String,
+            tag: String,
+            joinable: Boolean,
+            features: [String]
+        }],
+        roles: [{
+            name: String,
+            color: String,
+            permissions: [String]
+        }]
     })),
     'ModuleItem' : mongoose.model('ModuleItem', new mongoose.Schema({
         group: String,

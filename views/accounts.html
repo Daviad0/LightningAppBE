@@ -1,0 +1,54 @@
+<div class="transition" style="display: inline-block;padding-top:60px;width:100%;opacity:0" id="contentToShow">
+    <span class="text color-d" style="font-size: 100px;display:block" id="welcomeH">User Management</span>
+    
+
+    <div>
+        <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px" data-partof="usermanage" data-num="1">
+            <span style="pointer-events: none;">User Accounts</span>
+        </div>
+        <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px" data-partof="usermanage" data-num="2">
+            <span style="pointer-events: none">Permissions</span>
+        </div>
+        <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px" data-partof="usermanage" data-num="3">
+            <span style="pointer-events: none">Groups</span>
+        </div>
+    </div>
+
+    <div class="blockitem" data-partof="usermanage" data-num="1" style="width:100%;display:none">
+        a
+    </div>
+    <div class="blockitem" data-partof="usermanage" data-num="2" style="width:100%;display:none">
+        b
+    </div>
+    <div class="blockitem" data-partof="usermanage" data-num="3" style="width:100%;display:none">
+        c
+    </div>
+</div>
+<script>
+    document.getElementById("contentToShow").style.opacity = "1";
+
+    Array.from(document.getElementsByClassName("blockcontrol")).forEach(e => {
+        e.addEventListener("click", function(evt) {
+            var num = evt.srcElement.dataset.num;
+            var partof = evt.srcElement.dataset.partof;
+
+            Array.from(document.querySelectorAll(".blockitem[data-partof='" + partof + "']")).forEach(e => {
+                if(e.dataset.num == num){
+                    e.style.display = "block";
+                }else{
+                    e.style.display = "none";
+                }
+            });
+
+            Array.from(document.querySelectorAll(".blockcontrol[data-partof='" + partof + "']")).forEach(e => {
+                if(e.dataset.num == num){
+                    e.style.backgroundColor = "#4708c4";
+                    e.children[0].style.color = "white";
+                }else{
+                    e.style.backgroundColor = "";
+                    e.children[0].style.color = "";
+                }
+            });
+        });
+    });
+</script>
