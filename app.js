@@ -146,7 +146,7 @@ app.post('/acc/login', function (req, res){
                     }, 'secret', {
                         expiresIn: '24h'
                     });
-                    res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0]), token: token}));
+                    res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0], 3), token: token}));
                 }else{
                     res.send(JSON.stringify({successful: false}));
                 }
@@ -157,12 +157,14 @@ app.post('/acc/login', function (req, res){
     
 });
 
-function createSafeUser(u){
+function createSafeUser(u, access){
     var safeUser = {
         username: u.username,
         group: u.group,
         id: u._id,
-        attendance: u.attendance
+        attendance: u.attendance,
+        access: u.access,
+        email: (access > 1 ? u.email : undefined)
 
 
     }
@@ -180,7 +182,7 @@ app.get('/acc/verify', function(req, res){
                 res.send(JSON.stringify({successful: false}));
             }else{
 
-                res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0])}));
+                res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0], 1)}));
             }
         });
     }catch(e){
@@ -233,7 +235,7 @@ app.post('/acc/create', function (req, res){
                             expiresIn: '2h'
                         });
                         d.token = token;
-                        res.send(JSON.stringify({successful: true, user: createSafeUser(d), token: token}));
+                        res.send(JSON.stringify({successful: true, user: createSafeUser(d, 3), token: token}));
                     });
 
                     
@@ -281,7 +283,12 @@ app.get("/group/users", async function(req, res){
     isAuthenticated(req, "cookie", async function(status, user){
         if(status){
             var users = await m.getDocs("Account", {group: user.group});
-            res.send(JSON.stringify({successful: true, items: users}));
+            var group = await m.getDocs("Group", {uniqueId: user.group});
+            var safeUsers = [];
+            users.forEach(u => {
+                safeUsers.push(createSafeUser(u, 2));
+            })
+            res.send(JSON.stringify({successful: true, items: safeUsers, roles: group[0].roles}));
 
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
