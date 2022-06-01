@@ -57,6 +57,7 @@
                 </div>
             </div>
             <div style="width:76%">
+                <span class="text color-g" id="permission_placeholder">Please Select a Role to Edit...</span>
                 <div class="container c-slightborder" style="width:90%;padding:20px;display:none" id="permissionViewer">
                     <div style="display:inline-flex;justify-content:space-between;width:100%">
                         <input type="text" class="text color-d input" style="display:inline-block;font-size:20px;width:70%;padding:10px;vertical-align:middle;" value="Member" placeholder="Role Name" id="permission_roleName">
@@ -202,8 +203,8 @@
                     var rN = 0;
                     roles.forEach(r => {
                         document.getElementById("roleList").innerHTML += `
-                            <div class="container c-border selectrole" data-num="${rN}" style="padding:10px 30px;width:60%;margin:5px;text-align:center;cursor:pointer">
-                                <span class="text" style="font-size:14px;pointer-events:none">${r.name.toUpperCase()}</span>
+                            <div class="container c-border selectrole" data-num="${rN}" data-toColor="${r.color}" style="padding:10px 30px;width:60%;margin:5px;text-align:center;cursor:pointer;border:2px solid ${r.color}">
+                                <span class="text" style="font-size:14px;pointer-events:none;color:${r.color}">${r.name.toUpperCase()}</span>
                             </div>
                         `;
                         rN += 1;
@@ -217,6 +218,7 @@
                             document.getElementById("permission_roleName").value = role.name;
                             document.getElementById("permission_roleColor").value = role.color;
                             document.getElementById("permissionViewer").style.display = "";
+                            document.getElementById("permission_placeholder").style.display = "none";
                             document.getElementById("permission_roleColor_preview").style.backgroundColor = role.color;
 
 
@@ -234,26 +236,16 @@
 
                             Array.from(document.querySelectorAll(".selectrole")).forEach(e => {
                                 if(e.dataset.num == num){
-                                    e.style.backgroundColor = "#4708c4";
+                                    e.style.backgroundColor = e.dataset.tocolor == undefined ? "#4708c4" : e.dataset.tocolor;;
                                     e.children[0].style.color = "white";
                                 }else{
                                     e.style.backgroundColor = "";
-                                    e.children[0].style.color = "";
+                                    e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;;
                                 }
                             });
                         });
                     });
-                    Array.from(document.getElementsByClassName("checkbox")).forEach(e => {
-                        e.addEventListener("click", function(evt){
-                            if(evt.srcElement.dataset.checked == "NO"){
-                                evt.srcElement.style.backgroundColor = "#4708c4";
-                                evt.srcElement.dataset.checked = "YES";
-                            }else{
-                                evt.srcElement.style.backgroundColor = "white";
-                                evt.srcElement.dataset.checked = "NO";
-                            }
-                        });
-                    });
+                    
                 }
             }
         })
@@ -272,7 +264,7 @@
                     roles = data["roles"];
                     console.log(roles);
                     allUsers.forEach(u => {
-                        var color = roles.find(r => r["name"] == u["access"]["roles"])["color"];
+                        var color = roles.find(r => r["name"] == u["access"]["role"])["color"];
                         document.getElementById("allUsers").innerHTML += `
                             <div class="container c-slightborder" style="width:100%;padding:20px;margin-bottom:10px;display:inline-flex;justify-content:space-between;align-items:center">
                                 <div style="width:16%;text-align:left">
@@ -284,7 +276,7 @@
                                 </div>
                                 <div style="width:20%;text-align:left"">
                                     <div class="container c-border" style="padding:5px 20px;background-color:${color};border:2px solid ${color}">
-                                        <span class="color-w" style="font-size:12px">${u["access"]["roles"].toUpperCase()}</span>
+                                        <span class="color-w" style="font-size:12px">${u["access"]["role"].toUpperCase()}</span>
                                         
                                     </div>
                                 </div>
@@ -347,7 +339,7 @@
                 
                             Array.from(document.querySelectorAll(".blockcontrol[data-partof='" + partof + "']")).forEach(e => {
                                 if(e.dataset.num == num){
-                                    e.style.backgroundColor = "#4708c4";
+                                    e.style.backgroundColor = e.dataset.tocolor == undefined ? "#4708c4" : e.dataset.tocolor;
                                     e.children[0].style.color = "white";
                                 }else{
                                     e.style.backgroundColor = "";
@@ -371,15 +363,53 @@
     })
 
     document.getElementById("permission_save").addEventListener("click", function(evt){
+        document.getElementById("permission_placeholder").style.display = "";
         document.getElementById("permissionViewer").style.display = "none";
-        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").style.backgroundColor = "";
-        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").children[0].style.color = "";
+        var e = document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']");
+        e.style.backgroundColor = "";
+        e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
         // do saving here
+        
+        currentRole.oldName = currentRole.name;
+        currentRole.name = document.getElementById("permission_roleName").value;
+        currentRole.color = document.getElementById("permission_roleColor").value;
+
+        var permissions = [];
+        Array.from(document.querySelectorAll(".permission")).forEach(e => {
+            if(e.dataset.checked == "YES"){
+                permissions.push(e.dataset.partof);
+            }
+        });
+        currentRole.permissions = permissions;
+        currentRole.action = "edit";
+
+        $.ajax({
+            url: "/group/role",
+            type: "POST",
+            data: currentRole,
+            success: function(data){
+                refreshPermissions();
+            }
+        })
     })
+
+    Array.from(document.getElementsByClassName("checkbox")).forEach(e => {
+        e.addEventListener("click", function(evt){
+            if(evt.srcElement.dataset.checked == "NO"){
+                evt.srcElement.style.backgroundColor = "#4708c4";
+                evt.srcElement.dataset.checked = "YES";
+            }else{
+                evt.srcElement.style.backgroundColor = "white";
+                evt.srcElement.dataset.checked = "NO";
+            }
+        });
+    });
     document.getElementById("permission_cancel").addEventListener("click", function(evt){
+        document.getElementById("permission_placeholder").style.display = "";
         document.getElementById("permissionViewer").style.display = "none";
-        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").style.backgroundColor = "";
-        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").children[0].style.color = "";
+        var e = document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']");
+        e.style.backgroundColor = "";
+        e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
         // do saving here
     })
 

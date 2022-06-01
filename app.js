@@ -28,17 +28,40 @@ function hashPassword(password, callback) {
     
 }
 
-function isAuthenticated(req, method, callback) {
+function isAuthenticated(req, method, permissionReq, callback) {
     if (req.headers.authorization || req.cookies.session) {
         
         var token = req.headers.authorization || req.cookies.session;
-        jwt.verify(token, 'secret', function (err, decoded) {
+        jwt.verify(token, 'secret', async function (err, decoded) {
             if (err) {
                 callback(false, undefined);
             } else {
-                // GET USER FROM DB
+                
                 req.user = decoded;
-                callback(true, decoded);
+                if(permissionReq != undefined && permissionReq.length > 0){
+                    var u = (await m.getDocs('Account', {_id: decoded.id}))[0];
+                    var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
+                    
+                    var specificRolePerms = group.roles.filter(r => r.name == u.access.role)[0].permissions;
+                    var access = false;
+                    permissionReq.forEach(p => {
+                        if(specificRolePerms.includes(p) || specificRolePerms.includes('*')){
+                            callback(true, decoded);
+                            access = true;
+                        }
+                    });
+                    
+                    if(!access){
+                        callback(false, decoded);
+                    }
+                }else{
+                    callback(true, decoded);
+                }
+
+                
+
+
+                
             }
         });
     } else {
@@ -61,7 +84,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/home*', function (req, res) {
-    isAuthenticated(req, "cookie", function(status, user){
+    isAuthenticated(req, "cookie",[], function(status, user){
         if(status){
             if(req.query.part != undefined){
                 res.setHeader("group", user.group);
@@ -219,7 +242,7 @@ app.post('/acc/create', function (req, res){
                         pwiterations: pwres.iterations,
                         group: req.body.group,
                         access: {
-                            roles: ["member"],
+                            role: "guest",
                             restricted: false,
                             elevated: false
                         },
@@ -255,7 +278,7 @@ app.post('/acc/create', function (req, res){
 });
 
 app.get("/group/links", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
             var links = await m.getDocs("QuickLink", {group: user.group});
             res.send(JSON.stringify({successful: true, items: links}));
@@ -267,7 +290,7 @@ app.get("/group/links", async function(req, res){
 });
 
 app.get("/group/presentation", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
             var pres = await m.getDocs("Presentation", {group: user.group});
             console.log(pres);
@@ -280,7 +303,7 @@ app.get("/group/presentation", async function(req, res){
 });
 
 app.get("/group/users", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
         if(status){
             var users = await m.getDocs("Account", {group: user.group});
             var group = await m.getDocs("Group", {uniqueId: user.group});
@@ -297,7 +320,7 @@ app.get("/group/users", async function(req, res){
 });
 
 app.get("/group/roles", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
         if(status){
             var group = await m.getDocs("Group", {uniqueId: user.group});
             
@@ -309,8 +332,41 @@ app.get("/group/roles", async function(req, res){
     });
 });
 
+app.post("/group/role", async function(req, res){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
+        if(status){
+            var id = req.body._id;
+            var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
+            if(req.body.action == "edit"){
+                var item = group.roles.find(r => r.name == req.body.oldName);
+                var index = group.roles.indexOf(item);
+                item.name = req.body.name;
+                item.color = req.body.color;
+                item.permissions = req.body.permissions;
+
+                group.roles[index] = item;
+
+                await m.updateDoc("Group", {_id: group._id}, {roles: group.roles});
+            }else if(req.body.action == "create"){
+                await m.createDoc("QuickLink", {
+                    name: req.body.name,
+                    from: req.body.from,
+                    to: req.body.to,
+                    restricted: req.body.restricted,
+                    group: user.group
+                });
+            }else if(req.body.action == "delete"){
+                await m.deleteDoc("QuickLink", {_id: id});
+            }
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
 app.get("/group/subgroups", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
             var group = await m.getDocs("Group", {uniqueId: user.group});
             
@@ -324,7 +380,7 @@ app.get("/group/subgroups", async function(req, res){
 
 
 app.post("/group/link", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie", ["ADMIN_QUICKLINKS", "ADMIN_QUICKLINKS_CREATE"] ,async function(status, user){
         if(status){
             var id = req.body._id;
             if(req.body.action == "edit"){
@@ -352,7 +408,7 @@ app.post("/group/link", async function(req, res){
     });
 });
 app.get("/group/items", function(req, res){
-    isAuthenticated(req, "cookie", function(status, user){
+    isAuthenticated(req, "cookie",[], function(status, user){
         var group = "";
         if(status){
             group = user.group;
@@ -373,7 +429,7 @@ app.get("/group/items", function(req, res){
 });
 
 app.post("/group/meeting", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status,user){
+    isAuthenticated(req, "cookie",["ADMIN_SCHEDULE"], async function(status,user){
         // must have edit main page access
         if(status){
             var id = req.body._id;
@@ -410,7 +466,7 @@ app.post("/group/meeting", async function(req, res){
 });
 
 app.post("/group/present", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status,user){
+    isAuthenticated(req, "cookie",[], async function(status,user){
         // must have edit main page access
         if(status){
             var id = req.body._id;
@@ -444,7 +500,7 @@ app.post("/group/present", async function(req, res){
 });
 
 app.post("/group/item", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status,user){
+    isAuthenticated(req, "cookie",["ADMIN_LANDING", "ADMIN_LANDING_CREATE"], async function(status,user){
         // must have edit main page access
         if(status){
             var id = req.body._id;
@@ -501,7 +557,7 @@ function getTodaysEvent(docs){
 }
 
 app.get("/group/meetings", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",["VIEW_SCHEDULE"], async function(status, user){
         if(status){
             var group = user.group;
             var docs = await m.getDocs("AttendanceItem", {group: group});
@@ -514,7 +570,7 @@ app.get("/group/meetings", async function(req, res){
 });
 
 app.get("/group/today", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",["VIEW_SCHEDULE", "VIEW_SCHEDULE_SIGNIN"], async function(status, user){
         if(status){
             user = await m.getDocs('Account', {_id: user.id});
             user = user[0];
@@ -544,7 +600,7 @@ app.get("/group/today", async function(req, res){
     });
 })
 app.post("/group/today", async function(req, res){
-    isAuthenticated(req, "cookie", async function(status, user){
+    isAuthenticated(req, "cookie",["VIEW_SCHEDULE_SIGNIN"], async function(status, user){
         if(status){
 
             user = await m.getDocs('Account', {_id: user.id});
@@ -579,7 +635,7 @@ app.post("/group/today", async function(req, res){
 });
 
 app.get("/group/accounts", function(req, res){
-    isAuthenticated(req, "cookie", function(status, user){
+    isAuthenticated(req, "cookie",["*", "ADMIN_REPRESENTATIVE"], function(status, user){
         if(status){
             if(req.headers["partial"] == "YES"){
                 res.sendFile(__dirname + "/views/accounts.html");
@@ -592,7 +648,7 @@ app.get("/group/accounts", function(req, res){
     });
 });
 app.get("/group/manage", function(req, res){
-    isAuthenticated(req, "cookie", function(status, user){
+    isAuthenticated(req, "cookie",["*", "ADMIN_LANDING", "ADMIN_QUICKLINKS"], function(status, user){
         if(status){
             if(req.headers["partial"] == "YES"){
                 res.sendFile(__dirname + "/views/manage.html");
@@ -618,7 +674,7 @@ app.use(async function(req, res, next) {
                 console.log("QUICK LINK");
                 
 
-                isAuthenticated(req, "cookie", async function(status, user){
+                isAuthenticated(req, "cookie",[], async function(status, user){
                     console.log(user)
                     if(status){
                         if(e.visitors == undefined){
