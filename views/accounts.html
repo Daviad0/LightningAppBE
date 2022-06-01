@@ -1,5 +1,4 @@
-<div class="transition" style="display: inline-block;padding-top:60px;width:100%;opacity:0" id="contentToShow">
-    <span class="text color-d" style="font-size: 100px;display:block" id="welcomeH">User Management</span>
+<div class="transition" style="display: inline-block;padding-top:20px;width:100%;opacity:0" id="contentToShow">
     
 
     <div>
@@ -51,9 +50,43 @@
     </div>
     <div class="blockitem" data-partof="usermanage" data-num="2" style="width:100%;display:none">
         <div style="display:inline-flex;justify-content:space-between;width:88%">
-            <div id="roleList">
+            <div style="width:20%;text-align:left">
+                <span class="text">Roles</span>
+                <div id="roleList" style="margin-top:20px">
 
+                </div>
             </div>
+            <div style="width:76%">
+                <div class="container c-slightborder" style="width:90%;padding:20px;display:none" id="permissionViewer">
+                    <div style="display:inline-flex;justify-content:space-between;width:100%">
+                        <input type="text" class="text color-d input" style="display:inline-block;font-size:20px;width:70%;padding:10px;vertical-align:middle;" value="Member" placeholder="Role Name" id="permission_roleName">
+                        <div style="display:inline-block;width:20%;">
+                            <div style="display: inline-block;vertical-align:middle;width:20px;height:20px;border-radius:20px;background-color:red;margin-right:5px" id="permission_roleColor_preview">
+
+                            </div>
+                            <input type="text" class="text color-d input" style="display:inline-block;font-size:20px;width:80%;padding:10px;vertical-align:middle;" value="red" placeholder="Color" id="permission_roleColor">
+                        </div>
+                        
+                        
+                        
+                    </div>
+                    
+                    
+                    <div id="permissions" style="width: 100%;margin-top:20px;margin-bottom:20px;max-height:40vh;overflow-y:scroll">
+                        
+                    </div>
+                    <div style="width:100%">
+                        <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px" id="permission_save">
+                            Save
+                        </div>
+                        <div class="container c-border-gray color-g c-hover-gray" style="padding:10px 50px 10px 50px;margin:10px" id="permission_cancel">
+                            Cancel
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
         </div>
     </div>
     <div class="blockitem" data-partof="usermanage" data-num="3" style="width:100%;display:none">
@@ -63,8 +96,99 @@
 <script>
     document.getElementById("contentToShow").style.opacity = "1";
     var allUsers = [];
+    var currentRole = "";
     var roles = [];
+
+    var permissionList = [{
+        name: "Administrator",
+        code: "*",
+        description: "This permission gives this role or user full access to everything inside of the group, including the management of other roles!"
+    },
+    {
+        name: "Representative",
+        code: "ADMIN_REPRESENTATIVE",
+        description: "This permission designates this role or user as a representative of the group, able to be contacted by the site administrators. They will be able to respond to contacts from outside of the group."
+    },
+    {
+        name: "Manage Landing Page",
+        code: "ADMIN_LANDING",
+        description: "This permission allows the role or user to manage the content of the landing page, including creating, editing and deleting content."
+    },
+    {
+        name: "Submit to Landing Page",
+        code: "ADMIN_LANDING_CREATE",
+        description: "This permission allows the role or user to only submit entries to the landing page, not being able to edit or delete any other pieces of content."
+    },
+    {
+        name: "Manage QuickLinks",
+        code: "ADMIN_QUICKLINKS",
+        description: "This permission allows the role or user to manage all Quicklinks, including creating, editing, and deleting links."
+    },
+    {
+        name: "Submit QuickLinks",
+        code: "ADMIN_QUICKLINKS_CREATE",
+        description: "This permission allows the role or user to only create QuickLinks, not being able to edit or delete any other QuickLinks."
+    },
+    {
+        name: "Public QuickLinks",
+        code: "ADMIN_QUICKLINKS_PUBLIC",
+        description: "This permission allows the role or user to create QuickLinks that are public. Being able to create QuickLinks alone does not automatically apply this permission."
+    },
+    {
+        name: "Manage Meeting Schedule",
+        code: "ADMIN_SCHEDULE",
+        description: "This permission allows the role or user to have full control over the group's meeting and event schedule, including creating, editing, and deleting events"
+    },
+    {
+        name: "See Meeting Schedule",
+        code: "VIEW_SCHEDULE",
+        description: "This permission allows the role or user to see the group's meeting schedule in its entirety, including all events and meetings (unless further restricted by custom permissions)."
+    },
+    {
+        name: "Sign In to Meeting",
+        code: "VIEW_SCHEDULE_SIGNIN",
+        description: "This permission allows the role or user to sign in for attendence, but only to meetings that they are apart of."
+    },
+    {
+        name: "View Own Attendence",
+        code: "VIEW_SCHEDULE_ATTENDENCE",
+        description: "This permission allows the role or user to see their own attendence, including any history or alterations that were made."
+    },
+    {
+        name: "View Everyone's Attendence",
+        code: "VIEW_SCHEDULE_ATTENDENCE_ALL",
+        description: "This permission allows the role or user to see everyone's attendence, including any history or alterations that were made."
+    },
+    {
+        name: "Confirm Everyone's Attendence",
+        code: "ADMIN_SCHEDULE_ATTENDENCE_CONFIRM",
+        description: "This permission allows the role or user to confirm another user's attendence, only if it is already unconfirmed."
+    },
+    {
+        name: "Manage Everyone's Attendence",
+        code: "ADMIN_SCHEDULE_ATTENDENCE",
+        description: "This permission allows the role or user to manage everyone's attendence records, making any changes that are incorrectly logged."
+    },
+    ]
     
+
+    permissionList.forEach(pI => {
+        document.getElementById("permissions").innerHTML += `
+        <div style="margin:10px;display:inline-flex;width:80%;justify-content:space-between;align-items:center">
+            <div style="width:10%;display:inline-block;vertical-align:middle;">
+                <div class="checkbox transition permission" data-partof="${pI.code}" style="display:inline-block;vertical-align:middle;" data-checked="NO">
+                                
+                </div>
+            </div>
+            
+            <div style="width:90%;display:inline-block;vertical-align:middle;">
+                <span class="text" style="font-size:16px;vertical-align:middle;font-weight:800">${pI.name}</span>   <span class="text" style="font-size:16px;vertical-align:middle;font-weight:500"><i>(${pI.code})</i></span><br/>
+                <span class="text" style="font-size:14px;vertical-align:middle;font-weight:500">${pI.description}</span>
+                
+            </div>
+        </div>
+        `;
+    })
 
     function refreshPermissions(){
         $.ajax({
@@ -75,7 +199,61 @@
                     roles = data["items"];
 
                     document.getElementById("roleList").innerHTML = "";
-                    
+                    var rN = 0;
+                    roles.forEach(r => {
+                        document.getElementById("roleList").innerHTML += `
+                            <div class="container c-border selectrole" data-num="${rN}" style="padding:10px 30px;width:60%;margin:5px;text-align:center;cursor:pointer">
+                                <span class="text" style="font-size:14px;pointer-events:none">${r.name.toUpperCase()}</span>
+                            </div>
+                        `;
+                        rN += 1;
+                    });
+
+                    Array.from(document.getElementsByClassName("selectrole")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            var num = parseInt(evt.srcElement.dataset.num);
+                            var role = roles[num];
+                            currentRole = role;
+                            document.getElementById("permission_roleName").value = role.name;
+                            document.getElementById("permission_roleColor").value = role.color;
+                            document.getElementById("permissionViewer").style.display = "";
+                            document.getElementById("permission_roleColor_preview").style.backgroundColor = role.color;
+
+
+                            Array.from(document.getElementsByClassName("permission")).forEach(e => {
+                                e.dataset.checked = "NO";
+                                e.style.backgroundColor = "white";
+                            });
+                            role.permissions.forEach(p => {
+                                if(document.querySelector(".permission[data-partof='" + p + "']") != null){
+                                    document.querySelector(".permission[data-partof='" + p + "']").dataset.checked = "YES";
+                                    document.querySelector(".permission[data-partof='" + p + "']").style.backgroundColor = "#4708c4";
+                                }
+                                
+                            })
+
+                            Array.from(document.querySelectorAll(".selectrole")).forEach(e => {
+                                if(e.dataset.num == num){
+                                    e.style.backgroundColor = "#4708c4";
+                                    e.children[0].style.color = "white";
+                                }else{
+                                    e.style.backgroundColor = "";
+                                    e.children[0].style.color = "";
+                                }
+                            });
+                        });
+                    });
+                    Array.from(document.getElementsByClassName("checkbox")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            if(evt.srcElement.dataset.checked == "NO"){
+                                evt.srcElement.style.backgroundColor = "#4708c4";
+                                evt.srcElement.dataset.checked = "YES";
+                            }else{
+                                evt.srcElement.style.backgroundColor = "white";
+                                evt.srcElement.dataset.checked = "NO";
+                            }
+                        });
+                    });
                 }
             }
         })
@@ -156,6 +334,8 @@
                         e.addEventListener("click", function(evt) {
                             var num = evt.srcElement.dataset.num;
                             var partof = evt.srcElement.dataset.partof;
+                            var toColor = evt.srcElement.dataset.toColor;
+                            console.log(toColor);
                 
                             Array.from(document.querySelectorAll(".blockitem[data-partof='" + partof + "']")).forEach(e => {
                                 if(e.dataset.num == num){
@@ -171,7 +351,7 @@
                                     e.children[0].style.color = "white";
                                 }else{
                                     e.style.backgroundColor = "";
-                                    e.children[0].style.color = "";
+                                    e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
                                 }
                             });
                         });
@@ -183,6 +363,26 @@
         })
     }
     refreshUsers();
+    refreshPermissions();
+
+    document.getElementById("permission_roleColor").addEventListener("change", function(evt){
+        var color = evt.srcElement.value;
+        document.getElementById("permission_roleColor_preview").style.backgroundColor = color;
+    })
+
+    document.getElementById("permission_save").addEventListener("click", function(evt){
+        document.getElementById("permissionViewer").style.display = "none";
+        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").style.backgroundColor = "";
+        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").children[0].style.color = "";
+        // do saving here
+    })
+    document.getElementById("permission_cancel").addEventListener("click", function(evt){
+        document.getElementById("permissionViewer").style.display = "none";
+        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").style.backgroundColor = "";
+        document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']").children[0].style.color = "";
+        // do saving here
+    })
+
     Array.from(document.getElementsByClassName("blockcontrol")).forEach(e => {
         e.addEventListener("click", function(evt) {
             var num = evt.srcElement.dataset.num;
