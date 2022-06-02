@@ -99,6 +99,13 @@ body{
 
 }
 
+.c-border-red{
+    border: 2px solid #ff413b;
+    border-radius: 60px;
+    box-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+
+}
+
 .c-slightborder{
     border-radius: 40px;
     box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
@@ -132,6 +139,18 @@ body{
     color: #ffffff;
 }
 
+.c-hover-red:hover{
+    background-color: #ff413b;
+    cursor: pointer;
+    color: #ffffff;
+}
+.c-hover-red:active{
+    background-color: #b8221d;
+    border: 2px solid #b8221d;
+    cursor: pointer;
+    color: #ffffff;
+}
+
 .color-m{
     color:#4708c4;
 }
@@ -143,6 +162,9 @@ body{
 }
 .color-g{
     color:#333333;
+}
+.color-r{
+    color:#ff413b;
 }
 
 .color-w{

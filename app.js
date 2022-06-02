@@ -36,27 +36,36 @@ function isAuthenticated(req, method, permissionReq, callback) {
             if (err) {
                 callback(false, undefined);
             } else {
-                
+                var randomReqNum = Math.random()*200;
                 req.user = decoded;
-                if(permissionReq != undefined && permissionReq.length > 0){
-                    var u = (await m.getDocs('Account', {_id: decoded.id}))[0];
-                    var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
-                    
-                    var specificRolePerms = group.roles.filter(r => r.name == u.access.role)[0].permissions;
-                    var access = false;
-                    permissionReq.forEach(p => {
-                        if(specificRolePerms.includes(p) || specificRolePerms.includes('*')){
-                            callback(true, decoded);
-                            access = true;
+                try{
+                    if(permissionReq != undefined && permissionReq.length > 0){
+                        var u = (await m.getDocs('Account', {_id: decoded.id}))[0];
+                        var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
+                        
+                        var specificRolePerms = group.roles.filter(r => r.name == u.access.role)[0].permissions;
+                        var access = false;
+    
+                        for(var pN = 0; pN < permissionReq.length; pN++){
+                            var p = permissionReq[pN];
+                            if(specificRolePerms.includes(p) || specificRolePerms.includes('*')){
+                                callback(true, decoded);
+                                
+                                access = true;
+                                break;
+                            }
                         }
-                    });
-                    
-                    if(!access){
-                        callback(false, decoded);
+                        
+                        if(!access){
+                            callback(false, decoded);
+                        }
+                    }else{
+                        callback(true, decoded);
                     }
-                }else{
-                    callback(true, decoded);
+                }catch(e){
+                    callback(false, decoded);
                 }
+                
 
                 
 
@@ -343,20 +352,38 @@ app.post("/group/role", async function(req, res){
                 item.name = req.body.name;
                 item.color = req.body.color;
                 item.permissions = req.body.permissions;
-
+                var oldName = req.body.oldName;
                 group.roles[index] = item;
 
+                // need to update all users with old role name
+                var users = await m.getDocs("Account", {group: user.group});
+                users.forEach(async function(u){
+                    if(u.access.role == oldName){
+                        u.access.role = req.body.name;
+                        await m.updateDoc("Account", {_id: u._id}, {access: u.access});
+                    }
+                })
                 await m.updateDoc("Group", {_id: group._id}, {roles: group.roles});
+
+
+                
             }else if(req.body.action == "create"){
-                await m.createDoc("QuickLink", {
+
+                var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
+                group.roles.push({
                     name: req.body.name,
-                    from: req.body.from,
-                    to: req.body.to,
-                    restricted: req.body.restricted,
-                    group: user.group
+                    color: req.body.color,
+                    permissions: req.body.permissions
                 });
+                await m.updateDoc("Group", {_id: group._id}, {roles: group.roles});
             }else if(req.body.action == "delete"){
-                await m.deleteDoc("QuickLink", {_id: id});
+                var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
+                var item = group.roles.find(r => r.name == req.body.name);
+                console.log(group.roles);
+                group.roles.splice(group.roles.indexOf(item), 1);
+                console.log(group.roles);
+
+                await m.updateDoc("Group", {_id: group._id}, {roles: group.roles});
             }
             res.send(JSON.stringify({successful: true}));
         }else{
