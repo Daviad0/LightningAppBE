@@ -66,7 +66,7 @@
                 <div class="container c-border c-hover" style="padding:5px;margin:5px" id="role_add">
                     <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
                 </div>
-                <div id="roleList" style="margin-top:20px">
+                <div id="roleList" style="margin-top:10px">
 
                 </div>
                 
@@ -110,17 +110,17 @@
     </div>
     <div class="blockitem" data-partof="usermanage" data-num="3" style="width:100%;display:none">
         <div style="display:inline-flex;justify-content:space-between;width:88%">
-            <div style="width:20%;text-align:left">
+            <div style="width:30%;text-align:left">
                 <span class="text">Subgroups</span>
                 <div class="container c-border c-hover" style="padding:5px;margin:5px" id="group_add">
                     <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
                 </div>
-                <div id="groupList" style="margin-top:20px">
+                <div id="subgroupList" style="margin-top:10px">
 
                 </div>
             </div>
             
-            <div style="width:76%">
+            <div style="width:66%">
 
             </div>
         </div>
@@ -129,6 +129,7 @@
 <script>
     document.getElementById("contentToShow").style.opacity = "1";
     var allUsers = [];
+    var subgroups = [];
     var currentRole = "";
     var roles = [];
     var roleAction = "";
@@ -224,6 +225,29 @@
         `;
     })
 
+    function refreshGroups(){
+        $.ajax({
+            url: "/group/subgroups",
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    subgroups = data["items"];
+                    document.getElementById("subgroupList").innerHTML = "";
+                    var sN = 0;
+                    subgroups.forEach(s => {
+                        document.getElementById("subgroupList").innerHTML += `
+                        <div class="container c-border c-hover selectgroup" data-num="${sN}" style="padding:10px 30px;width:60%;margin:5px;text-align:center;cursor:pointer;font-size:14px;font-weight:600">
+                            ${s.name} [${s.tag.toUpperCase()}]
+                        </div>
+                        `;
+                    })
+                }
+            },
+            error: function(data){
+                document.getElementById("showErrorMessage").click();
+            }
+        })
+    }
     function refreshPermissions(){
         $.ajax({
             url: "/group/roles",
@@ -296,6 +320,9 @@
                     });
                     
                 }
+            },
+            error: function(data){
+                document.getElementById("showErrorMessage").click();
             }
         })
     }
@@ -401,11 +428,15 @@
 
 
                 }
+            },
+            error: function(data){
+                document.getElementById("showErrorMessage").click();
             }
         })
     }
     refreshUsers();
     refreshPermissions();
+    refreshGroups();
 
     document.getElementById("permission_roleColor").addEventListener("change", function(evt){
         var color = evt.srcElement.value;

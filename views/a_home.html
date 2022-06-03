@@ -153,6 +153,9 @@
                 });
                 document.getElementById("contentToShow").style.opacity = 1;
             }
+        },
+        error: function(data){
+            document.getElementById("showErrorMessage").click();
         }
     })
     

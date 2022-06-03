@@ -23,6 +23,11 @@
             </style>
     </head>
     <body>
+        <div style="position: fixed;bottom:10px;right:20px;z-index:1000">
+            <div class="container c-border-red color-r" style="padding:10px 50px 10px 50px;margin:10px;font-weight:600;display:none;opacity:0" id="errorContainer">
+                Error: Not Authenticated
+            </div>
+        </div>
         <div class="overlay_bg" id="overlay" style="display: none;">
             <div class="container c-slightborder" style="position:absolute;width: 70%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:20px" id="overlayBox"></div>
         </div>
@@ -151,6 +156,7 @@
 
         <div class="baseaction" data-action="none" style="display:none" id="externalClickAction"></div>
         <div class="baseaction" data-action="none" style="display:none" id="reloadBaseEvents"></div>
+        <div class="baseaction" data-action="none" style="display:none" id="showErrorMessage"></div>
     </body>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -405,6 +411,13 @@
                 element.style.color = "";
             },timeout);
         }
+        document.getElementById("showErrorMessage").addEventListener("click", function(evt){
+            var el = document.getElementById("errorContainer");
+            el.style.display = "";
+            setTimeout(function(){
+                el.style.opacity = "1";
+            },10);
+        });
         document.getElementById("reloadBaseEvents").addEventListener("click", function(evt){
             reloadAllBaseEvents();
         })

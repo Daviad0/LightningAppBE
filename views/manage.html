@@ -632,6 +632,9 @@
                                 headers: {authorization: authId},
                                 success: function(data) {
                                     getMenuItems();
+                                },
+                                error: function(data){
+                                    document.getElementById("showErrorMessage").click();
                                 }
                             })
             
