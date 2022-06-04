@@ -121,7 +121,35 @@
             </div>
             
             <div style="width:66%">
-
+                <span class="text color-g" id="subgroup_placeholder">Please Select a Subgroup to Edit...</span>
+                <div class="container c-slightborder" style="width:90%;padding:20px;display:none" id="subgroupViewer">
+                    <div style="display:inline-flex;justify-content:space-between;width:100%">
+                        <input type="text" class="text color-d input" style="display:inline-block;font-size:20px;width:60%;padding:10px;vertical-align:middle;" value="" placeholder="Subgroup Name" id="subgroup_groupName">
+                        <div style="display:inline-block;width:30%;text-align:right">
+                            <input type="text" class="text color-d input" style="display:inline-block;font-size:20px;width:80%;padding:10px;vertical-align:middle;" value="" placeholder="Tag" id="subgroup_groupTag">
+                        </div>
+                        
+                        
+                        
+                    </div>
+                    
+                    
+                    <div id="features" style="width: 100%;margin-top:20px;margin-bottom:20px;max-height:40vh;overflow-y:scroll">
+                        
+                    </div>
+                    <div style="width:100%">
+                        <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px" id="subgroup_save">
+                            Save
+                        </div>
+                        <div class="container c-border-gray color-g c-hover-gray" style="padding:10px 50px 10px 50px;margin:10px" id="subgroup_cancel">
+                            Cancel
+                        </div>
+                        <div class="container c-border-red color-r c-hover-red" style="padding:10px 50px 10px 50px;margin:10px" id="subgroup_delete">
+                            Delete
+                        </div>
+                    </div>
+                    
+                </div>
             </div>
         </div>
     </div>
@@ -131,6 +159,7 @@
     var allUsers = [];
     var subgroups = [];
     var currentRole = "";
+    var currentSubgroup = "";
     var roles = [];
     var roleAction = "";
 
@@ -241,6 +270,32 @@
                         </div>
                         `;
                     })
+                    Array.from(document.getElementsByClassName("selectgroup")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            var num = parseInt(evt.srcElement.dataset.num);
+                            var group = subgroups[num];
+                            currentSubgroup = group;
+                            document.getElementById("subgroup_delete").style.display = "";
+                            document.getElementById("subgroup_groupName").value = group.name;
+                            document.getElementById("subgroup_groupTag").value = group.tag;
+                            document.getElementById("subgroupViewer").style.display = "";
+                            document.getElementById("subgroup_placeholder").style.display = "none";
+                            
+
+                            Array.from(document.querySelectorAll(".selectgroup")).forEach(e => {
+                                
+                                if(e.dataset.num == num){
+                                    e.style.backgroundColor = e.dataset.tocolor == undefined ? "#4708c4" : e.dataset.tocolor;
+                                    e.style.color = "white"
+                                    e.children[0].style.color = "white";
+                                }else{
+                                    e.style.backgroundColor = "";
+                                    
+                                    e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
+                                }
+                            });
+                        });
+                    });
                 }
             },
             error: function(data){
@@ -551,6 +606,40 @@
         document.getElementById("permissionViewer").style.display = "none";
         var e = document.querySelector(".selectrole[data-num='" + (roles.indexOf(currentRole)) + "']");
         e.style.backgroundColor = "";
+        e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
+        
+        
+    })
+
+    document.getElementById("subgroup_save").addEventListener("click", function(evt){
+        document.getElementById("subgroup_placeholder").style.display = "";
+        document.getElementById("subgroupViewer").style.display = "none";
+        currentSubgroup.oldName = currentSubgroup.name;
+        currentSubgroup.name = document.getElementById("subgroup_groupName").value;
+        currentSubgroup.action = "edit";
+        currentSubgroup.features = [];
+        currentSubgroup.joinable = false;
+        currentSubgroup.tag = document.getElementById("subgroup_groupTag").value;
+
+        $.ajax({
+            url: "/group/subgroup",
+            type: "POST",
+            data: currentSubgroup,
+            success: function(data){
+                refreshGroups();
+            }
+        })
+        
+        
+    })
+
+
+    document.getElementById("subgroup_cancel").addEventListener("click", function(evt){
+        document.getElementById("subgroup_placeholder").style.display = "";
+        document.getElementById("subgroupViewer").style.display = "none";
+        var e = document.querySelector(".selectgroup[data-num='" + (subgroups.indexOf(currentSubgroup)) + "']");
+        e.style.backgroundColor = "";
+        e.style.color = "";
         e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
         
         

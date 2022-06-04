@@ -87,12 +87,15 @@ app.get("/part*", function(req, res){
 
 
 app.get('/', function (req, res) {
+    console.log("A");
     res.sendFile(__dirname + "/views/base.html");
+    console.log("B");
     
     //res.end();
 });
 
 app.get('/home*', function (req, res) {
+    
     isAuthenticated(req, "cookie",[], function(status, user){
         if(status){
             if(req.query.part != undefined){
@@ -165,11 +168,11 @@ app.get('/create', function (req, res) {
 });
 
 app.post('/acc/login', function (req, res){
-    m.getDocs('Account', {username: req.body.username, group: req.body.group}).then(function(docs){
+    m.getDocs('Account', {username: req.body.username, group: req.body.group}).then(async function(docs){
         if(docs.length == 0){
             res.send(JSON.stringify({successful: false}));
         }else{
-            crypto.pbkdf2(req.body.password, docs[0].pwsalt, docs[0].pwiterations, 64, 'sha512', function(err, derivedKey){
+            crypto.pbkdf2(req.body.password, docs[0].pwsalt, docs[0].pwiterations, 64, 'sha512', async function(err, derivedKey){
                 if(docs[0].pwhash == derivedKey.toString('hex')){
                     var token = jwt.sign({
                         username: req.body.username,
@@ -178,7 +181,7 @@ app.post('/acc/login', function (req, res){
                     }, 'secret', {
                         expiresIn: '24h'
                     });
-                    res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0], 3), token: token}));
+                    res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
                 }else{
                     res.send(JSON.stringify({successful: false}));
                 }
@@ -189,14 +192,17 @@ app.post('/acc/login', function (req, res){
     
 });
 
-function createSafeUser(u, access){
+async function createSafeUser(u, access){
+    var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
+    var role = group.roles.find(r => r.name == u.access.role);
     var safeUser = {
         username: u.username,
         group: u.group,
         id: u._id,
         attendance: u.attendance,
         access: u.access,
-        email: (access > 1 ? u.email : undefined)
+        email: (access > 1 ? u.email : undefined),
+        permissions: role == undefined ? [] : role.permissions
 
 
     }
@@ -209,12 +215,12 @@ app.get('/acc/verify', function(req, res){
     try{
         var token = req.cookies.session;
         var decoded = jwt.verify(token, 'secret');
-        m.getDocs('Account', {_id: decoded.id}).then(function(docs){
+        m.getDocs('Account', {_id: decoded.id}).then(async function(docs){
             if(docs.length == 0){
                 res.send(JSON.stringify({successful: false}));
             }else{
 
-                res.send(JSON.stringify({successful: true, user: createSafeUser(docs[0], 1)}));
+                res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 1)}));
             }
         });
     }catch(e){
@@ -257,7 +263,7 @@ app.post('/acc/create', function (req, res){
                         },
                         connections: []
     
-                    }).then(function(d){
+                    }).then(async function(d){
                         var token = jwt.sign({
                             username: req.body.username,
                             group: req.body.group,
@@ -267,7 +273,7 @@ app.post('/acc/create', function (req, res){
                             expiresIn: '2h'
                         });
                         d.token = token;
-                        res.send(JSON.stringify({successful: true, user: createSafeUser(d, 3), token: token}));
+                        res.send(JSON.stringify({successful: true, user: await createSafeUser(d, 3), token: token}));
                     });
 
                     
@@ -317,9 +323,11 @@ app.get("/group/users", async function(req, res){
             var users = await m.getDocs("Account", {group: user.group});
             var group = await m.getDocs("Group", {uniqueId: user.group});
             var safeUsers = [];
-            users.forEach(u => {
-                safeUsers.push(createSafeUser(u, 2));
-            })
+            console.log(users);
+            console.log(user.group);
+            for(var i = 0; i < users.length; i++){
+                safeUsers.push(await createSafeUser(users[i], 2));
+            }
             res.send(JSON.stringify({successful: true, items: safeUsers, roles: group[0].roles}));
 
         }else{
@@ -399,6 +407,58 @@ app.get("/group/subgroups", async function(req, res){
             
             res.send(JSON.stringify({successful: true, items: group[0].subgroups}));
 
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+app.post("/group/subgroup", async function(req, res){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
+        if(status){
+            var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
+            if(req.body.action == "edit"){
+                var item = group.subgroups.find(r => r.name == req.body.oldName);
+                var index = group.subgroups.indexOf(item);
+                item.name = req.body.name;
+                item.tag = req.body.tag;
+                item.features = req.body.features;
+                item.joinable = req.body.joinable;
+                var oldName = req.body.oldName;
+                group.subgroups[index] = item;
+
+                // need to update all users with old role name
+                var users = await m.getDocs("Account", {group: user.group});
+                users.forEach(async function(u){
+                    u.access.groups.forEach(async function(g) {
+                        if(g == oldName){
+                            u.access.groups[u.access.groups.indexOf(g)] = req.body.name;
+                        }
+                    })
+                    await m.updateDoc("Account", {_id: u._id}, {access: u.access});
+                })
+                await m.updateDoc("Group", {_id: group._id}, {subgroups: group.subgroups});
+
+
+                
+            }else if(req.body.action == "create"){
+
+                var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
+                group.subgroups.push({
+                    name: req.body.name,
+                    tag: req.body.tag,
+                    features: req.body.features,
+                    joinable: req.body.joinable
+                });
+                await m.updateDoc("Group", {_id: group._id}, {subgroups: group.subgroups});
+            }else if(req.body.action == "delete"){
+                var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
+                var item = group.subgroups.find(r => r.name == req.body.name);
+                group.subgroups.splice(group.subgroups.indexOf(item), 1);
+
+                await m.updateDoc("Group", {_id: group._id}, {subgroups: group.subgroups});
+            }
+            res.send(JSON.stringify({successful: true}));
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }
@@ -670,7 +730,11 @@ app.get("/group/accounts", function(req, res){
                 res.sendFile(__dirname + "/views/base.html");
             }
         }else{
-            res.sendFile(__dirname + "/views/base.html");
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/home.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
         }
     });
 });
@@ -683,7 +747,11 @@ app.get("/group/manage", function(req, res){
                 res.sendFile(__dirname + "/views/base.html");
             }
         }else{
-            res.sendFile(__dirname + "/views/base.html");
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/home.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
         }
     });
 });
