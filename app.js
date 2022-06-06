@@ -495,7 +495,7 @@ app.post("/group/link", async function(req, res){
     });
 });
 app.get("/group/items", function(req, res){
-    isAuthenticated(req, "cookie",[], function(status, user){
+    isAuthenticated(req, "cookie",[], async function(status, user){
         var group = "";
         if(status){
             group = user.group;
@@ -503,11 +503,14 @@ app.get("/group/items", function(req, res){
         if((req.headers["group"] != undefined && req.headers["group"] != "")){
             group = req.headers["group"];
             
+            
         }
+        var groupItem = (await m.getDocs("Group", {uniqueId: group.length == undefined ? group["uniqueId"] : group}))[0];
+        
         
         if(group != ""){
             m.getDocs('ModuleItem', {group: group}).then(function(docs){
-                res.send(JSON.stringify({successful:true, items: docs, fromGroupId: group}));
+                res.send(JSON.stringify({successful:true, items: docs, group: groupItem}));
             });
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
@@ -786,6 +789,8 @@ app.use(async function(req, res, next) {
                         if(e.restricted == false){
                             res.setHeader("to", e.to);
                             res.setHeader("group", e.group);
+                            res.cookie("to", e.to);
+                            res.cookie("group", e.group);
                             res.sendFile(__dirname + "/views/tolink.html");
                             
                             sent = true;

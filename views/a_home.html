@@ -68,7 +68,8 @@
         success: function(data){
             data = JSON.parse(data);
             if(data["successful"]){
-                document.getElementById("welcomeH").innerHTML = data["fromGroupId"];
+                console.log(data)
+                document.getElementById("welcomeH").innerHTML = data["group"]["name"];
                 document.getElementById("items").innerHTML = "";
                 data["items"].forEach(i => {
                     if(i["show"]){

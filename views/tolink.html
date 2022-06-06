@@ -33,10 +33,13 @@
                     
                 </div>
                 <div style="width:84%;display:inline-block;vertical-align:middle">
-                    <span class="text" style="font-size: 30px;margin:10px;display:block">Are You Sure?</span>
-                    <span class="text color-d" style="font-size: 18px;margin:10px;display:block">This Quick Link from the group, [GROUP], leads to [LINK], an external website. Would you like to continue to this website?</span>
-                    <div class="container c-border c-hover link" style="padding:10px 50px 10px 50px;margin:10px">
+                    <span class="text color-d" style="font-size: 30px;margin:10px;display:block">Are You Sure?</span>
+                    <span class="text color-d" style="font-size: 18px;margin:10px;display:block;font-weight:500">This Quick Link from the group, <span id="group" style="font-weight:600">[GROUP]</span>, leads to <span id="link" style="font-weight:600">[LINK]</span>, an external website. Would you like to continue to this website?</span>
+                    <div class="container c-border c-hover link" style="padding:10px 50px 10px 50px;margin:10px" id="open">
                         Open Link
+                    </div>
+                    <div class="container c-border-gray color-g c-hover-gray" style="padding:10px 50px 10px 50px;margin:10px" id="goback">
+                        Go Back
                     </div>
                 </div>
                 
@@ -44,6 +47,35 @@
         </div>
     </body>
     <script>
+
+
+        var toLink = "";
+        var group = "";
+        var cookies = document.cookie.split(";");
+        cookies.forEach(function(cookie){
+            console.log(cookie);
+            var cookieName = cookie.split("=")[0];
+            var cookieValue = cookie.split("=")[1];
+            if(cookieName == " to"){
+                toLink = decodeURIComponent(cookieValue);
+                document.getElementById("link").innerHTML = toLink;
+
+            }
+            if(cookieName == "group"){
+                group = decodeURIComponent(cookieValue);
+                document.getElementById("group").innerHTML = group;
+            }
+        });
+
+        document.getElementById("open").addEventListener("click",function(){
+            window.location= toLink;
+        });
+        
+        document.getElementById("goback").addEventListener("click",function(){
+            window.location= "/";
+        });
+
+
         Array.from(document.getElementsByClassName("bounce")).forEach(e => {
                 e.addEventListener("click", function() {
                     if(!e.classList.contains("bounce-on")){
