@@ -34,7 +34,16 @@ const models = {
             name: String,
             tag: String,
             joinable: Boolean,
-            features: [String]
+            features: [String],
+            channels: [{
+                name: String,
+                access: [],
+                messages: [{
+                    sender: String,
+                    message: String,
+                    datetime: Date
+                }]
+            }]
         }],
         roles: [{
             name: String,

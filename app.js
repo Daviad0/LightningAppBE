@@ -400,6 +400,19 @@ app.post("/group/role", async function(req, res){
     });
 });
 
+app.get("/group/this", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var group = await m.getDocs("Group", {uniqueId: user.group});
+            
+            res.send(JSON.stringify({successful: true, group: group[0]}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
 app.get("/group/subgroups", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
@@ -412,6 +425,7 @@ app.get("/group/subgroups", async function(req, res){
         }
     });
 });
+
 
 app.post("/group/subgroup", async function(req, res){
     isAuthenticated(req, "cookie",["*"], async function(status, user){
@@ -746,6 +760,23 @@ app.get("/group/manage", function(req, res){
         if(status){
             if(req.headers["partial"] == "YES"){
                 res.sendFile(__dirname + "/views/manage.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }else{
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/home.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }
+    });
+});
+app.get("/group/cable", function(req, res){
+    isAuthenticated(req, "cookie",[], function(status, user){
+        if(status){
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/cable.html");
             }else{
                 res.sendFile(__dirname + "/views/base.html");
             }

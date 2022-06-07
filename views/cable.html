@@ -1,0 +1,150 @@
+<div class="transition" style="display: inline-block;width:100%;opacity:0" id="contentToShow">
+    <div style="display:inline-flex;justify-content:space-between;width:88%">
+        <div style="width:40%;text-align:left">
+            <span class="text">Channels in </span>
+            <div style="display: inline-flex;align-items: center;justify-content:center;width:60%">
+                <div class="container c-border dropdown form_actiontype" data-partof="select_group" style="cursor:pointer;display:inline-block;vertical-align:middle;width:80%" id="group_choice">
+                    <span class="dropdown_text" style="opacity:0.5;margin-left:5px;pointer-events:none" data-partof="select_group">Select an Option</span>
+                    <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="select_group">expand_more</span>
+                    <option class="dropdown_option" data-partof="select_group" value="all">Testing Environment</option>
+                    <option class="dropdown_option" data-partof="select_group" value="Leadership Team">Leadership Team</option>
+                </div>
+                
+            </div>
+            <div class="container c-border c-hover" style="padding:5px;margin:5px" id="group_add">
+                <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
+            </div>
+            <div id="subgroupList" style="margin-top:10px">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("contentToShow").style.opacity = "1";
+
+    var subgroups = [];
+    var thisGroup = undefined;
+
+    function reloadGroups(){
+        $.ajax({
+            url: "/group/subgroups",
+            type: "GET",
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    subgroups = data["items"];
+                    // make sure to filter here who has the "CHAT" feature enabled
+                    Array.from(document.querySelectorAll(".dropdown_option[data-partof='select_group']")).forEach(el => {
+                        // delete previous nodes
+                        el.remove();
+                    });
+                    document.querySelector(".dropdown[data-partof='select_group']").innerHTML += `<option class="dropdown_option" data-partof="select_group" value="all">${thisGroup["name"]}</option>`;
+                    var n = 0;
+                    subgroups.forEach(s => {
+                        document.querySelector(".dropdown[data-partof='select_group']").innerHTML += `<option class="dropdown_option" data-partof="select_group" value="${n}">${s["name"]}</option>`;
+                        n+=1;
+                    })
+
+                    
+                    Array.from(document.getElementsByClassName("dropdown")).forEach(e => {
+
+                        var val = e.dataset.value;
+                        var partof = e.dataset.partof;
+                        if(val != undefined && val != null && val != ""){
+                            var option = e.querySelector(`.dropdown_option[data-partof="${partof}"][value="${val}"]`);
+                            if(option != undefined && option != null){
+                                document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = option.innerHTML;
+                                document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = 1;
+                            }
+                        }
+            
+                        e.addEventListener("click", function(evt){
+                            var partof = evt.srcElement.dataset.partof;
+                            
+                            var elementLoc = evt.srcElement.getBoundingClientRect();
+                            var documentRect = document.body.getBoundingClientRect();
+                            var existing = document.querySelector(`.dropdown_option_container[data-partof="${partof}"]`)
+                            if(existing == undefined || existing == null){
+                                var newElement = document.createElement("div");
+                                newElement.classList.add("dropdown-content");
+                                newElement.dataset.partof = partof;
+                                newElement.style.position = "absolute";
+                                newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
+                                newElement.dataset.normY = elementLoc.top-90+80;
+                                newElement.style.left = elementLoc.left+(elementLoc.width/2)+10 + "px";
+                                
+                                newElement.style.transform = "translateX(-50%)";
+            
+                                var addHTML = "";
+                                var options = Array.from(document.querySelectorAll(`.dropdown_option[data-partof="${partof}"]`));
+            
+                                for(var i = 0; i < options.length; i++){
+                                    var e = options[i];
+                                    addHTML += `
+                                    <div data-value="${e.value}" data-partof="${partof}" style="padding:5px 0px;width:100%;border-radius:8px;margin:2px 0px;text-align:center" class="dropdown_option_show transition">
+                                        ${"  " + e.innerHTML}
+                                    </div>
+                                    `;
+                                }
+            
+                                newElement.innerHTML = `
+                                <div class="container c-slightborder dropdown_option_container" style="width:${(elementLoc.width-20) + "px"};border-radius:16px" data-partof="${partof}">
+                                    ${addHTML}
+                                </div>
+                                `
+                                
+                                evt.srcElement.appendChild(newElement)
+                            }else{
+                                if(evt.srcElement.classList.contains("dropdown_option_show")){
+                                    console.log("AAA");
+                                    var newValue = evt.srcElement.dataset.value;
+                                    var newText = evt.srcElement.innerHTML;
+                                    document.querySelector(`.dropdown[data-partof="${partof}"]`).dataset.value = newValue;
+                                    document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = newText;
+                                    document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = "1";
+                                    e.dispatchEvent(new Event("change"));
+                                }
+                                existing.remove();
+                            }
+                        
+                            
+                        });
+                    });
+                }
+            }
+        })
+    }
+
+    $.ajax({
+        url: "/group/this",
+        success: function(data){
+            data = JSON.parse(data);
+            if(data["successful"]){
+                console.log(data);
+                thisGroup = data["group"];
+                reloadGroups();
+            }
+        }
+    })
+
+    document.getElementById("group_choice").addEventListener("change", function(evt){
+        var index = evt.srcElement.dataset.value;
+        var currentSubgroup = subgroups[index];
+        $.ajax({
+            url: "/group/subgroups",
+            type: "GET",
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    subgroups = data["items"];
+                    var channels = subgroups.find(s => s["name"] == currentSubgroup["name"])["channels"];
+                    console.log(channels);
+                    
+                }
+            }
+        })
+    })
+
+    
+</script>
