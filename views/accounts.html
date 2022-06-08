@@ -10,7 +10,7 @@
                 <span style="pointer-events: none">Roles & Permissions</span>
             </div>
             <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:0px 8px 0px 0px;border-width:2px 2px 2px 1px" data-partof="usermanage" data-num="3">
-                <span style="pointer-events: none">Subgroup Settings</span>
+                <span style="pointer-events: none">Subgroup Configuration</span>
             </div>
         </div>
     </div>
@@ -133,10 +133,41 @@
                         
                     </div>
                     
-                    
-                    <div id="features" style="width: 100%;margin-top:20px;margin-bottom:20px;max-height:40vh;overflow-y:scroll">
+                    <div style="width: 100%;display:flex;justify-content:space-between;align-items:center;margin:10px 0px">
+                        <div style="width:14%;">
+                            <div class="c-border bounce blockcontrol" data-partof="manage_subgroup" data-num="0" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:4.5vw;height:4.5vw;display:inline-block;margin-bottom:10px;margin-top:20px">
+                                <span class="material-symbols-rounded color-m" style="width:50%;margin-top:24%;font-size:2.3vw;color:white">home_repair_service</span>
+                            </div>
+                            <div class="c-border bounce blockcontrol" data-partof="manage_subgroup" data-num="1" style="border-radius: 60px;border-width:4px;background-color:transparent;width:4.5vw;height:4.5vw;display:inline-block;margin-bottom:10px">
+                                <span class="material-symbols-rounded color-m" style="width:50%;margin-top:24%;font-size:2.3vw">admin_panel_settings</span>
+                            </div>
+                            <div class="c-border bounce blockcontrol" data-partof="manage_subgroup" data-num="2" style="border-radius: 60px;border-width:4px;background-color:transparent;width:4.5vw;height:4.5vw;display:inline-block;margin-bottom:20px">
+                                <span class="material-symbols-rounded color-m" style="width:50%;margin-top:24%;font-size:2.3vw">flag</span>
+                            </div>
+                            
+                        </div>
+                        <div class="blockitem" data-partof="manage_subgroup" data-num="0" style="width: 84%">
+                            <div id="features" style="width:100%;margin-top:10px;margin-bottom:20px;max-height:40vh;overflow-y:scroll;overflow-x:hidden">
+                        
+                            </div>
+                        </div>  
+                        <div class="blockitem" data-partof="manage_subgroup" data-num="1" style="width: 84%;display:none">
+                            <div style="width:100%;margin-top:10px;margin-bottom:20px;max-height:40vh;overflow-y:scroll;overflow-x:hidden">
+                                <div class="checkbox transition permission" data-partof="subgroup_joinable" style="display:inline-block;vertical-align:middle;margin-right:10px" data-checked="NO">
+                                
+                                </div>
+                                <span class="text" style="display:inline-block;vertical-align:middle" id="subgroup_joinable">Joinable</span>
+                            </div>
+                        </div>  
+                        <div class="blockitem" data-partof="manage_subgroup" data-num="2" style="width: 84%;display:none">
+                            <div style="width:100%;margin-top:10px;margin-bottom:20px;max-height:40vh;overflow-y:scroll;overflow-x:hidden">
+                                <span class="text color-g" style="display:inline-block;vertical-align:middle"><i>No Outstanding Audit Items...</i></span>
+                            </div>
+                        </div>  
+                        
                         
                     </div>
+                   
                     <div style="width:100%">
                         <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px" id="subgroup_save">
                             Save
@@ -162,6 +193,22 @@
     var currentSubgroup = "";
     var roles = [];
     var roleAction = "";
+
+    var features = [{
+        name: "Special Attendance",
+        code: "special_attendance",
+        description: "This subgroup can set when they are meeting overall in the meeting system, in case they have an altered schedule from the rest of the group."
+    },
+    {
+        name: "Announcement Channel",
+        code: "announcements",
+        description: "This subgroup can post announcements to its members that will show up as push notifications."
+    },
+    {
+        name: "Pages",
+        code: "pages",
+        description: "This subgroup can create special pages for their subgroup members and other outsides to view."
+    }]
 
     var permissionList = [{
         name: "Administrator",
@@ -254,6 +301,28 @@
         `;
     })
 
+    features.forEach(f => {
+        document.getElementById("features").innerHTML += `
+        <div style="margin:10px;width:80%;display:inline-flex;justify-content:space-between;align-items:center">
+            <div class="checkbox transition feature" data-partof="${f.code}" style="display:inline-block;vertical-align:middle;margin-right:20px" data-checked="NO">
+                                
+            </div>
+            <div>
+                <div style="width:100%;display:flex;vertical-align:middle;justify-content:center">
+                
+                    <span class="text" style="font-size:16px;vertical-align:middle;font-weight:800;width:100%">${f.name}</span>
+                </div>
+                
+                <div style="width:100%;display:flex;vertical-align:middle;margin:5px">
+                    
+                    <span class="text" style="font-size:14px;vertical-align:middle;font-weight:500">${f.description}</span>
+                    
+                </div>
+            </div>
+            
+        </div>
+        `;
+    })
     function refreshGroups(){
         $.ajax({
             url: "/group/subgroups",
@@ -276,6 +345,17 @@
                             var group = subgroups[num];
                             currentSubgroup = group;
                             document.getElementById("subgroup_delete").style.display = "";
+                            document.getElementById("subgroup_joinable").dataset.checked = group.joinable ? "YES" : "NO";
+                            document.getElementById("subgroup_joinable").style.backgroundColor = group.joinable ? "#4708c4" : "#ffffff";
+
+                            Array.from(document.getElementsByClassName("feature")).forEach(e => {
+                                e.dataset.checked = "NO";
+                                e.style.backgroundColor = "#ffffff";
+                            })
+                            group.features.forEach(f => {
+                                document.querySelector(`.feature[data-partof="${f}"]`).dataset.checked = "YES";
+                                document.querySelector(`.feature[data-partof="${f}"]`).style.backgroundColor = "#4708c4";
+                            });
                             document.getElementById("subgroup_groupName").value = group.name;
                             document.getElementById("subgroup_groupTag").value = group.tag;
                             document.getElementById("subgroupViewer").style.display = "";
@@ -618,7 +698,13 @@
         currentSubgroup.name = document.getElementById("subgroup_groupName").value;
         currentSubgroup.action = "edit";
         currentSubgroup.features = [];
-        currentSubgroup.joinable = false;
+
+        Array.from(document.getElementsByClassName("feature")).forEach(e => {
+            if(e.dataset.checked == "YES"){
+                currentSubgroup.features.push(e.dataset.partof);
+            }
+        })
+        currentSubgroup.joinable = document.getElementById("subgroup_joinable").dataset.checked == "YES" ? true : false;
         currentSubgroup.tag = document.getElementById("subgroup_groupTag").value;
 
         $.ajax({

@@ -14,10 +14,44 @@
             <div class="container c-border c-hover" style="padding:5px;margin:5px" id="group_add">
                 <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
             </div>
-            <div id="subgroupList" style="margin-top:10px">
+            <div id="channelList" style="margin-top:10px">
 
             </div>
         </div>
+        <div style="width:56%">
+            <div class="container c-slightborder" style="width:90%;padding:20px;display:none" id="chatViewer">
+                <div style="width:100%;border-radius:20px;background-color:#eeeeee;height:60vh;margin-bottom:10px;padding-top:10px" id="messages">
+                    <div style="width: 100%;text-align:left">
+                        
+                        <div style="margin: 10px 20px;">
+                            <span class="color-g" style="font-size: 10px;display:block;margin:2px;margin-left:5px">USERNAME</span>
+                            <div style="background-color: #bbbbbb;padding:10px;max-width:70%;border-radius:8px;display:inline-block">
+                                <span class="color-w" style="font-size: 12px;display:block">MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width: 100%;text-align:right;">
+                        <div style="margin: 10px 20px;">
+                            <span class="color-g" style="font-size: 10px;display:block;margin:2px;margin-left:5px">YOU</span>
+                            <div style="background-color: #a77aff;padding:10px;max-width:70%;border-radius:8px;display:inline-block">
+                                <span class="color-w" style="font-size: 12px;display:block">MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE MESSAGE </span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div style="width:100%;display:flex;justify-content:space-between;align-items:center">
+                    <textarea class="input" style="width:80%;resize:none;vertical-align:center;font-size:12px" placeholder="Your Message..."></textarea>
+                    <div class="container c-border c-hover" style="padding:5px;margin:5px;vertical-align:center;display:inline-flex;width:20px;height:20px;justify-content:center;align-items:center">
+                        <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">send</span>
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+
     </div>
 </div>
 <script>
@@ -25,6 +59,13 @@
 
     var subgroups = [];
     var thisGroup = undefined;
+
+    var channels = [];
+    var currentChannel = undefined;
+    
+    function reupdateMessages(){
+        document.getElementById("messages").innerHTML = "";
+    }
 
     function reloadGroups(){
         $.ajax({
@@ -39,7 +80,7 @@
                         // delete previous nodes
                         el.remove();
                     });
-                    document.querySelector(".dropdown[data-partof='select_group']").innerHTML += `<option class="dropdown_option" data-partof="select_group" value="all">${thisGroup["name"]}</option>`;
+                    
                     var n = 0;
                     subgroups.forEach(s => {
                         document.querySelector(".dropdown[data-partof='select_group']").innerHTML += `<option class="dropdown_option" data-partof="select_group" value="${n}">${s["name"]}</option>`;
@@ -97,6 +138,7 @@
                                 evt.srcElement.appendChild(newElement)
                             }else{
                                 if(evt.srcElement.classList.contains("dropdown_option_show")){
+                                    var e = document.querySelector(`.dropdown[data-partof="${partof}"]`)
                                     console.log("AAA");
                                     var newValue = evt.srcElement.dataset.value;
                                     var newText = evt.srcElement.innerHTML;
@@ -138,8 +180,31 @@
                 data = JSON.parse(data);
                 if(data["successful"]){
                     subgroups = data["items"];
-                    var channels = subgroups.find(s => s["name"] == currentSubgroup["name"])["channels"];
-                    console.log(channels);
+                    channels = [];
+                    if(currentSubgroup["name"] != undefined){
+                        channels = subgroups.find(s => s["name"] == currentSubgroup["name"])["channels"];
+                    }else{
+
+                    }
+                    
+                    document.getElementById("channelList").innerHTML = "";
+                    var cN = 0;
+                    channels.forEach(c => {
+                        document.getElementById("channelList").innerHTML += `
+                        <div class="container c-border c-hover selectchannel" data-num="${cN}" style="padding:10px 30px;width:60%;margin:5px;text-align:center;cursor:pointer;font-size:14px;font-weight:600">
+                            @${c.name.toUpperCase()}
+                        </div>
+                        `
+                        cN += 1;
+                    
+                    })
+
+                    Array.from(document.getElementsByClassName("selectchannel")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            document.getElementById("chatViewer").style.display = "";
+                        });
+                    })
+                    
                     
                 }
             }

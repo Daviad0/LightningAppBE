@@ -35,6 +35,7 @@ const models = {
             tag: String,
             joinable: Boolean,
             features: [String],
+            managers: [String],
             channels: [{
                 name: String,
                 access: [],
