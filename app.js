@@ -94,6 +94,7 @@ app.get('/', function (req, res) {
     //res.end();
 });
 
+
 app.get('/home*', function (req, res) {
     
     isAuthenticated(req, "cookie",[], function(status, user){
@@ -773,6 +774,25 @@ app.get("/group/manage", function(req, res){
         }
     });
 });
+
+app.get("/acc/user*", function(req, res){
+    isAuthenticated(req, "cookie",[], function(status, user){
+        if(status){
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/user.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }else{
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/home.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }
+    });
+});
+
 app.get("/group/cable", function(req, res){
     isAuthenticated(req, "cookie",[], function(status, user){
         if(status){

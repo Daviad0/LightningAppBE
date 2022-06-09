@@ -147,7 +147,7 @@
             
             
             <br/>
-            <div class="a container c-border c-hover" style="padding:10px 20px 10px 20px">
+            <div class="a container c-border c-hover baseaction" data-action="account" style="padding:10px 20px 10px 20px">
                 My Account
             </div>
             <div class="a container c-border-gray c-hover-gray color-g baseaction" data-action="logout" style="padding:10px 20px 10px 20px">
@@ -176,6 +176,7 @@
         var authId = "";
         var group = "";
         var overlayData = {};
+        var thisUser = undefined;
 
 
 
@@ -215,6 +216,7 @@
                             data = JSON.parse(data);
                             if(data["successful"]){
                                 group = data["user"]["group"];
+                                thisUser = data["user"];
                                 document.getElementById("account_login").style.display = "none";
                                 document.getElementById("account_create").style.display = "none";
                                 document.getElementById("account_me").style.display = "";
@@ -285,6 +287,7 @@
                                     flashFormError(3000, document.getElementById("login_password"));
                                     flashFormError(3000, document.getElementById("login_group"));
                                 }else{
+                                    thisUser = data["user"];
                                     document.cookie = "session=" + data["token"];
                                     authId = data["token"];
                                     document.getElementById("account_login").style.display = "none";
@@ -321,6 +324,7 @@
                                 }
                             }else{
                                 authId = data["token"];
+                                thisUser = data["user"];
                                 document.cookie = "session=" + data["token"];
                                 document.getElementById("account_login").style.display = "none";
                                 //document.getElementById("account_create").style.display = "none";
@@ -333,6 +337,15 @@
                                 load("/home");
                             }
                         });
+                            break;
+                        case "account":
+                            
+                        
+                            document.getElementById("accountC_me").style.display = "none";
+                            if(thisUser != undefined){
+                                load("/acc/user/" + thisUser["id"]);
+                            }
+                            
                             break;
                         case "logout":
                             document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
