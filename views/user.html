@@ -1,6 +1,59 @@
 <div class="transition" style="display: inline-block;width:100%;opacity:0" id="contentToShow">
-    <span class="text color-d" style="font-size:20px">Daviado</span>
+
+    <div style="width:80%;display:inline-flex;justify-content:space-between;padding:20px;align-items:center" class="container c-slightborder">
+        <div style="text-align:left">
+            <div style="display: inline-block;vertical-align:middle;margin:20px">
+                <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:100px;height:100px;display:inline-flex;justify-content:center;align-items:center">
+                    <span class="material-symbols-rounded color-w" style="font-size:56px">person</span>
+                </div>
+            </div>
+            <div style="display: inline-block;vertical-align:middle">
+                <span class="text color-d" style="font-size:40px;display:block" id="username">Daviado</span>
+                <span class="text color-d" style="font-size:20px;display:block;font-weight:500">Part of <span id="group">Testing Environment</span></span>
+                <div style="display: block;">
+                    <div class="container c-border" id="roleC" style="padding:5px 15px;border-radius:40px;display:inline-block;margin:10px 0px">
+
+                        <span class="text color-d" style="font-size:14px;display:inline-block;font-weight:500;color:white" id="role">Representative</span>
+                    </div>
+                </div>
+                
+                
+            </div>
+            
+        </div>
+        <div>
+            <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px;display:block">
+                Edit
+            </div>
+            <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px;display:block">
+                Contact User
+            </div>
+        </div>
+
+    </div>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
 </div>
 <script>
-    document.getElementById("contentToShow").style.opacity = "1";
+    
+
+    var params = window.location.pathname.split("/");
+    $.ajax({
+        url: "/group/user?id=" + params[3],
+        type: "GET",
+        success: function(data){
+            data = JSON.parse(data);
+            if(data["successful"]){
+                document.getElementById("username").innerHTML = data["user"]["username"];
+                document.getElementById("group").innerHTML = data["group"]["name"];
+                document.getElementById("role").innerHTML = data["user"]["access"]["role"].toUpperCase();
+                document.getElementById("roleC").style.backgroundColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
+                document.getElementById("roleC").style.borderColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
+                document.getElementById("contentToShow").style.opacity = "1";
+            }
+        }
+    })
+
 </script>

@@ -705,6 +705,34 @@ app.get("/group/today", async function(req, res){
         }
     });
 })
+
+app.get("/group/user", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            console.log(req.query.id);
+            var getUser = (await m.getDocs('Account', {_id: req.query.id}))[0];
+            
+            var ownUser = false;
+            
+            if(getUser.id == req.query.id){
+                getUser = await createSafeUser(getUser, 2);
+                ownUser = true;
+            }else{
+                getUser = await createSafeUser(getUser, 1);
+            }
+            var group = (await m.getDocs('Group', {uniqueId: getUser.group}))[0];
+
+
+
+
+            res.send(JSON.stringify({successful: true, user: getUser, ownUser: ownUser, group: group}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
 app.post("/group/today", async function(req, res){
     isAuthenticated(req, "cookie",["VIEW_SCHEDULE_SIGNIN"], async function(status, user){
         if(status){
