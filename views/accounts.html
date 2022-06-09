@@ -356,12 +356,12 @@
             //currentSubgroup.managers.forEach(m => {
                                 
             document.getElementById("subgroup_managers").innerHTML += `
-                <div class="container c-border manager" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${mN}">
-                    <div class="removemanager" style="display:inline-block" data-num="${mN}">
-                        <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${mN}">cancel</span>
+                <div class="container c-border manager" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${mN}" data-id="${m["id"]}">
+                    <div class="removemanager" style="display:inline-block" data-num="${mN}" data-id="${m["id"]}">
+                        <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${mN}" data-id="${m["id"]}">cancel</span>
                     </div>
                     
-                    <span class="color-w" style="font-size:12px">${m}</span>
+                    <span class="color-w" style="font-size:12px">${m["username"]}</span>
                 </div>
             `;
             mN += 1;
@@ -391,7 +391,10 @@
         console.log(data)
         var name = data[0].split("=")[1];
         var id = data[1].split("=")[1];
-        managers_copy.push(name);
+        managers_copy.push({
+            username: name,
+            id: id
+        });
         reshowManagers(); 
     });
 
@@ -420,7 +423,14 @@
                             document.getElementById("subgroup_joinable").dataset.checked = group.joinable ? "YES" : "NO";
                             document.getElementById("subgroup_joinable").style.backgroundColor = group.joinable ? "#4708c4" : "#ffffff";
 
-                            managers_copy = group.managers.slice();
+                            managers_copy = [];
+                            group.managers.forEach(m => {
+                                var userObj = allUsers.find(u => u.id == m);
+                                managers_copy.push({
+                                    username: userObj["username"],
+                                    id: userObj["id"]
+                                });
+                            })
                             
                             
                             reshowManagers();
@@ -637,9 +647,12 @@
                             });
                         });
                     });
+                    
 
 
                 }
+                refreshPermissions();
+                refreshGroups();
             },
             error: function(data){
                 document.getElementById("showErrorMessage").click();
@@ -647,8 +660,7 @@
         })
     }
     refreshUsers();
-    refreshPermissions();
-    refreshGroups();
+    
 
     document.getElementById("permission_roleColor").addEventListener("change", function(evt){
         var color = evt.srcElement.value;
@@ -781,7 +793,10 @@
                 currentSubgroup.features.push(e.dataset.partof);
             }
         })
-        currentSubgroup.managers = managers_copy.slice();
+        currentSubgroup.managers = []
+        managers_copy.forEach(m => {
+            currentSubgroup.managers.push(m.id);
+        });
         currentSubgroup.joinable = document.getElementById("subgroup_joinable").dataset.checked == "YES" ? true : false;
         currentSubgroup.tag = document.getElementById("subgroup_groupTag").value;
 

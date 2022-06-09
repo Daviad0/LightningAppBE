@@ -39,6 +39,10 @@ body{
     transition: .4s ease all; 
     color: #2b047a;
 }
+.container:disabled{
+    opacity: 0.5;
+    
+}
 
 .checkbox{
     padding: 10px;

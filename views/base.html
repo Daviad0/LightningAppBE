@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="overlay_bg" id="overlay" style="display: none;z-index:10000">
-            <div class="container c-slightborder" style="position:absolute;width: 50%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:30px">
+            <div class="container c-slightborder" style="position:absolute;width: 50%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:30px" id="overlayBigBox">
                 <div id="overlayBox"></div>
                 <div class="container c-border color-g c-hover" style="padding:10px 50px 10px 50px;margin:10px" id="overlay_done">
                     Done
@@ -175,6 +175,7 @@
 
         var authId = "";
         var group = "";
+        var overlayData = {};
 
 
 
@@ -243,7 +244,8 @@
                     break;
                 case "add_manager":
                     var username = document.getElementById("overlay_username").value;
-                    data = "user=" + username + ";id=1234";
+                    var id = document.getElementById("overlay_username").dataset.id;
+                    data = "user=" + username + ";id=" + id;
                     break;
             }
             if(sendback != null){
@@ -258,6 +260,8 @@
             
         });
 
+
+        
 
         function reloadAllBaseEvents(){
 
@@ -375,15 +379,115 @@
                                     `;
                                     break;
                                 case "add_manager":
-                                    document.getElementById('overlay').style.display = "";
-                                    document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_manager";
-                                    document.getElementById('overlayBox').innerHTML = `
-                                    <span class="text color-d" style="font-size:28px;margin:10px">Add a Subgroup Manager</span>
-                                    <div style="margin:20px">
-                                        <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
-                                    </div>
+                                    function handleAddManager(evt){
+                                        var oldContent = document.querySelector(".overlay_usernameComplete");
+                                        if(oldContent != null){
+                                            oldContent.remove();
+                                        }
+                                        var newElement = document.createElement("div");
+                                        var elementLoc = evt.srcElement.getBoundingClientRect();
+                                        var documentRect = document.body.getBoundingClientRect();
+                                        newElement.classList.add("dropdown-content");
+                                        newElement.classList.add("overlay_usernameComplete");
+                                        newElement.style.position = "absolute";
+                                        newElement.style.zIndex = "200";
+                                        newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
+                                        newElement.dataset.normY = elementLoc.top-90+80;
+                                        newElement.style.left = elementLoc.left-(elementLoc.width/2)+10 + "px";
+                                        
+                                        newElement.style.transform = "translateX(-50%)";
+                                        var addHTML = "";
+                                        var useUsers = overlayData["users"].filter(u => u["username"].toLowerCase().includes(evt.srcElement.value.toLowerCase()));
+                                        useUsers.sort((a, b) => {
+                                            if(a["username"].toLowerCase() < b["username"].toLowerCase()){
+                                                return -1;
+                                            }else if(a["username"].toLowerCase() > b["username"].toLowerCase()){
+                                                return 1;
+                                            }else{
+                                                return 0;
+                                            }
+                                        });
+                                        for(var i = 0; i < (useUsers.length > 5 ? 5 : useUsers.length); i++){
+                                            var e = useUsers[i];
+                                            addHTML += `
+                                            <div data-value="${e.id}" data-username="${e.username}" style="padding:5px 0px;width:100%;border-radius:8px;margin:2px 0px;cursor:pointer" class="dropdown_option_show overlay_username_item transition">
+                                                ${e.username}
+                                            </div>
+                                            `;
+                                        }
+                                        newElement.innerHTML = `
+                                        <div class="container c-slightborder dropdown_option_container" style="width:${(elementLoc.width-20) + "px"};border-radius:16px">
+                                            ${addHTML}
+                                        </div>
+                                        `
+                                        
+                                        document.getElementById("place_suggestion").appendChild(newElement)
+
+                                        Array.from(document.getElementsByClassName("overlay_username_item")).forEach(function(e){
+                                            e.addEventListener("click", function(evt){
+                                                var id = evt.srcElement.dataset.value;
+                                                var name = evt.srcElement.dataset.username;
+
+                                                document.getElementById("overlay_username").value = name;
+                                                document.getElementById("overlay_username").dataset.id = id;
+                                                var oldContent = document.querySelector(".overlay_usernameComplete");
+                                                if(oldContent != null){
+                                                    oldContent.remove();
+                                                }
+                                                document.getElementById("overlay_done").style.opacity = "1";
+                                                document.getElementById("overlay_done").style.pointerEvents = "";
+                                                document.getElementById("overlay_done").style.cursor = "pointer";
+
+                                            })
+                                        })
+                                    }
+                                    $.ajax({
+                                        url : "/group/users",
+                                        type : "GET",
+                                        success: function(data){
+                                            data = JSON.parse(data);
+                                            if(data["successful"]){
+                                                overlayData["users"] = data["items"];
+                                                document.getElementById("overlay_done").style.opacity = "0.5";
+                                                document.getElementById("overlay_done").style.pointerEvents = "none";
+                                                document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                                document.getElementById('overlay').style.display = "";
+                                                document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_manager";
+                                                document.getElementById('overlayBox').innerHTML = `
+                                                <span class="text color-d" style="font-size:28px;margin:10px">Add a Subgroup Manager</span>
+                                                <div style="margin:20px" id="place_suggestion">
+                                                    <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
+                                                </div>
+                                                
+                                                `;
+                                                document.getElementById("overlay_username").addEventListener("change", function(evt){
+                                                    handleAddManager(evt);
+                                                    
+
+                                                });
+                                                document.getElementById("overlay_username").addEventListener("keyup", function(evt){
+                                                    handleAddManager(evt);
+                                                    document.getElementById("overlay_done").style.opacity = "0.5";
+                                                    document.getElementById("overlay_done").style.pointerEvents = "none";
+                                                    document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                                });
+                                                document.getElementById("overlay_username").addEventListener("click", function(evt){
+                                                    handleAddManager(evt);
+                                                    
+                                                });
+                                                document.getElementById("overlay_username").addEventListener("focusout", function(evt){
+                                                    setTimeout(function(){
+                                                        var oldContent = document.querySelector(".overlay_usernameComplete");
+                                                        if(oldContent != null){
+                                                            oldContent.remove();
+                                                        }
+                                                    },500);
+                                                    
+                                                })
+                                            }
+                                        }
+                                    })
                                     
-                                    `;
                                     break;
                                 
                             }
