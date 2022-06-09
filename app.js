@@ -438,6 +438,7 @@ app.post("/group/subgroup", async function(req, res){
                 item.tag = req.body.tag;
                 item.features = req.body.features;
                 item.joinable = req.body.joinable;
+                item.managers = req.body.managers;
                 var oldName = req.body.oldName;
                 group.subgroups[index] = item;
 

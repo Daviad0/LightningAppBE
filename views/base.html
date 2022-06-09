@@ -28,8 +28,17 @@
                 Error: Not Authenticated
             </div>
         </div>
-        <div class="overlay_bg" id="overlay" style="display: none;">
-            <div class="container c-slightborder" style="position:absolute;width: 70%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:20px" id="overlayBox"></div>
+        <div class="overlay_bg" id="overlay" style="display: none;z-index:10000">
+            <div class="container c-slightborder" style="position:absolute;width: 50%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:30px">
+                <div id="overlayBox"></div>
+                <div class="container c-border color-g c-hover" style="padding:10px 50px 10px 50px;margin:10px" id="overlay_done">
+                    Done
+                </div>
+                <div class="container c-border-gray color-g c-hover-gray" style="padding:10px 50px 10px 50px;margin:10px" id="overlay_close">
+                    Cancel
+                </div>
+            </div>
+            
         </div>
         <div class="header">
             <div>
@@ -224,6 +233,31 @@
 
         }
 
+        document.getElementById("overlay_done").addEventListener("click", function(evt){
+            document.getElementById('overlay').style.display = "none";
+            
+            var sendback = document.getElementById(evt.srcElement.dataset.sendback);
+            var data = "";
+            switch(evt.srcElement.dataset.overlay){
+                case "create_meeting":
+                    break;
+                case "add_manager":
+                    var username = document.getElementById("overlay_username").value;
+                    data = "user=" + username + ";id=1234";
+                    break;
+            }
+            if(sendback != null){
+                sendback.innerHTML = data;
+                sendback.click();
+            }
+        });
+        
+
+        document.getElementById("overlay_close").addEventListener("click", function(evt){
+            document.getElementById('overlay').style.display = "none";
+            
+        });
+
 
         function reloadAllBaseEvents(){
 
@@ -328,6 +362,7 @@
                             })
                             break;
                         case "overlay":
+                            document.getElementById("overlay_done").dataset.overlay = evt.srcElement.dataset.overlay;
                             switch(evt.srcElement.dataset.overlay){
                                 case "create_meeting":
                                     document.getElementById('overlay').style.display = "";
@@ -339,6 +374,17 @@
                                     </div>
                                     `;
                                     break;
+                                case "add_manager":
+                                    document.getElementById('overlay').style.display = "";
+                                    document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_manager";
+                                    document.getElementById('overlayBox').innerHTML = `
+                                    <span class="text color-d" style="font-size:28px;margin:10px">Add a Subgroup Manager</span>
+                                    <div style="margin:20px">
+                                        <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
+                                    </div>
+                                    
+                                    `;
+                                    break;
                                 
                             }
                             break;
@@ -346,7 +392,7 @@
                 });
             });
 
-
+            
             
     
             Array.from(document.getElementsByClassName("goToPage")).forEach(e => {

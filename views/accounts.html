@@ -153,10 +153,26 @@
                         </div>  
                         <div class="blockitem" data-partof="manage_subgroup" data-num="1" style="width: 84%;display:none">
                             <div style="width:100%;margin-top:10px;margin-bottom:20px;max-height:40vh;overflow-y:scroll;overflow-x:hidden">
+                                
+                                <div style="width: 100%;margin-bottom:20px">
+                                    <span class="text" style="display:inline-block;vertical-align:middle">Group Managers</span><br/>
+                                    <span class="text" style="font-size:14px;font-weight:500;margin:10px 20px 15px 20px;display:block">These members can manage the settings of this group specifically, looking at all of the features. They are not allowed to view this page to overall configure this, or other subgroups.</span>
+                                    <div style="border: 2px solid #4708c4;padding:20px;margin:10px;border-radius:20px;max-height:60px;overflow-y:scroll">
+                                        <div style="display:inline-block;vertical-align:middle" id="subgroup_managers">
+
+                                        </div>
+                                        <div class="container c-border c-hover" style="padding:5px;margin:3px;vertical-align:middle" id="manager_add">
+                                            <span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>
+                                        </div>
+                                        
+                                        
+                                    </div>
+                                </div>
                                 <div class="checkbox transition permission" data-partof="subgroup_joinable" style="display:inline-block;vertical-align:middle;margin-right:10px" data-checked="NO">
                                 
                                 </div>
-                                <span class="text" style="display:inline-block;vertical-align:middle" id="subgroup_joinable">Joinable</span>
+                                <span class="text" style="display:inline-block;vertical-align:middle" id="subgroup_joinable">Open to Join</span>
+                                
                             </div>
                         </div>  
                         <div class="blockitem" data-partof="manage_subgroup" data-num="2" style="width: 84%;display:none">
@@ -184,6 +200,7 @@
             </div>
         </div>
     </div>
+    <div id="overlayRes_add_manager" style="display: none;"></div>
 </div>
 <script>
     document.getElementById("contentToShow").style.opacity = "1";
@@ -193,6 +210,7 @@
     var currentSubgroup = "";
     var roles = [];
     var roleAction = "";
+    var subgroupAction = "";
 
     var features = [{
         name: "Special Attendance",
@@ -280,6 +298,11 @@
         code: "ADMIN_SCHEDULE_ATTENDENCE",
         description: "This permission allows the role or user to manage everyone's attendence records, making any changes that are incorrectly logged."
     },
+    {
+        name: "Global Subgroup Manager",
+        code: "ADMIN_SUBGROUPS_MANAGER",
+        description: "This permission automatically specifies the user as a irremovable subgroup manager to every subgroup, meaning they can manage the specific features of the subgroup."
+    },
     ]
     
 
@@ -323,6 +346,55 @@
         </div>
         `;
     })
+
+    var managers_copy = [];
+
+    function reshowManagers(){
+        var mN = 0;
+        document.getElementById("subgroup_managers").innerHTML = "";
+        managers_copy.forEach(m => {
+            //currentSubgroup.managers.forEach(m => {
+                                
+            document.getElementById("subgroup_managers").innerHTML += `
+                <div class="container c-border manager" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${mN}">
+                    <div class="removemanager" style="display:inline-block" data-num="${mN}">
+                        <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${mN}">cancel</span>
+                    </div>
+                    
+                    <span class="color-w" style="font-size:12px">${m}</span>
+                </div>
+            `;
+            mN += 1;
+        })
+        Array.from(document.getElementsByClassName("removemanager")).forEach(e => {
+            e.addEventListener("click", function(evt){
+                
+
+                var num = parseInt(evt.srcElement.dataset.num);
+                console.log(num);
+                console.log(managers_copy);
+                managers_copy.splice(num, 1);
+                reshowManagers();
+                
+            })
+        });
+    }
+
+    document.getElementById("manager_add").addEventListener("click", function(){
+        document.getElementById("externalClickAction").dataset.action = "overlay";
+        document.getElementById("externalClickAction").dataset.overlay = "add_manager";
+        document.getElementById("externalClickAction").click();
+    })
+
+    document.getElementById("overlayRes_add_manager").addEventListener("click", function(evt){
+        var data = evt.srcElement.innerHTML.split(";");
+        console.log(data)
+        var name = data[0].split("=")[1];
+        var id = data[1].split("=")[1];
+        managers_copy.push(name);
+        reshowManagers(); 
+    });
+
     function refreshGroups(){
         $.ajax({
             url: "/group/subgroups",
@@ -348,10 +420,15 @@
                             document.getElementById("subgroup_joinable").dataset.checked = group.joinable ? "YES" : "NO";
                             document.getElementById("subgroup_joinable").style.backgroundColor = group.joinable ? "#4708c4" : "#ffffff";
 
+                            managers_copy = group.managers.slice();
+                            
+                            
+                            reshowManagers();
                             Array.from(document.getElementsByClassName("feature")).forEach(e => {
                                 e.dataset.checked = "NO";
                                 e.style.backgroundColor = "#ffffff";
                             })
+                            
                             group.features.forEach(f => {
                                 document.querySelector(`.feature[data-partof="${f}"]`).dataset.checked = "YES";
                                 document.querySelector(`.feature[data-partof="${f}"]`).style.backgroundColor = "#4708c4";
@@ -704,6 +781,7 @@
                 currentSubgroup.features.push(e.dataset.partof);
             }
         })
+        currentSubgroup.managers = managers_copy.slice();
         currentSubgroup.joinable = document.getElementById("subgroup_joinable").dataset.checked == "YES" ? true : false;
         currentSubgroup.tag = document.getElementById("subgroup_groupTag").value;
 
