@@ -203,7 +203,13 @@
     <div id="overlayRes_add_manager" style="display: none;"></div>
 </div>
 <script>
-    document.getElementById("contentToShow").style.opacity = "1";
+    Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
+        if(!e.classList.contains("logospin")){
+            e.classList.add("logospin");
+        }
+        
+    })
+    
     var allUsers = [];
     var subgroups = [];
     var currentRole = "";
@@ -651,6 +657,13 @@
 
 
                 }
+                document.getElementById("contentToShow").style.opacity = "1";
+                Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
+                    if(e.classList.contains("logospin")){
+                        e.classList.remove("logospin");
+                    }
+                    
+                })
                 refreshPermissions();
                 refreshGroups();
             },

@@ -45,7 +45,8 @@
                 <div style="height:100%;width:100%;display:flex;align-items:center;justify-content:space-between">
                     <div class="bigscreen">
                         <div style="display: inline-flex;align-items:center">
-                            <span style="display: inline-flex;margin:0px 20px 0px 20px" class="text">SparkClub</span>
+                            <img src="/images/sparkclub.png" style="width:40px;margin:0px 40px;transition:all 1s ease-in-out" class="mainlogo"/>
+                        
                             <div class="a container c-border c-hover goToPage" data-page="home" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
                                 Home
                             </div>
@@ -62,7 +63,7 @@
                     </div>
                     <div class="smallscreen">
                         <div style="display: inline-flex;align-items:center">
-                            <span style="display: inline-flex;margin:0px 20px 0px 20px" class="text">SparkClub</span>
+                            <img src="/images/sparkclub.png" style="width:40px;margin:0px 40px;transition:all 1s ease-in-out" class="mainlogo"/>
                         </div>
                     </div>
                     
@@ -547,6 +548,16 @@
                 });
             });
         }
+
+
+        Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
+            e.addEventListener("click", function(evt) {
+                evt.srcElement.classList.add("logospin");
+                setTimeout(function(){
+                    evt.srcElement.classList.remove("logospin");
+                },500);
+            });
+        })
 
         $(document).ready(function(){
             reloadAllBaseEvents();

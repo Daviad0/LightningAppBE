@@ -107,6 +107,12 @@
 </div>
 
 <script>
+    Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
+        if(!e.classList.contains("logospin")){
+            e.classList.add("logospin");
+        }
+        
+    })
     var currentItems = [];
     var currentLinks = [];
     var currentMeetings = [];
@@ -336,6 +342,12 @@
         });
 
         document.getElementById("contentToShow").style.opacity = 1;
+        Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
+            if(e.classList.contains("logospin")){
+                e.classList.remove("logospin");
+            }
+            
+        })
 
         Array.from(document.getElementsByClassName("iconedit")).forEach(e => {
             e.addEventListener("change", function(evt) {
