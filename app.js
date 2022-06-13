@@ -535,16 +535,19 @@ app.get("/group/items", function(req, res){
 });
 
 app.post("/group/meeting", async function(req, res){
-    isAuthenticated(req, "cookie",["ADMIN_SCHEDULE"], async function(status,user){
+    isAuthenticated(req, "cookie",["*", "ADMIN_SCHEDULE"], async function(status,user){
         // must have edit main page access
         if(status){
             var id = req.body._id;
+            console.log(req.body.subgroups)
             if(req.body.action == "edit"){
+                console.log(req.body)
                 await m.updateDoc('AttendanceItem', {_id: id}, {
                     title: req.body.title,
                     datetime: req.body.datetime,
                     length: req.body.length,
                     description: req.body.description,
+                    subgroups: req.body.subgroups,
                     code: req.body.code
                 });
             }else if(req.body.action == "create"){

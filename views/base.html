@@ -250,6 +250,24 @@
                     var id = document.getElementById("overlay_username").dataset.id;
                     data = "user=" + username + ";id=" + id;
                     break;
+                case "see_meeting":
+                    var attending = [];
+                    Array.from(document.getElementsByClassName("subgroup")).forEach(e => {
+                        var index = e.dataset.num;
+                        attending.push(overlayData["existing"][index]);
+                    });
+                    console.log(attending);
+                    var dataObj = {
+                        _id: overlayData["meeting"]["_id"],
+                        title: document.getElementById("meeting_purpose").value,
+                        description: document.getElementById("meeting_description").value,
+                        date: document.getElementById("meeting_date").value,
+                        time: document.getElementById("meeting_time").value,
+                        subgroups: attending,
+                        length: document.getElementById("meeting_length").value
+                    }
+                    data += JSON.stringify(dataObj);
+                    break;
             }
             if(sendback != null){
                 sendback.innerHTML = data;
@@ -402,32 +420,33 @@
                                         <div style="display:inline-block;text-align:left;margin:5px 30px">
                                             <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Purpose</span>
                                         </div>
-                                        <input type="text" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="Party!">
+                                        <input type="text" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="${data["meeting"]["title"]}" placeholder="Party!" id="meeting_purpose">
                                     </div>
                                     <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
                                         <div style="display:inline-block;text-align:left;margin:5px 30px">
-                                            <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Location</span>
+                                            <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Description</span>
                                         </div>
-                                        <input type="text" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="Hell, MI">
+                                        <input type="text" class="text color-d input form_name" style="display:inline-block;font-size:14px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="${data["meeting"]["description"]}" placeholder="For the greatest of party attenders!" id="meeting_description">
                                     </div>
                                     <div style="display:flex;justify-content:space-around">
                                         <div>
                                             <div style="display:inline-block;text-align:left">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Date</span>
                                             </div>
-                                            <input type="date" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="${ date.getFullYear() + "-" + (date.getMonth()+1).toString().padStart(2, "0") + "-" + (date.getDate()+1).toString().padStart(2, "0")}" placeholder="Someday">
+                                            
+                                            <input type="date" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="${ date.getFullYear() + "-" + (date.getMonth()+1).toString().padStart(2, "0") + "-" + (date.getDate()).toString().padStart(2, "0")}" placeholder="Someday" id="meeting_date">
                                         </div>
                                         <div>
                                             <div style="display:inline-block;text-align:left">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Time</span>
                                             </div>
-                                            <input type="time" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:120px;padding:14px;vertical-align:middle;text-align:center" value="${date.getHours() + ":" + (date.getMinutes().toString().padStart(2, "0"))}" placeholder="25:00PM">
+                                            <input type="time" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:120px;padding:14px;vertical-align:middle;text-align:center" value="${(date.getHours().toString().padStart(2, "0")) + ":" + (date.getMinutes().toString().padStart(2, "0"))}" placeholder="25:00PM" id="meeting_time">
                                         </div>
                                         <div>
                                             <div style="display:inline-block;text-align:left">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Hours</span>
                                             </div>
-                                            <input type="number" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:120px;padding:14px;vertical-align:middle;text-align:center" value="${data["meeting"]["length"]}" min="0" placeholder="2h">
+                                            <input type="number" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:120px;padding:14px;vertical-align:middle;text-align:center" value="${data["meeting"]["length"]}" min="0" placeholder="2h" id="meeting_length">
                                         </div>
                                     </div>
                                     
@@ -439,10 +458,8 @@
                                             </div>
                                             <div class="container c-border c-hover" style="padding:5px;margin:3px;vertical-align:middle" data-partof="add_subgroup" id="subgroup_attend_add">
                                                 <span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>
-                                                <option class="dropdown_option" data-partof="add_subgroup" value="a">A</option>
-                                                <option class="dropdown_option" data-partof="add_subgroup" value="b">B</option>
-                                                <option class="dropdown_option" data-partof="add_subgroup" value="c">C</option>
-                                                <option class="dropdown_option" data-partof="add_subgroup" value="d">D</option>
+                                                
+                                                
                                             </div>
                                             
                                             
@@ -452,70 +469,108 @@
                                     </div>
                                     <br/>
                                     `;
-                                    var sN = 0;
-                                    data["meeting"]["subgroups"].forEach(m => {
-                                        document.getElementById("subgroups_attending").innerHTML += `
-                                        <div class="container c-border manager" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${sN}">
-                                            <div class="removemanager" style="display:inline-block" data-num="${sN}" data-id="${m}">
-                                                <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${sN}">cancel</span>
-                                                
-                                            </div>
-                                            
-                                            <span class="color-w" style="font-size:12px">${m}</span>
-                                        </div>`;
-                                        sN += 1;
-                                    })
 
-                                    document.getElementById("subgroup_attend_add").addEventListener("click", function(evt) {
-                                            var partof = evt.srcElement.dataset.partof;
-                                            
-                                            var elementLoc = evt.srcElement.getBoundingClientRect();
-                                            var documentRect = document.body.getBoundingClientRect();
-                                            var existing = document.querySelector(`.dropdown_option_container[data-partof="${partof}"]`)
-                                            if(existing == undefined || existing == null){
-                                                var newElement = document.createElement("div");
-                                                newElement.classList.add("dropdown-content");
-                                                newElement.dataset.partof = partof;
-                                                newElement.style.position = "absolute";
-                                                newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
-                                                newElement.style.width = "100px";
-                                                newElement.dataset.normY = elementLoc.top-90+80;
-                                                newElement.style.left = elementLoc.left-(documentRect.width/4)+80 + "px";
-                                                
-                                                newElement.style.transform = "translateX(-50%)";
-                            
-                                                var addHTML = "";
-                                                var options = Array.from(document.querySelectorAll(`.dropdown_option[data-partof="${partof}"]`));
-                            
-                                                for(var i = 0; i < options.length; i++){
-                                                    var e = options[i];
-                                                    addHTML += `
-                                                    <div data-value="${e.value}" data-partof="${partof}" style="padding:5px 0px;width:100px;border-radius:8px;margin:2px 0px" class="dropdown_option_show transition">
-                                                        ${e.innerHTML}
-                                                    </div>
-                                                    `;
-                                                }
-                            
-                                                newElement.innerHTML = `
-                                                <div class="container c-slightborder dropdown_option_container" style="width:100px;border-radius:16px" data-partof="${partof}">
-                                                    ${addHTML}
+                                    overlayData["meeting"] = data["meeting"];
+                                    
+                                    overlayData["existing"] = data["meeting"]["subgroups"];
+
+                                    function showSubgroups(){
+                                        var sN = 0;
+                                        document.getElementById("subgroups_attending").innerHTML = "";
+                                        overlayData["existing"].forEach(m => {
+                                            document.getElementById("subgroups_attending").innerHTML += `
+                                            <div class="container c-border subgroup" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${sN}">
+                                                <div class="remove" style="display:inline-block" data-num="${sN}" data-id="${m}">
+                                                    <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${sN}">cancel</span>
+                                                    
                                                 </div>
-                                                `
                                                 
-                                                evt.srcElement.appendChild(newElement)
-                                            }else{
-                                                if(evt.srcElement.classList.contains("dropdown_option_show")){
-                                                    console.log("AAA");
-                                                    var newValue = evt.srcElement.dataset.value;
-                                                    var newText = evt.srcElement.innerHTML;
-                                                    document.querySelector(`#subgroup_attend_add`).dataset.value = newValue;
+                                                <span class="color-w" style="font-size:12px">${m}</span>
+                                            </div>`;
+                                            sN += 1;
+                                        })
+                                        $.ajax({
+                                            url: "/group/subgroups",
+                                            success: function(data){
+                                                data = JSON.parse(data);
+                                                if(data["successful"]){
+                                                    overlayData["subgroups"] = data["items"];
+                                                    var added = 0;
+                                                    document.getElementById("subgroup_attend_add").innerHTML = `<span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>`;
+                                                    data["items"].forEach(m => {
+                                                        if(!overlayData["existing"].includes(m.name)){
+                                                            document.getElementById("subgroup_attend_add").innerHTML += `<option class="dropdown_option" data-partof="add_subgroup" value="${m.name}">${m.name}</option>`;
+                                                            added += 1;
+                                                        }
+                                                        
+                                                    });
+                                                    if(added == 0){
+                                                        document.getElementById("subgroup_attend_add").style.display = "none";
+                                                    }
                                                     
                                                 }
-                                                existing.remove();
+    
                                             }
+                                        })
+                                    }
+                                    document.getElementById("subgroup_attend_add").addEventListener("click", function(evt) {
+                                        var partof = evt.srcElement.dataset.partof;
                                         
-                                        
-                                    });
+                                        var elementLoc = evt.srcElement.getBoundingClientRect();
+                                        var documentRect = document.body.getBoundingClientRect();
+                                        var existing = document.querySelector(`.dropdown_option_container[data-partof="${partof}"]`)
+                                        if(existing == undefined || existing == null){
+                                            var newElement = document.createElement("div");
+                                            newElement.classList.add("dropdown-content");
+                                            newElement.dataset.partof = partof;
+                                            newElement.style.position = "absolute";
+                                            newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
+                                            newElement.style.width = "100px";
+                                            newElement.dataset.normY = elementLoc.top-90+80;
+                                            newElement.style.left = elementLoc.left-(documentRect.width/4)+80 + "px";
+                                            
+                                            newElement.style.transform = "translateX(-50%)";
+                        
+                                            var addHTML = "";
+                                            var options = Array.from(document.querySelectorAll(`.dropdown_option[data-partof="${partof}"]`));
+                        
+                                            for(var i = 0; i < options.length; i++){
+                                                var e = options[i];
+                                                addHTML += `
+                                                <div data-value="${e.value}" data-partof="${partof}" style="padding:5px 0px;width:100px;border-radius:8px;margin:2px 0px" class="dropdown_option_show transition">
+                                                    ${e.innerHTML}
+                                                </div>
+                                                `;
+                                            }
+                        
+                                            newElement.innerHTML = `
+                                            <div class="container c-slightborder dropdown_option_container" style="width:100px;border-radius:16px" data-partof="${partof}">
+                                                ${addHTML}
+                                            </div>
+                                            `
+                                            
+                                            evt.srcElement.appendChild(newElement)
+                                        }else{
+                                            if(evt.srcElement.classList.contains("dropdown_option_show")){
+                                                console.log("AAA");
+                                                var newValue = evt.srcElement.dataset.value;
+                                                var newText = evt.srcElement.innerHTML;
+                                                document.querySelector(`#subgroup_attend_add`).dataset.value = newValue;
+                                                overlayData["existing"].push(newValue);
+                                                showSubgroups();
+                                                
+                                            }
+                                            existing.remove();
+                                        }
+                                    
+                                    
+                                    }); 
+                                    showSubgroups();
+
+
+                                    
+
+                                    
 
                                     break;
                                 case "add_manager":

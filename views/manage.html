@@ -36,7 +36,7 @@
         
 
         <div style="width:90%;text-align:center;display:inline-block">
-            <div style="display:none;justify-content:center;width:80%" class="daterow" data-row="0">
+            <div style="display:none;justify-content:center;width:90%" class="daterow" data-row="0">
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="0" data-column="0"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="0" data-column="1"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="0" data-column="2"></div>
@@ -45,7 +45,7 @@
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="0" data-column="5"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="0" data-column="6"></div>
             </div>
-            <div style="display:none;justify-content:center;width:80%" class="daterow" data-row="1">
+            <div style="display:none;justify-content:center;width:90%" class="daterow" data-row="1">
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="1" data-column="0"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="1" data-column="1"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="1" data-column="2"></div>
@@ -54,7 +54,7 @@
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="1" data-column="5"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="1" data-column="6"></div>
             </div>
-            <div style="display:none;justify-content:center;width:80%" class="daterow" data-row="2">
+            <div style="display:none;justify-content:center;width:90%" class="daterow" data-row="2">
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="2" data-column="0"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="2" data-column="1"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="2" data-column="2"></div>
@@ -63,7 +63,7 @@
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="2" data-column="5"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="2" data-column="6"></div>
             </div>
-            <div style="display:none;justify-content:center;width:80%" class="daterow" data-row="3">
+            <div style="display:none;justify-content:center;width:90%" class="daterow" data-row="3">
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="3" data-column="0"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="3" data-column="1"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="3" data-column="2"></div>
@@ -72,7 +72,7 @@
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="3" data-column="5"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="3" data-column="6"></div>
             </div>
-            <div style="display:none;justify-content:center;width:80%" class="daterow" data-row="4">
+            <div style="display:none;justify-content:center;width:90%" class="daterow" data-row="4">
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="4" data-column="0"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="4" data-column="1"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="4" data-column="2"></div>
@@ -81,7 +81,7 @@
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="4" data-column="5"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="4" data-column="6"></div>
             </div>
-            <div style="display:none;justify-content:center;width:80%" class="daterow" data-row="5">
+            <div style="display:none;justify-content:center;width:90%" class="daterow" data-row="5">
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="5" data-column="0"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="5" data-column="1"></div>
                 <div class="container c-slighterborder dateitem" style="margin:5px;width:10%;height:80px" data-row="5" data-column="2"></div>
@@ -103,7 +103,7 @@
 
 
     
-
+    <div style="display:none" id="editMeeting"></div>
 </div>
 
 <script>
@@ -149,8 +149,8 @@
             document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML = `<span class="text" style="font-size:12px;text-align:left;display:block">${i}</span>
                 `;
             document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").style.opacity = "1";
-            if(currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i-1 && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear).length > 0){
-                var meeting = currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i-1 && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear)[0];
+            if(currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear).length > 0){
+                var meeting = currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear)[0];
                 var time = (new Date(meeting["datetime"]).getHours() > 12 ? new Date(meeting["datetime"]).getHours()-12 : new Date(meeting["datetime"]).getHours()) + ":" + new Date(meeting["datetime"]).getMinutes().toString().padStart(2, "0");
 
                 
@@ -174,6 +174,7 @@
                     number: parseInt(evt.srcElement.dataset.num)+1
                 }
                 document.getElementById("externalClickAction").dataset.data = JSON.stringify(stats);
+                document.getElementById("overlay_done").dataset.sendback = "editMeeting";
                 document.getElementById("externalClickAction").click();
             })
         })
@@ -688,6 +689,22 @@
             }
         })
     }
+
+    document.getElementById("editMeeting").addEventListener("click", function(evt){
+        var data = JSON.parse(evt.srcElement.innerHTML);
+        data.action = "edit";
+        data.datetime = new Date(data.date + "T" + data.time);
+        data.code = "12345";
+        console.log(data._id);
+        $.ajax({
+            url: "/group/meeting",
+            type: "POST",
+            data: data,
+            success: function(data){
+                getMeetingItems();
+            }
+        })
+    })
 
 
     document.addEventListener('scroll', function(evt){
