@@ -112,7 +112,7 @@
         <div style="display:inline-flex;justify-content:space-between;width:88%">
             <div style="width:30%;text-align:left">
                 <span class="text">Subgroups</span>
-                <div class="container c-border c-hover" style="padding:5px;margin:5px" id="group_add">
+                <div class="container c-border c-hover" style="padding:5px;margin:5px" id="subgroup_add">
                     <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
                 </div>
                 <div id="subgroupList" style="margin-top:10px">
@@ -419,6 +419,7 @@
                             ${s.name} [${s.tag.toUpperCase()}]
                         </div>
                         `;
+                        sN += 1;
                     })
                     Array.from(document.getElementsByClassName("selectgroup")).forEach(e => {
                         e.addEventListener("click", function(evt){
@@ -456,15 +457,25 @@
                             
 
                             Array.from(document.querySelectorAll(".selectgroup")).forEach(e => {
-                                
-                                if(e.dataset.num == num){
+                                console.log(e.dataset.num + " " + num)
+                                if(parseInt(e.dataset.num) == num){
                                     e.style.backgroundColor = e.dataset.tocolor == undefined ? "#4708c4" : e.dataset.tocolor;
                                     e.style.color = "white"
-                                    e.children[0].style.color = "white";
+                                    try{
+                                        e.children[0].style.color = "white";
+                                    }catch(e){
+
+                                    }
+                                    
                                 }else{
                                     e.style.backgroundColor = "";
+                                    e.style.color = "";
+                                    try{
+                                        e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
+                                    }catch(e){
+
+                                    }
                                     
-                                    e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
                                 }
                             });
                         });
@@ -796,31 +807,59 @@
     document.getElementById("subgroup_save").addEventListener("click", function(evt){
         document.getElementById("subgroup_placeholder").style.display = "";
         document.getElementById("subgroupViewer").style.display = "none";
-        currentSubgroup.oldName = currentSubgroup.name;
-        currentSubgroup.name = document.getElementById("subgroup_groupName").value;
-        currentSubgroup.action = "edit";
-        currentSubgroup.features = [];
+        if(subgroupAction == "edit"){
+            currentSubgroup.oldName = currentSubgroup.name;
+            currentSubgroup.name = document.getElementById("subgroup_groupName").value;
+            currentSubgroup.action = "edit";
+            currentSubgroup.features = [];
 
-        Array.from(document.getElementsByClassName("feature")).forEach(e => {
-            if(e.dataset.checked == "YES"){
-                currentSubgroup.features.push(e.dataset.partof);
-            }
-        })
-        currentSubgroup.managers = []
-        managers_copy.forEach(m => {
-            currentSubgroup.managers.push(m.id);
-        });
-        currentSubgroup.joinable = document.getElementById("subgroup_joinable").dataset.checked == "YES" ? true : false;
-        currentSubgroup.tag = document.getElementById("subgroup_groupTag").value;
+            Array.from(document.getElementsByClassName("feature")).forEach(e => {
+                if(e.dataset.checked == "YES"){
+                    currentSubgroup.features.push(e.dataset.partof);
+                }
+            })
+            currentSubgroup.managers = []
+            managers_copy.forEach(m => {
+                currentSubgroup.managers.push(m.id);
+            });
+            currentSubgroup.joinable = document.getElementById("subgroup_joinable").dataset.checked == "YES" ? true : false;
+            currentSubgroup.tag = document.getElementById("subgroup_groupTag").value;
 
-        $.ajax({
-            url: "/group/subgroup",
-            type: "POST",
-            data: currentSubgroup,
-            success: function(data){
-                refreshGroups();
-            }
-        })
+            $.ajax({
+                url: "/group/subgroup",
+                type: "POST",
+                data: currentSubgroup,
+                success: function(data){
+                    refreshGroups();
+                }
+            })
+        }else if(subgroupAction == "create"){
+            currentSubgroup.name = document.getElementById("subgroup_groupName").value;
+            currentSubgroup.action = "create";
+            currentSubgroup.features = [];
+
+            Array.from(document.getElementsByClassName("feature")).forEach(e => {
+                if(e.dataset.checked == "YES"){
+                    currentSubgroup.features.push(e.dataset.partof);
+                }
+            })
+            currentSubgroup.managers = []
+            managers_copy.forEach(m => {
+                currentSubgroup.managers.push(m.id);
+            });
+            currentSubgroup.joinable = document.getElementById("subgroup_joinable").dataset.checked == "YES" ? true : false;
+            currentSubgroup.tag = document.getElementById("subgroup_groupTag").value;
+
+            $.ajax({
+                url: "/group/subgroup",
+                type: "POST",
+                data: currentSubgroup,
+                success: function(data){
+                    refreshGroups();
+                }
+            })
+        }
+        
         
         
     })
@@ -857,6 +896,34 @@
             e.style.backgroundColor = "white";
         });
     });
+    document.getElementById("subgroup_add").addEventListener("click", function(evt){
+        subgroupAction = "create";
+        document.getElementById("subgroup_delete").style.display = "";
+        document.getElementById("subgroup_joinable").dataset.checked = "NO";
+        document.getElementById("subgroup_joinable").style.backgroundColor = "#ffffff";
+
+        managers_copy = [];
+        
+        
+        reshowManagers();
+        Array.from(document.getElementsByClassName("feature")).forEach(e => {
+            e.dataset.checked = "NO";
+            e.style.backgroundColor = "#ffffff";
+        })
+        
+        document.getElementById("subgroup_groupName").value = "";
+        document.getElementById("subgroup_groupTag").value = "";
+        document.getElementById("subgroupViewer").style.display = "";
+        document.getElementById("subgroup_placeholder").style.display = "none";
+
+        Array.from(document.querySelectorAll(".selectgroup")).forEach(e => {
+                                
+            e.style.backgroundColor = "";
+            e.style.color = ""; 
+            e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
+        });
+    });
+
 
     Array.from(document.getElementsByClassName("blockcontrol")).forEach(e => {
         e.addEventListener("click", function(evt) {

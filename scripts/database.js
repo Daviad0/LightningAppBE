@@ -82,7 +82,8 @@ const models = {
         to: String,
         from: String,
         restricted: Boolean,
-        visitors: [String]
+        visitors: [String],
+        subgroups: [String]
     })),
     'Presentation': mongoose.model('Presentation', new mongoose.Schema({
         group: String,
