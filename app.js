@@ -440,6 +440,7 @@ app.post("/group/subgroup", async function(req, res){
                 item.features = req.body.features;
                 item.joinable = req.body.joinable;
                 item.managers = req.body.managers;
+                console.log(item.managers)
                 var oldName = req.body.oldName;
                 group.subgroups[index] = item;
 
@@ -496,7 +497,6 @@ app.post("/group/link", async function(req, res){
             }else if(req.body.action == "create"){
                 await m.createDoc("QuickLink", {
                     name: req.body.name,
-                    from: req.body.from,
                     to: req.body.to,
                     restricted: req.body.restricted,
                     group: user.group
@@ -539,9 +539,7 @@ app.post("/group/meeting", async function(req, res){
         // must have edit main page access
         if(status){
             var id = req.body._id;
-            console.log(req.body.subgroups)
             if(req.body.action == "edit"){
-                console.log(req.body)
                 await m.updateDoc('AttendanceItem', {_id: id}, {
                     title: req.body.title,
                     datetime: req.body.datetime,
@@ -551,13 +549,15 @@ app.post("/group/meeting", async function(req, res){
                     code: req.body.code
                 });
             }else if(req.body.action == "create"){
+                console.log(req.body.subgroups);
                 await m.createDoc('AttendanceItem', {
                     title: req.body.title,
                     datetime: req.body.datetime,
                     length: req.body.length,
                     description: req.body.description,
                     code: req.body.code,
-                    group: user.group
+                    group: user.group,
+                    subgroups: req.body.subgroups
                 })
             }else if(req.body.action == "delete"){
                 await m.deleteDoc('AttendanceItem', {_id: id});

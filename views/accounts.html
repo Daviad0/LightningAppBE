@@ -426,6 +426,7 @@
                             var num = parseInt(evt.srcElement.dataset.num);
                             var group = subgroups[num];
                             currentSubgroup = group;
+                            subgroupAction = "edit";
                             document.getElementById("subgroup_delete").style.display = "";
                             document.getElementById("subgroup_joinable").dataset.checked = group.joinable ? "YES" : "NO";
                             document.getElementById("subgroup_joinable").style.backgroundColor = group.joinable ? "#4708c4" : "#ffffff";

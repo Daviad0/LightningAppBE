@@ -55,5 +55,16 @@
             }
         }
     })
+    Array.from(document.getElementsByClassName("bounce")).forEach(e => {
+        e.addEventListener("click", function() {
+            if(!e.classList.contains("bounce-on")){
+                e.classList.add("bounce-on");
+                setTimeout(function() {
+                    e.classList.remove("bounce-on");
+                }, 600);
+            }
+            
+        });
+    });
 
 </script>

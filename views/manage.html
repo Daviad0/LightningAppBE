@@ -104,6 +104,7 @@
 
     
     <div style="display:none" id="editMeeting"></div>
+    <div style="display:none" id="createMeeting"></div>
 </div>
 
 <script>
@@ -139,15 +140,16 @@
             }
         }
 
-        var days = daysInMonth(currentMonth, currentYear);
+        var days = daysInMonth(currentMonth+1, currentYear);
         for(var i = 1; i <= days; i++){
             var row = Math.floor(start/7);
             var column = start%7;
             
             start+=1;
             document.querySelector(".daterow[data-row='" + row + "']").style.display = "inline-flex";
-            document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML = `<span class="text" style="font-size:12px;text-align:left;display:block">${i}</span>
+            document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML = `<span class="text" style="font-size:12px;text-align:left;display:block;pointer-events:none">${i}</span>
                 `;
+                document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").dataset.date = currentYear + "-" + (currentMonth+1).toString().padStart(2, "0") + "-" + i.toString().padStart(2, "0");
             document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").style.opacity = "1";
             if(currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear).length > 0){
                 var meeting = currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear)[0];
@@ -155,7 +157,7 @@
 
                 
                 document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML += `
-                <div class="container c-border c-hover meetingitem" style="margin:2px 2px;padding:4px;font-size:12px;width:80%;font-size:12px" data-num="${currentMeetings.indexOf(meeting)}">
+                <div class="container c-border c-hover meetingitem" style="margin:2px 2px;padding:4px;font-size:12px;width:80%;font-size:12px" data-num="${currentMeetings.indexOf(meeting)}" title="${meeting["title"]}">
                     ${time} (${meeting["length"]}h)
                 </div>
                 `;
@@ -409,6 +411,10 @@
         di.addEventListener("click", function(evt){
             document.getElementById("externalClickAction").dataset.action = "overlay";
             document.getElementById("externalClickAction").dataset.overlay = "create_meeting";
+            document.getElementById("overlay_done").dataset.sendback = "createMeeting";
+            document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                "date": evt.srcElement.dataset.date,
+            })
             document.getElementById("externalClickAction").click();
         })
     })
@@ -706,6 +712,22 @@
         })
     })
 
+    document.getElementById("createMeeting").addEventListener("click", function(evt){
+        console.log(evt.srcElement.innerHTML);
+        var data = JSON.parse(evt.srcElement.innerHTML);
+        data.action = "create";
+        data.datetime = new Date(data.date + "T" + data.time);
+        data.code = "12345";
+        console.log(data._id);
+        $.ajax({
+            url: "/group/meeting",
+            type: "POST",
+            data: data,
+            success: function(data){
+                getMeetingItems();
+            }
+        })
+    })
 
     document.addEventListener('scroll', function(evt){
         dropdowns.forEach(d => {

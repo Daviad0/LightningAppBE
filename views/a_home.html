@@ -3,19 +3,27 @@
     <span class="text" style="font-size: 2vw;display:block;font-weight:500;margin-top:10px" id="welcomeM">This is your club page with all the links that you can follow!</span>
     <br/>
     <br/>
-    <div class="container c-border" id="signin_container" style="display: none;width:50%;padding:20px">
-        <span class="text color-d" style="font-size: 40px;display:block;margin-bottom: 5px;" id="signin_title"></span>
-        <div>
-            <span class="text color-d" style="font-size: 20px;font-weight: 500;display:block;margin-bottom: 20px;" id="signin_desc"><i>This is a very interesing dialogue box!</i></span>
-            <div class="container c-border c-hover goToPage baseaction" data-action="logattendance" style="padding:10px 20px 10px 20px;display:inline-block" id="signin_no">
-                I'm There!
+    <div class="container c-slightborder" style="padding:20px;width:60%;display: none" id="signin_container">
+        <span class="text" style="font-size: 32px;display:block;font-weight:600">Currently:</span>
+        <div class="container c-border" style="display: inline-flex;width:80%;padding:20px;justify-content:space-between;align-items:center;margin:20px">
+            
+            <div style="width:80%">
+                <span class="text color-d" style="font-size: 40px;display:block;margin-bottom: 5px;" id="signin_title"></span>
+                <span class="text color-d" style="font-size: 20px;font-weight: 500;display:block;" id="signin_desc"><i>This is a very interesing dialogue box!</i></span>
+    
+                
             </div>
-            <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:2vw;height:2vw;display:inline-block" id="signin_yes">
-                <span class="material-symbols-rounded color-w" style="width:50%;margin-top:24%;font-size:1.05vw">check</span>
+            <div class="container c-border c-hover goToPage baseaction" data-action="logattendance" style="width:50px;height:50px;display:inline-block" id="signin_no">
+                <span class="material-symbols-rounded" style="margin-top:20%;font-size:28px">pending_actions</span>
             </div>
+            <div class="c-border bounce" style="border-radius: 60px;background-color:#4708c4;width:50px;height:50px;display:inline-block;padding:10px" id="signin_yes">
+                <span class="material-symbols-rounded color-w" style="margin-top:20%;font-size:28px">inventory</span>
+            </div>
+            
         </div>
-        
     </div>
+    
+    <br/>
     <br/>
     <br/>
     <div id="items" style="width:100%">
@@ -50,7 +58,7 @@
                     var date = new Date(data["today"]["datetime"]);
                     document.getElementById("signin_title").innerHTML = data["today"]["title"];
                     document.getElementById("signin_desc").innerHTML = data["today"]["description"] + " @ " + (date.getHours()%12) + ":" + date.getMinutes();
-                    document.getElementById("signin_container").style.display = "inline-block";
+                    document.getElementById("signin_container").style.display = "";
                     if(data["today"]["logged"]){
                         document.getElementById("signin_yes").style.display = "inline-block";
                         document.getElementById("signin_no").style.display = "none";

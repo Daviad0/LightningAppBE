@@ -216,6 +216,10 @@ body{
     
 }
 
+.dateitem{
+    cursor: pointer;
+}
+
 .mainlogo{
     transform: rotate(0deg);
     transition: .5s ease-in-out all;

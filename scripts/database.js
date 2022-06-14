@@ -74,7 +74,8 @@ const models = {
         description: String,
         datetime: Date,
         length: Number,
-        code: String
+        code: String,
+        subgroups: [String]
     })),
     'QuickLink' : mongoose.model('QuickLink', new mongoose.Schema({
         group: String,
@@ -82,8 +83,7 @@ const models = {
         to: String,
         from: String,
         restricted: Boolean,
-        visitors: [String],
-        subgroups: [String]
+        visitors: [String]
     })),
     'Presentation': mongoose.model('Presentation', new mongoose.Schema({
         group: String,
