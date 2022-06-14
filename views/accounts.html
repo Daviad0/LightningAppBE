@@ -583,57 +583,104 @@
                         var exists = !(roles.find(r => r["name"] == u["access"]["role"]) == undefined);
                         var color = !exists ? "gray" : roles.find(r => r["name"] == u["access"]["role"])["color"];
                         document.getElementById("allUsers").innerHTML += `
-                            <div class="container c-slightborder" style="width:100%;padding:20px;margin-bottom:10px;display:inline-flex;justify-content:space-between;align-items:center">
-                                <div style="width:16%;text-align:left">
-                                    <div>
-                                        <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block">${u["username"]}</span>
-                                        <span style="pointer-events: none;margin-left:10px;font-size:10px;display:block">Person's Name</span>
+                            <div class="container c-slightborder" style="width:100%;padding:20px;margin-bottom:10px;">
+                                <div class="blockitem" data-partof="u_${u["id"]}" data-num="0" style="width:100%">
+                                    <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
+                                        <div style="width:16%;text-align:left">
+                                            <div>
+                                                <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block">${u["username"]}</span>
+                                                <span style="pointer-events: none;margin-left:10px;font-size:10px;display:block">Person's Name</span>
+                                            </div>
+                                            
+                                        </div>
+                                        <div style="width:20%;text-align:left"">
+                                            <div class="container c-border showrole" style="padding:5px 20px;background-color:${color};border:2px solid ${color}" data-role="${u["access"]["role"]}">
+                                                <span class="color-w" style="font-size:12px">${exists ? u["access"]["role"].toUpperCase() : "???"}</span>
+                                                
+                                            </div>
+                                        </div>
+                                        <div style="width:28%;text-align:left;">
+                                            ${
+                                                u["email"] == undefined ? `
+                                                <span style="pointer-events: none;margin-left:10px"><i>Email Not Found</i></span>
+                                                ` : `
+                                                <div class="blockitem" data-partof="u_${u.id}_email" data-num="0">
+                                                    <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
+                                                        <span style="pointer-events: none;margin-left:10px;font-size:12px">*******@${u["email"].split("@")[1]}</span>
+                                                        <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}_email" data-num="1">
+                                                            <span class="material-symbols-rounded" style="font-size:16px">visibility</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                                <div class="blockitem" data-partof="u_${u.id}_email" data-num="1" style="display:none;">
+                                                    <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
+                                                        <span style="pointer-events: none;margin-left:10px;font-size:12px">${u["email"]}</span>
+                                                        <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}_email" data-num="0">
+                                                            <span class="material-symbols-rounded" style="font-size:16px">visibility_off</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                                `
+        
+        
+                                            }
+                                            
+                                            
+                                        </div>
+                                        <div style="width:16%;text-align:right">
+                                            <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="1">
+                                                <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">edit</span>
+                                            </div>
+                                            <div class="container c-border c-hover" style="padding:5px;margin:1px" data-partof="u_${u.id}">
+                                                <span class="material-symbols-rounded" style="font-size:16px">delete</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                 </div>
-                                <div style="width:20%;text-align:left"">
-                                    <div class="container c-border showrole" style="padding:5px 20px;background-color:${color};border:2px solid ${color}" data-role="${u["access"]["role"]}">
-                                        <span class="color-w" style="font-size:12px">${exists ? u["access"]["role"].toUpperCase() : "???"}</span>
+                                <div class="blockitem" data-partof="u_${u["id"]}" data-num="1" style="width:100%;display:none">
+                                    <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
+                                        <div style="width:50%;text-align:left">
+                                            <input type="text" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:100%" value="${u["username"]}" placeholder="Username">
+                                            
+                                        </div>
+                                        <div style="width:16%;text-align:right">
+                                            <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
+                                                <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">check</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+                                        <div style="margin:20px;width:50%">
+                                            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Full Name</span>
+                                                <input type="email" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" value="John Doe" placeholder="John Doe">
+                                            </div>
+                                            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Email Address</span>
+                                                <input type="email" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" value="${u["email"]}" placeholder="john.doe@company.com">
+                                            </div>
+                                        </div>
+                                        <div style="width:40%">
+                                            <span class="text color-d" style="font-size:16px;margin:5px;display:block">A Part of Subgroups:</span>
+                                            <div style="border: 2px solid #4708c4;padding:20px;margin:10px;border-radius:20px;max-height:60px;overflow-y:scroll">
+                                                <div style="display:inline-block;vertical-align:middle">
+        
+                                                </div>
+                                                <div class="container c-border c-hover" style="padding:5px;margin:3px;vertical-align:middle" data-partof="add_subgroup" id="subgroup_attend_add">
+                                                    <span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>
+                                                    
+                                                    
+                                                </div>
+                                                
+                                                
+                                            </div>
+                                        </div>
                                         
                                     </div>
-                                </div>
-                                <div style="width:28%;text-align:left;">
-                                    ${
-                                        u["email"] == undefined ? `
-                                        <span style="pointer-events: none;margin-left:10px"><i>Email Not Found</i></span>
-                                        ` : `
-                                        <div class="blockitem" data-partof="u_${u.id}_email" data-num="0">
-                                            <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
-                                                <span style="pointer-events: none;margin-left:10px;font-size:12px">*******@${u["email"].split("@")[1]}</span>
-                                                <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}_email" data-num="1">
-                                                    <span class="material-symbols-rounded" style="font-size:16px">visibility</span>
-                                                </div>
-                                            </div>
-                                            
-                                        </div>
-                                        <div class="blockitem" data-partof="u_${u.id}_email" data-num="1" style="display:none;">
-                                            <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
-                                                <span style="pointer-events: none;margin-left:10px;font-size:12px">${u["email"]}</span>
-                                                <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}_email" data-num="0">
-                                                    <span class="material-symbols-rounded" style="font-size:16px">visibility_off</span>
-                                                </div>
-                                            </div>
-                                            
-                                        </div>
-                                        `
-
-
-                                    }
                                     
-                                    
-                                </div>
-                                <div style="width:16%;text-align:right">
-                                    <div class="container c-border c-hover" style="padding:5px;margin:1px" data-partof="u_${u.id}">
-                                        <span class="material-symbols-rounded" style="font-size:16px">edit</span>
-                                    </div>
-                                    <div class="container c-border c-hover" style="padding:5px;margin:1px" data-partof="u_${u.id}">
-                                        <span class="material-symbols-rounded" style="font-size:16px">delete</span>
-                                    </div>
                                 </div>
                             </div>
                             `;

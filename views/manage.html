@@ -151,17 +151,34 @@
                 `;
                 document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").dataset.date = currentYear + "-" + (currentMonth+1).toString().padStart(2, "0") + "-" + i.toString().padStart(2, "0");
             document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").style.opacity = "1";
-            if(currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear).length > 0){
-                var meeting = currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear)[0];
+            var meetings = currentMeetings.filter(m => new Date(m["datetime"]).getDate() == i && new Date(m["datetime"]).getMonth() == currentMonth && new Date(m["datetime"]).getFullYear() == currentYear);
+            meetings = meetings.sort((a, b) => {
+                return new Date(a["datetime"]) - new Date(b["datetime"]);
+            });
+
+            for(var m = 0; m < meetings.length; m++){
+                var meeting = meetings[m];
                 var time = (new Date(meeting["datetime"]).getHours() > 12 ? new Date(meeting["datetime"]).getHours()-12 : new Date(meeting["datetime"]).getHours()) + ":" + new Date(meeting["datetime"]).getMinutes().toString().padStart(2, "0");
 
+                var am = new Date(meeting["datetime"]).getHours() < 12;
+
+
+                if(meetings.length > 2){
+                    document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML += `
+                    <div class="container c-border c-hover meetingitem" style="margin:2px 2px;padding:4px;font-size:12px;width:34%;font-size:10px" data-num="${currentMeetings.indexOf(meeting)}" title="${meeting["title"]}">
+                        ${time}<span style="font-size:8px">${am ? "AM" : "PM"}</span>
+                    </div>
+                    `;
+                }else{
+                    document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML += `
+                    <div class="container c-border c-hover meetingitem" style="margin:2px 2px;padding:4px;font-size:12px;width:80%;font-size:12px" data-num="${currentMeetings.indexOf(meeting)}" title="${meeting["title"]}">
+                        ${time}<span style="font-size:10px">${am ? "AM" : "PM"}</span> (${meeting["length"]}h)
+                    </div>
+                    `;
+                }
                 
-                document.querySelector(".dateitem[data-row='"+row+"'][data-column='"+column+"']").innerHTML += `
-                <div class="container c-border c-hover meetingitem" style="margin:2px 2px;padding:4px;font-size:12px;width:80%;font-size:12px" data-num="${currentMeetings.indexOf(meeting)}" title="${meeting["title"]}">
-                    ${time} (${meeting["length"]}h)
-                </div>
-                `;
             }
+            
             
         }
         Array.from(document.getElementsByClassName("meetingitem")).forEach(di => {
