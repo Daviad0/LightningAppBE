@@ -83,7 +83,7 @@
                     
                     var n = 0;
                     subgroups.forEach(s => {
-                        document.querySelector(".dropdown[data-partof='select_group']").innerHTML += `<option class="dropdown_option" data-partof="select_group" value="${n}">${s["name"]}</option>`;
+                        document.querySelector(".dropdown[data-partof='select_group']").innerHTML += `<option class="dropdown_option" style="display:none" data-partof="select_group" value="${n}">${s["name"]}</option>`;
                         n+=1;
                     })
 

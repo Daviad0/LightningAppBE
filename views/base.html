@@ -28,8 +28,8 @@
                 Error: Not Authenticated
             </div>
         </div>
-        <div class="overlay_bg" id="overlay" style="display: none;z-index:10000">
-            <div class="container c-slightborder" style="position:absolute;width: 50%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:30px" id="overlayBigBox">
+        <div class="overlay_bg" id="overlay" style="display: none;z-index:10000;position:fixed">
+            <div class="container c-slightborder" style="position:fixed;width: 50%;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:30px" id="overlayBigBox">
                 <div id="overlayBox"></div>
                 <div class="container c-border color-g c-hover" style="padding:10px 50px 10px 50px;margin:10px" id="overlay_done">
                     Done
@@ -442,13 +442,13 @@
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Date</span>
                                             </div>
                                             
-                                            <input type="date" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="${ date.getFullYear() + "-" + (date.getMonth()+1).toString().padStart(2, "0") + "-" + (date.getDate()).toString().padStart(2, "0")}" placeholder="Someday" id="meeting_date">
+                                            <input type="date" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:200px;padding:14px;vertical-align:middle;text-align:center" value="${ date.getFullYear() + "-" + (date.getMonth()+1).toString().padStart(2, "0") + "-" + (date.getDate()).toString().padStart(2, "0")}" placeholder="Someday" id="meeting_date">
                                         </div>
                                         <div>
                                             <div style="display:inline-block;text-align:left">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Time</span>
                                             </div>
-                                            <input type="time" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:120px;padding:14px;vertical-align:middle;text-align:center" value="${(date.getHours().toString().padStart(2, "0")) + ":" + (date.getMinutes().toString().padStart(2, "0"))}" placeholder="25:00PM" id="meeting_time">
+                                            <input type="time" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="${(date.getHours().toString().padStart(2, "0")) + ":" + (date.getMinutes().toString().padStart(2, "0"))}" placeholder="25:00PM" id="meeting_time">
                                         </div>
                                         <div>
                                             <div style="display:inline-block;text-align:left">
@@ -476,6 +476,9 @@
                                         
                                     </div>
                                     <br/>
+                                    <div class="container c-border-red color-r c-hover-red" style="padding:10px 50px 10px 50px;margin:10px" id="overlay_delete">
+                                        Delete Meeting
+                                    </div>
                                     `;
 
                                     overlayData["meeting"] = data["meeting"];
@@ -507,7 +510,7 @@
                                                     document.getElementById("subgroup_attend_add").innerHTML = `<span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>`;
                                                     data["items"].forEach(m => {
                                                         if(!overlayData["existing"].includes(m.name)){
-                                                            document.getElementById("subgroup_attend_add").innerHTML += `<option class="dropdown_option" data-partof="add_subgroup" value="${m.name}">${m.name}</option>`;
+                                                            document.getElementById("subgroup_attend_add").innerHTML += `<option class="dropdown_option" style="display:none" data-partof="add_subgroup" value="${m.name}">${m.name}</option>`;
                                                             added += 1;
                                                         }
                                                         
@@ -575,6 +578,11 @@
                                     }); 
                                     showSubgroups();
 
+                                    document.getElementById("overlay_delete").addEventListener("click", function(evt){
+                                        document.getElementById("overlay").style.display = "none";
+                                        document.getElementById("deleteMeeting").innerHTML = JSON.stringify(overlayData["meeting"]);
+                                        document.getElementById("deleteMeeting").click();
+                                    });
 
                                     
 
@@ -605,13 +613,13 @@
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Date</span>
                                             </div>
                                             
-                                            <input type="date" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="${data["date"]}" placeholder="Someday" id="meeting_date">
+                                            <input type="date" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:200px;padding:14px;vertical-align:middle;text-align:center" value="${data["date"]}" placeholder="Someday" id="meeting_date">
                                         </div>
                                         <div>
                                             <div style="display:inline-block;text-align:left">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Time</span>
                                             </div>
-                                            <input type="time" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:120px;padding:14px;vertical-align:middle;text-align:center" value="" placeholder="25:00PM" id="meeting_time">
+                                            <input type="time" class="text color-d input form_name" style="display:inline-block;font-size:16px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="" placeholder="25:00PM" id="meeting_time">
                                         </div>
                                         <div>
                                             <div style="display:inline-block;text-align:left">
@@ -669,7 +677,7 @@
                                                     document.getElementById("subgroup_attend_add").innerHTML = `<span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>`;
                                                     data["items"].forEach(m => {
                                                         if(!overlayData["existing"].includes(m.name)){
-                                                            document.getElementById("subgroup_attend_add").innerHTML += `<option class="dropdown_option" data-partof="add_subgroup" value="${m.name}">${m.name}</option>`;
+                                                            document.getElementById("subgroup_attend_add").innerHTML += `<option class="dropdown_option" style="display:none" data-partof="add_subgroup" value="${m.name}">${m.name}</option>`;
                                                             added += 1;
                                                         }
                                                         

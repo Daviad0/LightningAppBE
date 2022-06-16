@@ -1,4 +1,4 @@
-<div class="transition" style="display: inline-block;padding-top:0px;width:100%;opacity:0" id="contentToShow">
+<div class="transition" style="display: inline-block;padding-top:0px;width:100%;opacity:0;padding-bottom:100px" id="contentToShow">
     
 
     <div style="position: fixed;bottom:0;left:20px;z-index:999">
@@ -105,6 +105,7 @@
     
     <div style="display:none" id="editMeeting"></div>
     <div style="display:none" id="createMeeting"></div>
+    <div style="display:none" id="deleteMeeting"></div>
 </div>
 
 <script>
@@ -651,10 +652,10 @@
                                             <div class="container c-border dropdown form_actiontype" data-partof="dropdown${id}" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-value="${i["result"]["to"]}">
                                                 <span class="dropdown_text" style="float:left;margin-right:20px;opacity:0.5;margin-left:5px;pointer-events:none" data-partof="dropdown${id}">Select an Option</span>
                                                 <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="dropdown${id}">expand_more</span>
-                                                <option class="dropdown_option" data-partof="dropdown${id}" value="link">Link</option>
-                                                <option class="dropdown_option" data-partof="dropdown${id}" value="action">Action</option>
-                                                <option class="dropdown_option" data-partof="dropdown${id}" value="static">Static</option>
-                                                <option class="dropdown_option" data-partof="dropdown${id}" value="vote">Vote</option>
+                                                <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="link">Link</option>
+                                                <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="action">Action</option>
+                                                <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="static">Static</option>
+                                                <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="vote">Vote</option>
                                             </div>
                                             <input type="text" class="text color-d input form_actionto" style="display:inline-block;font-size:14px;margin:10px;width:50%;vertical-align:middle" value="${i["result"]["data"]}" placeholder="To..." data-partof="${id}">
                                         </div>
@@ -719,6 +720,19 @@
         data.datetime = new Date(data.date + "T" + data.time);
         data.code = "12345";
         console.log(data._id);
+        $.ajax({
+            url: "/group/meeting",
+            type: "POST",
+            data: data,
+            success: function(data){
+                getMeetingItems();
+            }
+        })
+    })
+
+    document.getElementById("deleteMeeting").addEventListener("click", function(evt){
+        var data = JSON.parse(evt.srcElement.innerHTML);
+        data.action = "delete";
         $.ajax({
             url: "/group/meeting",
             type: "POST",
