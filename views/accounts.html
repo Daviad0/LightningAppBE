@@ -1,4 +1,4 @@
-<div class="transition" style="display: inline-block;width:100%;opacity:0" id="contentToShow">
+<div class="transition" style="display: inline-block;width:100%;opacity:0;padding-bottom:80px" id="contentToShow">
     
 
     <div style="position: fixed;bottom:0;left:20px;z-index:999">
@@ -646,11 +646,11 @@
                                 <div class="blockitem" data-partof="u_${u["id"]}" data-num="1" style="width:100%;display:none">
                                     <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
                                         <div style="width:50%;text-align:left">
-                                            <input type="text" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:100%" value="${u["username"]}" placeholder="Username">
+                                            <input type="text" class="text color-d input user_username" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:100%" value="${u["username"]}" data-partof="u_${u.id}" placeholder="Username">
                                             
                                         </div>
                                         <div style="width:16%;text-align:right">
-                                            <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
+                                            <div class="container c-border c-hover blockcontrol saveuser" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
                                                 <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">check</span>
                                             </div>
                                             <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
@@ -662,27 +662,27 @@
                                         <div style="margin:20px;width:50%">
                                             <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Full Name</span>
-                                                <input type="email" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" value="John Doe" placeholder="John Doe">
+                                                <input type="email" class="text color-d input user_fullname" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["fullname"]}" placeholder="John Doe">
                                             </div>
                                             <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Email Address</span>
-                                                <input type="email" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" value="${u["email"]}" placeholder="john.doe@company.com">
+                                                <input type="email" class="text color-d input user_email" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["email"]}" placeholder="john.doe@company.com">
                                             </div>
                                             <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Notes</span>
-                                                <textarea class="text color-d input" style="display:inline-block;font-size:12px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%;height:80px;resize:none;border-radius:20px" placeholder="Stuffs"></textarea>
+                                                <textarea class="text color-d input user_notes" style="display:inline-block;font-size:12px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%;height:80px;resize:none;border-radius:20px" data-partof="u_${u.id}" placeholder="Stuffs">${u["notes"]}</textarea>
                                             </div>
                                         </div>
                                         <div style="width:40%">
                                             <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin:20px 0px">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Role Access</span>
-                                                <div class="container c-border dropdown form_actiontype" data-partof="dropdown_${u.id}" style="cursor:pointer;style="display:inline-block;vertical-align:middle">
+                                                <div class="container c-border dropdown user_role" data-partof="dropdown_${u.id}" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-value="${u.access.role}">
                                                     <span class="dropdown_text" style="float:left;margin-right:20px;opacity:0.5;margin-left:5px;pointer-events:none" data-partof="dropdown_${u.id}">Select an Option</span>
                                                     <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="dropdown_${u.id}">expand_more</span>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="link">ADMIN</option>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="action">MEMBER</option>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="static">LEADER</option>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="vote">PARENT</option>
+                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="admin">ADMIN</option>
+                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="member">MEMBER</option>
+                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="leader">LEADER</option>
+                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="parent">PARENT</option>
                                                 </div>
                                             </div>
                                             <span class="text color-d" style="font-size:16px;margin:5px;display:block">A Part of Subgroups:</span>
@@ -811,6 +811,30 @@
                         
                         
                         showSubgroups();
+                    });
+
+                    Array.from(document.getElementsByClassName("saveuser")).forEach(e => {
+                        e.addEventListener("click", function(evt) {
+                            var uid = evt.srcElement.dataset.partof.split("_")[1];
+                            var data = {
+                                action: "edit",
+                                id: uid,
+                                username: document.querySelector(`.user_username[data-partof="u_${uid}"]`).value,
+                                email: document.querySelector(`.user_email[data-partof="u_${uid}"]`).value,
+                                fullname: document.querySelector(`.user_fullname[data-partof="u_${uid}"]`).value,
+                                notes: document.querySelector(`.user_notes[data-partof="u_${uid}"]`).value,
+                                role: document.querySelector(`.user_role[data-partof="dropdown_${uid}"]`).dataset.value,
+                                subgroups: []
+                            }
+                            $.ajax({
+                                url: "/group/user",
+                                type: "POST",
+                                data: data,
+                                success: function(data){
+                                    refreshUsers();
+                                }
+                            })
+                        });
                     });
 
                     

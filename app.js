@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var m = require('./scripts/database.js');
 var app = express();
 var cookies = require("cookie-parser");
+const { moveMessagePortToContext } = require('worker_threads');
 
 app.use(cookies());
 m.init();
@@ -202,8 +203,11 @@ async function createSafeUser(u, access){
         id: u._id,
         attendance: u.attendance,
         access: u.access,
+        fullname: u.fullname,
+        notes: u.notes,
         email: (access > 1 ? u.email : undefined),
-        permissions: role == undefined ? [] : role.permissions
+        permissions: role == undefined ? [] : role.permissions,
+        notes: (access > 1 ? u.notes : undefined)
 
 
     }
@@ -729,6 +733,39 @@ app.get("/group/user", async function(req, res){
 
 
             res.send(JSON.stringify({successful: true, user: getUser, ownUser: ownUser, group: group}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
+app.post("/group/user", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var _id = req.body.id;
+            var userCurrently = (await m.getDocs('Account', {_id: _id}))[0];
+            if(req.body.action == "edit"){
+                userCurrently.access.subgroups = req.body.subgroups;
+                userCurrently.access.role = req.body.role;
+                await m.updateDoc('Account', {_id: _id}, {
+                    username: req.body.username,
+                    email: req.body.email,
+                    fullname: req.body.fullname,
+                    access: userCurrently.access,
+                    notes: req.body.notes
+
+                });
+            }else if(req.body.action == "delete"){
+                await m.deleteDoc('Account', {_id: _id});
+            }
+            
+           
+
+
+
+
+            res.send(JSON.stringify({successful: true}));
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }

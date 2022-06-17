@@ -9,6 +9,8 @@ const models = {
         pwsalt: String,
         pwiterations: Number,
         username: String,
+        fullname: String,
+        notes: String,
         uuid: String,
         access: {
             role: String,
