@@ -444,7 +444,6 @@ app.post("/group/subgroup", async function(req, res){
                 item.features = req.body.features;
                 item.joinable = req.body.joinable;
                 item.managers = req.body.managers;
-                console.log(item.managers)
                 var oldName = req.body.oldName;
                 group.subgroups[index] = item;
 
@@ -746,7 +745,8 @@ app.post("/group/user", async function(req, res){
             var _id = req.body.id;
             var userCurrently = (await m.getDocs('Account', {_id: _id}))[0];
             if(req.body.action == "edit"){
-                userCurrently.access.subgroups = req.body.subgroups;
+                
+                userCurrently.access.groups = req.body.subgroups;
                 userCurrently.access.role = req.body.role;
                 await m.updateDoc('Account', {_id: _id}, {
                     username: req.body.username,

@@ -404,6 +404,8 @@
         reshowManagers(); 
     });
 
+
+
     function refreshGroups(){
         $.ajax({
             url: "/group/subgroups",
@@ -558,7 +560,7 @@
                             });
                         });
                     });
-                    
+                    refreshUsers();
                 }
             },
             error: function(data){
@@ -568,6 +570,7 @@
     }
 
     var existingMemberships = [];
+    var usersExtended = [];
 
     function refreshUsers(){
         $.ajax({
@@ -577,17 +580,29 @@
                 data = JSON.parse(data);
                 if(data["successful"]){
                     
-                    console.log(data);
                     document.getElementById("allUsers").innerHTML = "";
                     allUsers = data["items"];
                     roles = data["roles"];
-                    console.log(roles);
+                    console.log(data)
                     allUsers.forEach(u => {
                         var exists = !(roles.find(r => r["name"] == u["access"]["role"]) == undefined);
                         var color = !exists ? "gray" : roles.find(r => r["name"] == u["access"]["role"])["color"];
+                        var rs = "";
+                        roles.forEach(r => {
+                            rs += `<option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="${r.name}">${r.name.toUpperCase()}</option>`;
+                        })
+                        var ss = "";
+                        u["access"]["groups"].forEach(g => {
+                            ss += g + ",";
+
+                        });
+                        if(ss.length > 0){
+                            ss = ss.substring(0, ss.length - 1);
+                        }
+                        
                         document.getElementById("allUsers").innerHTML += `
                             <div class="container c-slightborder" style="width:100%;padding:20px;margin-bottom:10px;">
-                                <div class="blockitem" data-partof="u_${u["id"]}" data-num="0" style="width:100%">
+                                <div class="blockitem" data-partof="u_${u["id"]}" data-num="0" style="width:100%;${usersExtended.includes(u["id"]) ? "display:none" : ""}">
                                     <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
                                         <div style="width:16%;text-align:left">
                                             <div>
@@ -633,7 +648,7 @@
                                             
                                         </div>
                                         <div style="width:16%;text-align:right">
-                                            <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="1">
+                                            <div class="container c-border c-hover blockcontrol user_extend" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="1">
                                                 <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">edit</span>
                                             </div>
                                             <div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px" data-partof="u_${u.id}">
@@ -643,17 +658,17 @@
                                     </div>
                                     
                                 </div>
-                                <div class="blockitem" data-partof="u_${u["id"]}" data-num="1" style="width:100%;display:none">
+                                <div class="blockitem" data-partof="u_${u["id"]}" data-num="1" style="width:100%;${!usersExtended.includes(u["id"]) ? "display:none" : ""}">
                                     <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
                                         <div style="width:50%;text-align:left">
                                             <input type="text" class="text color-d input user_username" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:100%" value="${u["username"]}" data-partof="u_${u.id}" placeholder="Username">
                                             
                                         </div>
                                         <div style="width:16%;text-align:right">
-                                            <div class="container c-border c-hover blockcontrol saveuser" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
+                                            <div class="container c-border c-hover blockcontrol saveuser user_contract" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
                                                 <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">check</span>
                                             </div>
-                                            <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
+                                            <div class="container c-border c-hover blockcontrol user_contract" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
                                                 <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">close</span>
                                             </div>
                                         </div>
@@ -679,10 +694,8 @@
                                                 <div class="container c-border dropdown user_role" data-partof="dropdown_${u.id}" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-value="${u.access.role}">
                                                     <span class="dropdown_text" style="float:left;margin-right:20px;opacity:0.5;margin-left:5px;pointer-events:none" data-partof="dropdown_${u.id}">Select an Option</span>
                                                     <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="dropdown_${u.id}">expand_more</span>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="admin">ADMIN</option>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="member">MEMBER</option>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="leader">LEADER</option>
-                                                    <option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="parent">PARENT</option>
+                                                    ${rs}
+                                                    
                                                 </div>
                                             </div>
                                             <span class="text color-d" style="font-size:16px;margin:5px;display:block">A Part of Subgroups:</span>
@@ -690,7 +703,7 @@
                                                 <div style="display:inline-block;vertical-align:middle" class="memberships" data-partof="u_${u.id}">
         
                                                 </div>
-                                                <div class="container c-border c-hover addmembership" style="padding:5px;margin:3px;vertical-align:middle;pointer-events:all" data-partof="u_${u.id}">
+                                                <div class="container c-border c-hover addmembership" style="padding:5px;margin:3px;vertical-align:middle;pointer-events:all" data-partof="u_${u.id}" data-subgroups="${ss}">
                                                     <span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>
                                                     
                                                     
@@ -708,14 +721,19 @@
                                 </div>
                             </div>
                             `;
-                        existingMemberships = u.access.groups.slice();
+                        
                         var showEvent = false;
 
 
                         function showSubgroups(){
                             var sN = 0;
                             document.querySelector(`.memberships[data-partof="u_${u.id}"]`).innerHTML = "";
-                            existingMemberships.forEach(m => {
+
+                            let existing = document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups.split(",");
+                            if(document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups == ""){
+                                existing = [];
+                            }
+                            existing.forEach(m => {
                                 document.querySelector(`.memberships[data-partof="u_${u.id}"]`).innerHTML += `
                                 <div class="container c-border subgroup" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${sN}">
                                     <div class="remove" style="display:inline-block" data-num="${sN}" data-id="${m}">
@@ -735,8 +753,9 @@
                                         overlayData["subgroups"] = data["items"];
                                         var added = 0;
                                         document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).innerHTML = `<span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>`;
+                                        let existing = document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups.split(",");
                                         data["items"].forEach(m => {
-                                            if(!existingMemberships.includes(m.name)){
+                                            if(!existing.includes(m.name)){
                                                 document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).innerHTML += `<option class="dropdown_option" style="display:none" data-partof="u_${u.id}" value="${m.name}">${m.name}</option>`;
                                                 added += 1;
                                             }
@@ -788,8 +807,19 @@
                                                         console.log("AAA");
                                                         var newValue = evt.srcElement.dataset.value;
                                                         var newText = evt.srcElement.innerHTML;
-                                                        
-                                                        existingMemberships.push(newValue);
+                                                        let existing = document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups.split(",");
+                                                        if(document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups == ""){
+                                                            existing = [];
+                                                        }
+                                                        existing.push(newValue);
+                                                        var putBack = "";
+                                                        existing.forEach(e => {
+                                                            putBack += `${e},`;
+                                                        });
+                                                        if(putBack.length > 0){
+                                                            putBack = putBack.substring(0, putBack.length-1);
+                                                        }
+                                                        document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups = putBack;
                                                         showSubgroups();
                                                         
                                                     }
@@ -813,9 +843,31 @@
                         showSubgroups();
                     });
 
+                    Array.from(document.getElementsByClassName("user_extend")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            
+                            var id = evt.srcElement.dataset.partof.split("_")[1];
+                            if(!usersExtended.includes(id)){
+                                usersExtended.push(id);
+                            }
+                        });
+                    });
+                    Array.from(document.getElementsByClassName("user_contract")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            var id = evt.srcElement.dataset.partof.split("_")[1];
+                            if(usersExtended.includes(id)){
+                                usersExtended.splice(usersExtended.indexOf(id));
+                            }
+                        });
+                    });
+
                     Array.from(document.getElementsByClassName("saveuser")).forEach(e => {
                         e.addEventListener("click", function(evt) {
                             var uid = evt.srcElement.dataset.partof.split("_")[1];
+                            let existing = document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups.split(",");
+                            if(document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups == ""){
+                                existing = [];
+                            }
                             var data = {
                                 action: "edit",
                                 id: uid,
@@ -824,7 +876,7 @@
                                 fullname: document.querySelector(`.user_fullname[data-partof="u_${uid}"]`).value,
                                 notes: document.querySelector(`.user_notes[data-partof="u_${uid}"]`).value,
                                 role: document.querySelector(`.user_role[data-partof="dropdown_${uid}"]`).dataset.value,
-                                subgroups: []
+                                subgroups: existing
                             }
                             $.ajax({
                                 url: "/group/user",
@@ -834,6 +886,8 @@
                                     refreshUsers();
                                 }
                             })
+                            console.log(usersExtended)
+                            //usersExtended.splice(usersExtended.indexOf(uid));
                         });
                     });
 
@@ -941,7 +995,7 @@
                     }
                     
                 })
-                refreshPermissions();
+                
                 refreshGroups();
             },
             error: function(data){
@@ -949,7 +1003,7 @@
             }
         })
     }
-    refreshUsers();
+    refreshPermissions();
     
 
     document.getElementById("permission_roleColor").addEventListener("change", function(evt){
