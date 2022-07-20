@@ -25,6 +25,12 @@ const models = {
             status: String,
             overriddenstatus: String,
             datetime: Date
+        }],
+        protonLog: [{
+            datetime: Date,
+            message: String,
+            givenBy: String,
+            protons: Number
         }]
     })),
     'Group' : mongoose.model('Group', new mongoose.Schema({
@@ -52,6 +58,10 @@ const models = {
             name: String,
             color: String,
             permissions: [String]
+        }],
+        protonAssignments: [{
+            assigner: String,
+            protons: Number
         }]
     })),
     'ModuleItem' : mongoose.model('ModuleItem', new mongoose.Schema({

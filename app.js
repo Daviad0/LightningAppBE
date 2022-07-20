@@ -50,6 +50,7 @@ function isAuthenticated(req, method, permissionReq, callback) {
                         for(var pN = 0; pN < permissionReq.length; pN++){
                             var p = permissionReq[pN];
                             if(specificRolePerms.includes(p) || specificRolePerms.includes('*')){
+                                
                                 callback(true, decoded);
                                 
                                 access = true;
@@ -204,6 +205,7 @@ async function createSafeUser(u, access){
         attendance: u.attendance,
         access: u.access,
         fullname: u.fullname,
+        protonLog: u.protonLog,
         notes: u.notes,
         email: (access > 1 ? u.email : undefined),
         permissions: role == undefined ? [] : role.permissions,
@@ -348,6 +350,62 @@ app.get("/group/roles", async function(req, res){
             
             res.send(JSON.stringify({successful: true, items: group[0].roles}));
 
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+app.get("/group/protons", async function(req, res){
+    isAuthenticated(req, "cookie",["*", "COLLECT_PROTONS"], async function(status, user){
+        if(status){
+            var u = user;
+            if(req.query.id != undefined){
+                u = await m.getDocs("Account", {_id: req.query.id})[0];
+                
+            }
+
+            var total = 0;
+            for(var i = 0; i < u.protonLog.length; i++){
+                total += u.protonLog[i].protons;
+            }
+            
+            res.send(JSON.stringify({successful: true, total: total, log: u.protonLog}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
+app.post('/group/protons', async function(req, res){
+    isAuthenticated(req, "cookie",["*", "AWARD_PROTONS", "AWARD_PROTONS_INFINITE"], async function(status, user){
+        if(status){
+            // the user awarding the protons NEEDS to have enough protons to award the user
+            var requestingUser = await m.getDocs("Account", {_id: user.id})[0];
+            var permissions = await m.getDocs("Group", {uniqueId: user.group}).roles.find(r => r.name == requestingUser.access.role).permissions;
+            if(permissions.includes("AWARD_PROTONS_INFINITE")){
+                // allow for any operation
+            }
+            else{
+                // check for quota
+
+                var protonRequests = await m.getDocs("Group", {uniqueId: user.group}).protonAssignments;
+                var total = 0;
+                protonRequests.forEach(p => {
+                    if(p["assigner"] == user.id){
+                        total += p.protons;
+                    }
+
+                })
+
+                if(total + req.body.protons < 50){
+                    // set protons of resulting user
+                }else{
+                    res.status(401).send(JSON.stringify({successful: false, message: "OUT OF PROTONS"}));
+                }
+
+            }
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }

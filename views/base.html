@@ -751,6 +751,92 @@
                                     
 
                                     break;
+
+                                
+                                case "see_protons":
+                                    var data = JSON.parse(evt.srcElement.dataset.data);
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    var total = 0;
+                                    var htmlstr = "";
+                                    for(var i = 0; i < data["protonLog"].length; i++){
+                                        total += data["protonLog"][i].protons;
+                                        var icon = "";
+
+                                        switch(data["protonLog"][i].message){
+                                            case "REDEEM":
+                                                icon = "shopping_cart";
+                                                break;
+                                            case "COMMEND":
+                                                icon = "thumb_up";
+                                                break;
+                                            case "ATTEND":
+                                                icon = "inventory";
+                                                break;
+                                            default:
+                                                icon = "help";
+                                                break;
+                                        }
+
+                                        htmlstr += `
+                                        <div class="container c-slightborder" style="width:80%;padding:10px 20px;margin-bottom:10px">
+                                            <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
+                                                <span class="text color-${data["protonLog"][i].protons > 0 ? "d" : "r"}" style="font-size:18px;margin:10px;display:inline-flex;width:20%"><strong>${data["protonLog"][i].protons > 0 ? "+" : "-"}${Math.abs(data["protonLog"][i].protons)} </strong></span>
+                                                <span class="text color-m" style="font-size:14px;margin:10px;display:inline-flex;width:40%"><i>From ${data["protonLog"][i].givenBy.toUpperCase()}</i></span>
+                                                <span class="material-symbols-rounded" style="font-size:24px;pointer-events:none" title="${data["protonLog"][i].message}">${icon}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        `;
+                                    }
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">${data["username"]}'s Proton Record</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">${total} Total Protons</span>
+
+                                        <div style="width:100%;margin:20px 0px;max-height:40vh">
+                                        ${htmlstr}
+                                        </div>
+                                        `;
+
+                                    overlayData["username"] = data["username"];
+                                    
+                                    break;
+
+                                case "add_protons":
+                                    var data = JSON.parse(evt.srcElement.dataset.data);
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    var total = 0;
+
+                                    for(var i = 0; i < data["protonLog"].length; i++){
+                                        total += data["protonLog"][i].protons;
+                                        
+                                    }
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Add Proton Record for ${data["username"]}</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">They currently have ${total} protons</span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Number of Protons</span>
+                                            </div>
+                                            <input type="number" class="text color-d input form_protons" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="100" id="protons_number">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;"><u title="Specific Reasons:\n\nREDEEM: For redeeming points\nCOMMEND: To commend the user for work\nATTEND: For user's nonlogged attendance\nOtherwise, put something custom!">Message</u></span>
+                                            </div>
+                                            <input type="text" class="text color-d input form_reason" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="For being a valuable member to the team!" id="protons_message">
+                                        </div>
+                                        `;
+
+                                    overlayData["username"] = data["username"];
+                                    
+                                    break;
                                 case "add_manager":
                                     function handleAddManager(evt){
                                         var oldContent = document.querySelector(".overlay_usernameComplete");

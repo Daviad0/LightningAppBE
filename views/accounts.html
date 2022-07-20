@@ -687,6 +687,12 @@
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Notes</span>
                                                 <textarea class="text color-d input user_notes" style="display:inline-block;font-size:12px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%;height:80px;resize:none;border-radius:20px" data-partof="u_${u.id}" placeholder="Stuffs">${u["notes"]}</textarea>
                                             </div>
+                                            <div class="container c-border c-hover color-m user_protons" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
+                                                See Proton Record
+                                            </div>
+                                            <div class="container c-border c-hover color-m user_protons_add" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
+                                                Manual Proton Entry
+                                            </div>
                                         </div>
                                         <div style="width:40%">
                                             <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin:20px 0px">
@@ -852,6 +858,39 @@
                             }
                         });
                     });
+
+                    Array.from(document.getElementsByClassName("user_protons")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            
+                            var id = evt.srcElement.dataset.partof.split("_")[1];
+                            document.getElementById("externalClickAction").dataset.action = "overlay";
+                            document.getElementById("externalClickAction").dataset.overlay = "see_protons";
+                            document.getElementById("overlay_done").dataset.sendback = "createMeeting";
+                            document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                                "id": id,
+                                "username": allUsers.find(u => u.id == id).username,
+                                "protonLog": allUsers.find(u => u.id == id).protonLog
+                            })
+                            document.getElementById("externalClickAction").click();
+                        });
+                    })
+
+                    Array.from(document.getElementsByClassName("user_protons_add")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            
+                            var id = evt.srcElement.dataset.partof.split("_")[1];
+                            document.getElementById("externalClickAction").dataset.action = "overlay";
+                            document.getElementById("externalClickAction").dataset.overlay = "add_protons";
+                            document.getElementById("overlay_done").dataset.sendback = "createMeeting";
+                            document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                                "id": id,
+                                "username": allUsers.find(u => u.id == id).username,
+                                "protonLog": allUsers.find(u => u.id == id).protonLog
+                            })
+                            document.getElementById("externalClickAction").click();
+                        });
+                    })
+
                     Array.from(document.getElementsByClassName("user_contract")).forEach(e => {
                         e.addEventListener("click", function(evt){
                             var id = evt.srcElement.dataset.partof.split("_")[1];
