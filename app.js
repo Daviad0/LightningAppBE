@@ -359,10 +359,12 @@ app.get("/group/roles", async function(req, res){
 app.get("/group/protons", async function(req, res){
     isAuthenticated(req, "cookie",["*", "COLLECT_PROTONS"], async function(status, user){
         if(status){
-            var u = user;
+            var u = undefined;
             if(req.query.id != undefined){
-                u = await m.getDocs("Account", {_id: req.query.id})[0];
+                u = (await m.getDocs("Account", {_id: req.query.id}))[0];
                 
+            }else{
+                u = (await m.getDocs("Account", {_id: user.id}))[0];
             }
 
             var total = 0;
