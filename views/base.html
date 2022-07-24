@@ -837,6 +837,100 @@
                                     overlayData["username"] = data["username"];
                                     
                                     break;
+                                case "edit_attendance":
+                                    var data = JSON.parse(evt.srcElement.dataset.data);
+                                    document.getElementById('overlay').style.display = "";
+
+                                    var userReport = data.user.attendance.find(a => a.event == data.meeting._id);
+                                    var date = new Date(data.meeting.datetime);
+                                    date = date.toLocaleDateString("en-US", {month: "short", day: "numeric", year: "numeric"});
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Edit Attendance for ${data.user.username}</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">Meeting on ${date}</span>
+
+                                        <div style="margin:20px">
+                                            <span style="pointer-events: none;display:block"><div style="padding:5px 8px;background-color:red;border-radius:4px;display:inline-block;color:white">ABSENT</div> originally reported by user</span>
+                                        </div>
+                                        <div style="display:flex;justify-content:center;align-items:center;width:100%;margin:20px 0px">
+                                            <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">They actually (were) </span>
+                                            <div class="container c-border dropdown" data-partof="dropdown_attend" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-value="dropdown_attend">
+                                                <span class="dropdown_text" style="float:left;margin-right:20px;opacity:0.5;margin-left:5px;pointer-events:none" data-partof="dropdown_attend">Override Option</span>
+                                                <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="dropdown_attend">expand_more</span>
+                                                <option class="dropdown_option" style="display:none" data-partof="dropdown_attend" value="ATTEND">Attended</option>
+                                                <option class="dropdown_option" style="display:none" data-partof="dropdown_attend" value="ABSENT">Absent</option>
+                                                <option class="dropdown_option" style="display:none" data-partof="dropdown_attend" value="EXCUSED">Excused</option>
+                                                
+                                            </div>
+                                        </div>
+                                        `;
+
+                                        Array.from(document.getElementsByClassName("dropdown")).forEach(e => {
+
+                                            var val = e.dataset.value;
+                                            var partof = e.dataset.partof;
+                                            if(val != undefined && val != null && val != ""){
+                                                var option = e.querySelector(`.dropdown_option[data-partof="${partof}"][value="${val}"]`);
+                                                if(option != undefined && option != null){
+                                                    document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = option.innerHTML;
+                                                    document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = 1;
+                                                }
+                                            }
+                
+                                            e.addEventListener("click", function(evt){
+                                                var partof = evt.srcElement.dataset.partof;
+                                                
+                                                var elementLoc = evt.srcElement.getBoundingClientRect();
+                                                var documentRect = document.body.getBoundingClientRect();
+                                                var existing = document.querySelector(`.dropdown_option_container[data-partof="${partof}"]`)
+                                                if(existing == undefined || existing == null){
+                                                    var newElement = document.createElement("div");
+                                                    newElement.classList.add("dropdown-content");
+                                                    newElement.dataset.partof = partof;
+                                                    newElement.style.position = "absolute";
+                                                    newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
+                                                    newElement.dataset.normY = elementLoc.top-90+80;
+                                                    newElement.style.left = elementLoc.left-(elementLoc.width/2)-60 + "px";
+                                                    
+                                                    newElement.style.transform = "translateX(-50%)";
+                
+                                                    var addHTML = "";
+                                                    var options = Array.from(document.querySelectorAll(`.dropdown_option[data-partof="${partof}"]`));
+                
+                                                    for(var i = 0; i < options.length; i++){
+                                                        var e = options[i];
+                                                        addHTML += `
+                                                        <div data-value="${e.value}" data-partof="${partof}" style="padding:5px 0px;width:100%;border-radius:8px;margin:2px 0px" class="dropdown_option_show transition">
+                                                            ${e.innerHTML}
+                                                        </div>
+                                                        `;
+                                                    }
+                
+                                                    newElement.innerHTML = `
+                                                    <div class="container c-slightborder dropdown_option_container" style="width:${(elementLoc.width-20) + "px"};border-radius:16px" data-partof="${partof}">
+                                                        ${addHTML}
+                                                    </div>
+                                                    `
+                                                    
+                                                    evt.srcElement.appendChild(newElement)
+                                                }else{
+                                                    if(evt.srcElement.classList.contains("dropdown_option_show")){
+                                                        console.log("AAA");
+                                                        var newValue = evt.srcElement.dataset.value;
+                                                        var newText = evt.srcElement.innerHTML;
+                                                        document.querySelector(`.dropdown[data-partof="${partof}"]`).dataset.value = newValue;
+                                                        document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = newText;
+                                                        document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = "1";
+                                                    }
+                                                    existing.remove();
+                                                }
+                                            
+                                                
+                                            });
+                                        });
+
+                                    
+                                    
+                                    break;
                                 case "add_manager":
                                     function handleAddManager(evt){
                                         var oldContent = document.querySelector(".overlay_usernameComplete");

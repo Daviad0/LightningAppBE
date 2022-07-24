@@ -1,0 +1,364 @@
+<div class="transition" style="display: inline-block;width:100%;opacity:0" id="contentToShow">
+    <div style="position: fixed;bottom:0;left:20px;z-index:999">
+        <div style="display:inline-flex;justify-content:center">
+            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 0px 0px 0px;border-width:2px 1px 2px 2px" data-partof="report" data-num="1">
+                <span style="pointer-events: none">Attendance</span>
+            </div>
+            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:0px;border-width:2px 1px 2px 1px" data-partof="report" data-num="2">
+                <span style="pointer-events: none">Links</span>
+            </div>
+            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:0px 8px 0px 0px;border-width:2px 2px 2px 1px" data-partof="report" data-num="2">
+                <span style="pointer-events: none">KATH :></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="blockitem" data-partof="report" data-num="1" style="width:100%;display:none">
+        <div>
+            <div data-partof="attendance" data-num="1" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+                <span style="pointer-events: none">All Attendance</span>
+            </div>
+            <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+                <span style="pointer-events: none">User Summary</span>
+            </div>
+            <div data-partof="attendance" data-num="3" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+                <span style="pointer-events: none">Group Summary</span>
+            </div>
+        </div>
+        
+        <div class="blockitem container" data-partof="attendance" data-num="1" style="width:100%;display:none">
+            <div style="width: 80%;overflow-x:scroll;display:inline-block" id="attendancegrid">
+
+            </div>
+        </div>
+        
+        <div class="blockitem container" data-partof="attendance" data-num="2" style="width: 100%;display:none">
+            <div id="userlist" style="width:80%;display: inline-flex;flex-wrap:wrap;justify-content:center"></div>
+        </div>
+        <div class="blockitem container" data-partof="attendance" data-num="3" style="width: 100%;display:none">
+
+        </div>
+    </div>
+
+    <div style="display: none" id="editAttendance"></div>
+</div>
+<script>
+    setTimeout(function(){
+        document.getElementById("contentToShow").style.opacity = 1;
+    },5);
+
+
+    function reloadAllBaseEvents(){
+        Array.from(document.getElementsByClassName("delete")).forEach(e => {
+            e.addEventListener("click", function(evt){
+                var id = parseInt(evt.srcElement.dataset.partof);
+                id = currentItems[id]["_id"];
+                $.ajax({
+                    url: "/group/item",
+                    type: "POST",
+                    data: {
+                        action: "delete",
+                        _id: id
+                    },
+                    headers: {authorization: authId},
+                    success: function(data) {
+                        getMenuItems();
+                    }
+                })
+            });
+        });
+
+        Array.from(document.getElementsByClassName("dropdown")).forEach(e => {
+
+            var val = e.dataset.value;
+            var partof = e.dataset.partof;
+            if(val != undefined && val != null && val != ""){
+                var option = e.querySelector(`.dropdown_option[data-partof="${partof}"][value="${val}"]`);
+                if(option != undefined && option != null){
+                    document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = option.innerHTML;
+                    document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = 1;
+                }
+            }
+
+            e.addEventListener("click", function(evt){
+                var partof = evt.srcElement.dataset.partof;
+                
+                var elementLoc = evt.srcElement.getBoundingClientRect();
+                var documentRect = document.body.getBoundingClientRect();
+                var existing = document.querySelector(`.dropdown_option_container[data-partof="${partof}"]`)
+                if(existing == undefined || existing == null){
+                    var newElement = document.createElement("div");
+                    newElement.classList.add("dropdown-content");
+                    newElement.dataset.partof = partof;
+                    newElement.style.position = "absolute";
+                    newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
+                    newElement.dataset.normY = elementLoc.top-90+80;
+                    newElement.style.left = elementLoc.left+(elementLoc.width/2)+10 + "px";
+                    
+                    newElement.style.transform = "translateX(-50%)";
+
+                    var addHTML = "";
+                    var options = Array.from(document.querySelectorAll(`.dropdown_option[data-partof="${partof}"]`));
+
+                    for(var i = 0; i < options.length; i++){
+                        var e = options[i];
+                        addHTML += `
+                        <div data-value="${e.value}" data-partof="${partof}" style="padding:5px 0px;width:100%;border-radius:8px;margin:2px 0px" class="dropdown_option_show transition">
+                            ${e.innerHTML}
+                        </div>
+                        `;
+                    }
+
+                    newElement.innerHTML = `
+                    <div class="container c-slightborder dropdown_option_container" style="width:${(elementLoc.width-20) + "px"};border-radius:16px" data-partof="${partof}">
+                        ${addHTML}
+                    </div>
+                    `
+                    
+                    evt.srcElement.appendChild(newElement)
+                }else{
+                    if(evt.srcElement.classList.contains("dropdown_option_show")){
+                        console.log("AAA");
+                        var newValue = evt.srcElement.dataset.value;
+                        var newText = evt.srcElement.innerHTML;
+                        document.querySelector(`.dropdown[data-partof="${partof}"]`).dataset.value = newValue;
+                        document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = newText;
+                        document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = "1";
+                    }
+                    existing.remove();
+                }
+            
+                
+            });
+        });
+
+        Array.from(document.getElementsByClassName("bounce")).forEach(e => {
+            e.addEventListener("click", function() {
+                if(!e.classList.contains("bounce-on")){
+                    e.classList.add("bounce-on");
+                    setTimeout(function() {
+                        e.classList.remove("bounce-on");
+                    }, 600);
+                }
+                
+            });
+        });
+
+        Array.from(document.getElementsByClassName("link")).forEach(e => {
+            e.addEventListener("click", function(evt) {
+                window.open(evt.srcElement.dataset.link, '_blank');
+            });
+        });
+
+        Array.from(document.getElementsByClassName("generateqr")).forEach(e => {
+            e.addEventListener("click", function(evt){
+                //
+                var partof = evt.srcElement.dataset.partof;
+                var host = window.location.host;
+                    QrCreator.render({
+                        text: host + "/ql/" + document.querySelector('.form_from[data-partof="' + partof + '"]').value,
+                        radius: 0.4, // 0.0 to 0.5
+                        ecLevel: 'H', // L, M, Q, H
+                        fill: '#ffffff', // foreground color
+                        background: null, // color or null for transparent
+                        size: 200 // in pixels
+                      }, document.querySelector(`.qrcode[data-partof="${partof}"]`));
+                
+            });
+        });
+        Array.from(document.getElementsByClassName("hideqr")).forEach(e => {
+            e.addEventListener("click", function(evt){
+                var partof = evt.srcElement.dataset.partof;
+                document.querySelector(`.qrcode[data-partof="${partof}"]`).innerHTML = "";
+            });
+        });
+
+        Array.from(document.getElementsByClassName("checkbox")).forEach(e => {
+            e.addEventListener("click", function(evt){
+                if(evt.srcElement.dataset.checked == "NO"){
+                    evt.srcElement.style.backgroundColor = "#4708c4";
+                    evt.srcElement.dataset.checked = "YES";
+                }else{
+                    evt.srcElement.style.backgroundColor = "white";
+                    evt.srcElement.dataset.checked = "NO";
+                }
+            });
+        });
+
+        document.getElementById("contentToShow").style.opacity = 1;
+        Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
+            if(e.classList.contains("logospin")){
+                e.classList.remove("logospin");
+            }
+            
+        })
+
+        Array.from(document.getElementsByClassName("iconedit")).forEach(e => {
+            e.addEventListener("change", function(evt) {
+                var partof = evt.srcElement.dataset.partof;
+                document.querySelector(".iconshow[data-partof='" + partof + "']").innerHTML = evt.srcElement.value;
+            });
+        });
+
+        
+        Array.from(document.getElementsByClassName("blockcontrol")).forEach(e => {
+            e.addEventListener("click", function(evt) {
+                var num = evt.srcElement.dataset.num;
+                var partof = evt.srcElement.dataset.partof;
+    
+                Array.from(document.querySelectorAll(".blockitem[data-partof='" + partof + "']")).forEach(e => {
+                    if(e.dataset.num == num){
+                        e.style.display = "block";
+                    }else{
+                        e.style.display = "none";
+                    }
+                });
+    
+                Array.from(document.querySelectorAll(".blockcontrol[data-partof='" + partof + "']")).forEach(e => {
+                    if(e.dataset.num == num){
+                        e.style.backgroundColor = "#4708c4";
+                        e.children[0].style.color = "white";
+                    }else{
+                        e.style.backgroundColor = "";
+                        e.children[0].style.color = "";
+                    }
+                });
+            });
+        });
+    }
+
+    function reloadAttendance(){
+        $.ajax({
+            url: "/group/report/attendance",
+            type: "GET",
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"] == true){
+                    var fhtml = "";
+                    var uhtml = '';
+
+                    fhtml += `<div style="display:flex;justify-content:left;margin-bottom:10px">
+                        <div style="height:40px;display:inline-flex;width:200px;border:1px solid black;align-items:center;justify-content:center;background-color:black">
+                            
+                        </div>`
+                    var mN = 0;
+                    data["meetings"].forEach(function(m){
+                        mN += 1;
+                        fhtml += `
+
+                            <div style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center" title="${m["title"]}">
+                                <span style="pointer-events: none" title="${m["title"]}">${mN}</span>
+                            </div>
+                        
+                        `;
+                    });
+                    fhtml += `
+                    <div style="height:40px;display:inline-flex;width:100px;border:1px solid black;align-items:center;justify-content:center;margin-left:10px">
+                        <span style="pointer-events: none">Total</span>
+                    </div>
+                    <div style="height:40px;display:inline-flex;width:100px;border:1px solid black;align-items:center;justify-content:center"">
+                        <span style="pointer-events: none">%</span>
+                    </div>
+                </div>`;
+
+                    data["users"].forEach(function(u){
+                        console.log(u)
+                        fhtml += `<div style="display:flex;justify-content:left">
+                            <div style="height:40px;display:inline-flex;width:200px;border:1px solid black;align-items:center;justify-content:center">
+                                <span style="pointer-events: none;font-weight:600">${u["username"]}</span>
+                            </div>`
+                        var hours = 0;
+                        var totalHours = 0;
+                        var totalMeetings = 0;
+                        var meetings = 0;
+                        data["meetings"].forEach(function(m){
+                            // check if user was at meeting
+                            
+                            var present = u.attendance == undefined ? false : u.attendance.find(a => a.event == m._id && a.status == "ATTEND") != undefined;
+                            var required = false;
+
+                            for(var sg = 0; sg < m.subgroups.length; sg+=1){
+                                for(var ug = 0; ug < u.access.groups.length; ug += 1){
+                                    if(m.subgroups[sg] == u.access.groups[ug]){
+                                        required = true;
+                                        break;
+                                    }
+                                
+                                }
+                                if(required){
+                                    break;
+                                }
+                            }
+
+                            if(required){
+                                totalHours += m.length;
+                                totalMeetings += 1;
+                            }
+                            if(present){
+                                hours += m.length;
+                                meetings += 1;
+                            }
+
+                            fhtml += `
+
+                                <div class="editattendance" style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center;cursor:pointer;background-color: ${present ? "#23cc39" : (required ? "#ff413b": "white")}" data-uid="${u.id}" data-mid="${m._id}">
+                                    <span style="pointer-events: none;color:${present || required ? "white" : "lightgray"}">${present ? m.length : (required ? "0" : "/")}</span>
+                                </div>
+                            
+                            `;
+                        });
+                        var percentage = totalMeetings > 0 ? Math.round((meetings/totalMeetings)*100) : 0;
+                        uhtml += `
+                            <div class="container c-slighterborder" style="padding:20px;display:inline-block;width:200px;margin:5px">
+                                <span class="text color-d" style="font-size:28px;margin:5px;display:block">${u.username}</span>
+                                <div>
+                                    <span style="pointer-events: none" style="font-size:16px;display:block"><strong>${hours}</strong> total hours</span>
+                                </div>
+                                <div>
+                                    <span style="pointer-events: none" style="font-size:16px;display:block"><strong>${percentage}%</strong> attendance rate</span>
+                                </div>
+                                <div>
+                                    <span style="pointer-events: none" style="font-size:16px;display:block"><strong>90%</strong> honesty</span>
+                                </div>
+                                
+                                
+                            </div>
+                        `;
+                        fhtml += `
+                        <div style="height:40px;display:inline-flex;width:100px;border:1px solid black;align-items:center;justify-content:center;margin-left:10px">
+                            <span style="pointer-events: none">${hours}</span>
+                        </div>
+                        <div style="height:40px;display:inline-flex;width:100px;border:1px solid black;align-items:center;justify-content:center;color:white;background-color:${percentage < 40 ? "#ff413b" : (percentage < 70 ? "#ccbb23" : "#23cc39")}">
+                            <span style="pointer-events: none">${percentage}%</span>
+                        </div>
+                    </div>`;
+                    })
+
+                    document.getElementById("attendancegrid").innerHTML = fhtml;
+                    document.getElementById("userlist").innerHTML = uhtml;
+
+                    Array.from(document.getElementsByClassName("editattendance")).forEach(e => {
+                        e.addEventListener('click', function(evt){
+                            document.getElementById("externalClickAction").dataset.action = "overlay";
+                            document.getElementById("externalClickAction").dataset.overlay = "edit_attendance";
+                            var meeting = data["meetings"].find(m => m._id == e.dataset.mid);
+                            var user = data["users"].find(u => u.id == e.dataset.uid);
+                            var stats = {
+                                meeting: meeting,
+                                user: user
+                            }
+                            document.getElementById("externalClickAction").dataset.data = JSON.stringify(stats);
+                            document.getElementById("overlay_done").dataset.sendback = "editAttendance";
+                            document.getElementById("externalClickAction").click();
+                        });
+                    })
+
+                }
+            }
+        })
+    }
+
+    reloadAllBaseEvents();
+    reloadAttendance();
+
+</script>

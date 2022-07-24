@@ -478,6 +478,26 @@ app.get("/group/this", async function(req, res){
     });
 });
 
+app.get("/group/subgroup", (req, res) => {
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var subgroupid = req.query.tag.toUpperCase();
+            var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
+            console.log(subgroupid);
+
+
+            var subgroup = group.subgroups.find(s => s.tag == subgroupid);
+
+            var admin = subgroup.managers.filter(m => m == user.id) > 0;
+
+            res.send(JSON.stringify({successful: true, subgroup: subgroup, admin: admin}));
+
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+})
+
 app.get("/group/subgroups", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
@@ -799,6 +819,35 @@ app.get("/group/user", async function(req, res){
     });
 });
 
+app.get('/group/report/attendance', (req, res) => {
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var meetingRecords = await m.getDocs('AttendanceItem', {group: user.group});
+            var userRecords = await m.getDocs('Account', {group: user.group});
+
+            var users = [];
+            for(var i = 0; i < userRecords.length; i++){
+                users.push(await createSafeUser(userRecords[i], 1));
+            }
+           
+
+
+
+            
+           
+
+
+
+
+            res.send(JSON.stringify({successful: true, meetings: meetingRecords, users: users}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
+
 app.post("/group/user", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
@@ -890,6 +939,42 @@ app.get("/group/manage", function(req, res){
         if(status){
             if(req.headers["partial"] == "YES"){
                 res.sendFile(__dirname + "/views/manage.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }else{
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/home.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }
+    });
+});
+
+app.get("/group/report", function(req, res){
+    isAuthenticated(req, "cookie",["*"], function(status, user){
+        if(status){
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/report.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }else{
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/home.html");
+            }else{
+                res.sendFile(__dirname + "/views/base.html");
+            }
+        }
+    });
+});
+
+app.get("/group/sg*", function(req, res){
+    isAuthenticated(req, "cookie",["*"], function(status, user){
+        if(status){
+            if(req.headers["partial"] == "YES"){
+                res.sendFile(__dirname + "/views/subgroup.html");
             }else{
                 res.sendFile(__dirname + "/views/base.html");
             }
