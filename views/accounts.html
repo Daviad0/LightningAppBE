@@ -25,19 +25,19 @@
                         <div style="width:100px;display:inline-block;text-align:left;vertical-align:middle">
                             <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Username:</span>
                         </div>
-                        <input type="text" class="text color-d input" style="display:inline-block;font-size:14px;margin-top:10px;width:60%;padding:10px;vertical-align:middle;" value="" placeholder="Doe-y">
+                        <input type="text" class="text color-d input" id="filter_username" style="display:inline-block;font-size:14px;margin-top:10px;width:60%;padding:10px;vertical-align:middle;" value="" placeholder="Doe-y">
                     </div>
                     <div>
                         <div style="width:100px;display:inline-block;text-align:left;vertical-align:middle">
                             <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Name:</span>
                         </div>
-                        <input type="text" class="text color-d input" style="display:inline-block;font-size:14px;margin-top:10px;width:60%;padding:10px;vertical-align:middle;" value="" placeholder="John Doe">
+                        <input type="text" class="text color-d input" id="filter_name" style="display:inline-block;font-size:14px;margin-top:10px;width:60%;padding:10px;vertical-align:middle;" value="" placeholder="John Doe">
                     </div>
                     <div>
                         <div style="width:100px;display:inline-block;text-align:left;vertical-align:middle">
                             <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Email:</span>
                         </div>
-                        <input type="text" class="text color-d input" style="display:inline-block;font-size:14px;margin-top:10px;width:60%;padding:10px;vertical-align:middle;" value="" placeholder="john@doe.com">
+                        <input type="text" class="text color-d input" id="filter_email" style="display:inline-block;font-size:14px;margin-top:10px;width:60%;padding:10px;vertical-align:middle;" value="" placeholder="john@doe.com">
                     </div>
                     
                     <div class="container c-border c-hover" style="padding:5px;margin:10px" id="users_reload">
@@ -572,6 +572,331 @@
     var existingMemberships = [];
     var usersExtended = [];
 
+    document.getElementById("filter_username").addEventListener('change', function(evt){
+        localRefreshUsers();
+    })
+
+    document.getElementById("filter_name").addEventListener('change', function(evt){
+        localRefreshUsers();
+    })
+
+    document.getElementById("filter_email").addEventListener('change', function(evt){
+        localRefreshUsers();
+    })
+
+    function localRefreshUsers(){
+
+        var username = document.getElementById("filter_username").value == "" ? "ADHASJDASKDJ" : document.getElementById("filter_username").value;
+        var name = document.getElementById("filter_name").value == "" ? "ADHASJDASKDJ" : document.getElementById("filter_name").value;
+        var email = document.getElementById("filter_email").value == "" ? "ADHASJDASKDJ" : document.getElementById("filter_email").value;
+
+
+        var filteredUsers = allUsers.filter(u => {
+            var a = u.username.toLowerCase().includes(username.toLowerCase()) || u.fullname.toLowerCase().includes(name.toLowerCase()) || u.email.toLowerCase().includes(email.toLowerCase());
+            return a;
+        })
+
+        if(document.getElementById("filter_username").value == "" && document.getElementById("filter_name").value == "" && document.getElementById("filter_email").value == ""){
+            filteredUsers = allUsers;
+        }
+
+
+
+        document.getElementById("allUsers").innerHTML = "";
+
+
+        filteredUsers.forEach(u => {
+            var exists = !(roles.find(r => r["name"] == u["access"]["role"]) == undefined);
+            var color = !exists ? "gray" : roles.find(r => r["name"] == u["access"]["role"])["color"];
+            var rs = "";
+            roles.forEach(r => {
+                rs += `<option class="dropdown_option" style="display:none" data-partof="dropdown_${u.id}" value="${r.name}">${r.name.toUpperCase()}</option>`;
+            })
+            var ss = "";
+            u["access"]["groups"].forEach(g => {
+                ss += g + ",";
+
+            });
+            if(ss.length > 0){
+                ss = ss.substring(0, ss.length - 1);
+            }
+            
+            document.getElementById("allUsers").innerHTML += `
+                <div class="container c-slightborder" style="width:100%;padding:20px;margin-bottom:10px;">
+                    <div class="blockitem" data-partof="u_${u["id"]}" data-num="0" style="width:100%;${usersExtended.includes(u["id"]) ? "display:none" : ""}">
+                        <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
+                            <div style="width:16%;text-align:left">
+                                <div>
+                                    <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block">${u["username"]}</span>
+                                    <span style="pointer-events: none;margin-left:10px;font-size:10px;display:block">${u["fullname"]}</span>
+                                </div>
+                                
+                            </div>
+                            <div style="width:20%;text-align:left"">
+                                <div class="container c-border showrole" style="padding:5px 20px;background-color:${color};border:2px solid ${color}" data-role="${u["access"]["role"]}">
+                                    <span class="color-w" style="font-size:12px">${exists ? u["access"]["role"].toUpperCase() : "???"}</span>
+                                    
+                                </div>
+                            </div>
+                            <div style="width:28%;text-align:left;">
+                                ${
+                                    u["email"] == undefined ? `
+                                    <span style="pointer-events: none;margin-left:10px"><i>Email Not Found</i></span>
+                                    ` : `
+                                    <div class="blockitem" data-partof="u_${u.id}_email" data-num="0">
+                                        <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
+                                            <span style="pointer-events: none;margin-left:10px;font-size:12px">*******@${u["email"].split("@")[1]}</span>
+                                            <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}_email" data-num="1">
+                                                <span class="material-symbols-rounded" style="font-size:16px">visibility</span>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="blockitem" data-partof="u_${u.id}_email" data-num="1" style="display:none;">
+                                        <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
+                                            <span style="pointer-events: none;margin-left:10px;font-size:12px">${u["email"]}</span>
+                                            <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="u_${u.id}_email" data-num="0">
+                                                <span class="material-symbols-rounded" style="font-size:16px">visibility_off</span>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    `
+
+
+                                }
+                                
+                                
+                            </div>
+                            <div style="width:16%;text-align:right">
+                                <div class="container c-border c-hover blockcontrol user_extend" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="1">
+                                    <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">edit</span>
+                                </div>
+                                <div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px" data-partof="u_${u.id}">
+                                    <span class="material-symbols-rounded" style="font-size:16px">delete</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="blockitem" data-partof="u_${u["id"]}" data-num="1" style="width:100%;${!usersExtended.includes(u["id"]) ? "display:none" : ""}">
+                        <div style="display:inline-flex;justify-content:space-between;align-items:center;width:100%">
+                            <div style="width:50%;text-align:left">
+                                <input type="text" class="text color-d input user_username" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:100%" value="${u["username"]}" data-partof="u_${u.id}" placeholder="Username">
+                                
+                            </div>
+                            <div style="width:16%;text-align:right">
+                                <div class="container c-border c-hover blockcontrol saveuser user_contract" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
+                                    <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">check</span>
+                                </div>
+                                <div class="container c-border c-hover blockcontrol user_contract" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="0">
+                                    <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">close</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+                            <div style="margin:20px;width:50%">
+                                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                    <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Full Name</span>
+                                    <input type="email" class="text color-d input user_fullname" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["fullname"]}" placeholder="John Doe">
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                    <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Email Address</span>
+                                    <input type="email" class="text color-d input user_email" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["email"]}" placeholder="john.doe@company.com">
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                    <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Notes</span>
+                                    <textarea class="text color-d input user_notes" style="display:inline-block;font-size:12px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%;height:80px;resize:none;border-radius:20px" data-partof="u_${u.id}" placeholder="Stuffs">${u["notes"]}</textarea>
+                                </div>
+                                <div class="container c-border c-hover color-m user_protons" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
+                                    See Proton Record
+                                </div>
+                                <div class="container c-border c-hover color-m user_protons_add" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
+                                    Manual Proton Entry
+                                </div>
+                            </div>
+                            <div style="width:40%">
+                                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin:20px 0px">
+                                    <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Role Access</span>
+                                    <div class="container c-border dropdown user_role" data-partof="dropdown_${u.id}" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-value="${u.access.role}">
+                                        <span class="dropdown_text" style="float:left;margin-right:20px;opacity:0.5;margin-left:5px;pointer-events:none" data-partof="dropdown_${u.id}">Select an Option</span>
+                                        <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="dropdown_${u.id}">expand_more</span>
+                                        ${rs}
+                                        
+                                    </div>
+                                </div>
+                                <span class="text color-d" style="font-size:16px;margin:5px;display:block">A Part of Subgroups:</span>
+                                <div style="border: 2px solid #4708c4;padding:20px;margin:10px;border-radius:20px;max-height:60px;overflow-y:scroll">
+                                    <div style="display:inline-block;vertical-align:middle" class="memberships" data-partof="u_${u.id}">
+
+                                    </div>
+                                    <div class="container c-border c-hover addmembership" style="padding:5px;margin:3px;vertical-align:middle;pointer-events:all" data-partof="u_${u.id}" data-subgroups="${ss}">
+                                        <span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>
+                                        
+                                        
+                                    </div>
+                                    
+
+                                    
+                                    
+                                </div>
+                               
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+                `;
+            
+            var showEvent = false;
+
+
+            function showSubgroups(){
+                var sN = 0;
+                document.querySelector(`.memberships[data-partof="u_${u.id}"]`).innerHTML = "";
+
+                let existing = document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups.split(",");
+                if(document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups == ""){
+                    existing = [];
+                }
+                existing.forEach(m => {
+                    document.querySelector(`.memberships[data-partof="u_${u.id}"]`).innerHTML += `
+                    <div class="container c-border subgroup" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${sN}">
+                        <div class="remove" style="display:inline-block" data-num="${sN}" data-id="${m}">
+                            <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${sN}">cancel</span>
+                            
+                        </div>
+                        
+                        <span class="color-w" style="font-size:12px">${m}</span>
+                    </div>`;
+                    sN += 1;
+                })
+                $.ajax({
+                    url: "/group/subgroups",
+                    success: function(data){
+                        data = JSON.parse(data);
+                        if(data["successful"]){
+                            overlayData["subgroups"] = data["items"];
+                            var added = 0;
+                            document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).innerHTML = `<span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>`;
+                            let existing = document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups.split(",");
+                            data["items"].forEach(m => {
+                                if(!existing.includes(m.name)){
+                                    document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).innerHTML += `<option class="dropdown_option" style="display:none" data-partof="u_${u.id}" value="${m.name}">${m.name}</option>`;
+                                    added += 1;
+                                }
+                                
+                            });
+                            if(added == 0){
+                                document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).style.display = "none";
+                            }
+                            if(!showEvent){
+                                document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).addEventListener("click", function(evt) {
+                                    var partof = evt.srcElement.dataset.partof;
+                                    
+                                    var elementLoc = evt.srcElement.getBoundingClientRect();
+                                    var documentRect = document.body.getBoundingClientRect();
+                                    var existing = document.querySelector(`.dropdown_option_container[data-partof="${partof}"]`)
+                                    if(existing == undefined || existing == null){
+                                        var newElement = document.createElement("div");
+                                        newElement.classList.add("dropdown-content");
+                                        newElement.dataset.partof = partof;
+                                        newElement.style.position = "absolute";
+                                        newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
+                                        newElement.style.width = "160px";
+                                        newElement.dataset.normY = elementLoc.top-90+80;
+                                        newElement.style.left = elementLoc.left-(documentRect.width/4)+360 + "px";
+                                        
+                                        newElement.style.transform = "translateX(-50%)";
+                    
+                                        var addHTML = "";
+                                        var options = Array.from(document.querySelectorAll(`.dropdown_option[data-partof="${partof}"]`));
+                    
+                                        for(var i = 0; i < options.length; i++){
+                                            var e = options[i];
+                                            addHTML += `
+                                            <div data-value="${e.value}" data-partof="${partof}" style="padding:5px 0px;width:160px;border-radius:8px;margin:2px 0px" class="dropdown_option_show transition">
+                                                ${e.innerHTML}
+                                            </div>
+                                            `;
+                                        }
+                    
+                                        newElement.innerHTML = `
+                                        <div class="container c-slightborder dropdown_option_container" style="width:160px;border-radius:16px" data-partof="${partof}">
+                                            ${addHTML}
+                                        </div>
+                                        `
+                                        
+                                        evt.srcElement.appendChild(newElement)
+                                    }else{
+                                        if(evt.srcElement.classList.contains("dropdown_option_show")){
+                                            console.log("AAA");
+                                            var newValue = evt.srcElement.dataset.value;
+                                            var newText = evt.srcElement.innerHTML;
+                                            let existing = document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups.split(",");
+                                            if(document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups == ""){
+                                                existing = [];
+                                            }
+                                            existing.push(newValue);
+                                            var putBack = "";
+                                            existing.forEach(e => {
+                                                putBack += `${e},`;
+                                            });
+                                            if(putBack.length > 0){
+                                                putBack = putBack.substring(0, putBack.length-1);
+                                            }
+                                            document.querySelector(`.addmembership[data-partof="u_${u.id}"]`).dataset.subgroups = putBack;
+                                            showSubgroups();
+                                            
+                                        }
+                                        existing.remove();
+                                    }
+                                
+                                
+                                }); 
+                                showEvent = true;
+                            }
+
+                            
+                            
+                        }
+
+                    }
+                })
+            }
+            
+            
+            showSubgroups();
+            Array.from(document.getElementsByClassName("blockcontrol")).forEach(e => {
+                e.addEventListener("click", function(evt) {
+                    var num = evt.srcElement.dataset.num;
+                    var partof = evt.srcElement.dataset.partof;
+                    var toColor = evt.srcElement.dataset.toColor;
+                    console.log(toColor);
+        
+                    Array.from(document.querySelectorAll(".blockitem[data-partof='" + partof + "']")).forEach(e => {
+                        if(e.dataset.num == num){
+                            e.style.display = "block";
+                        }else{
+                            e.style.display = "none";
+                        }
+                    });
+        
+                    Array.from(document.querySelectorAll(".blockcontrol[data-partof='" + partof + "']")).forEach(e => {
+                        if(e.dataset.num == num){
+                            e.style.backgroundColor = e.dataset.tocolor == undefined ? "#4708c4" : e.dataset.tocolor;
+                            e.children[0].style.color = "white";
+                        }else{
+                            e.style.backgroundColor = "";
+                            e.children[0].style.color = e.dataset.tocolor == undefined ? "" : e.dataset.tocolor;
+                        }
+                    });
+                });
+            });
+        });
+    }
+
     function refreshUsers(){
         $.ajax({
             url: "/group/users",
@@ -607,7 +932,7 @@
                                         <div style="width:16%;text-align:left">
                                             <div>
                                                 <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block">${u["username"]}</span>
-                                                <span style="pointer-events: none;margin-left:10px;font-size:10px;display:block">Person's Name</span>
+                                                <span style="pointer-events: none;margin-left:10px;font-size:10px;display:block">${u["fullname"]}</span>
                                             </div>
                                             
                                         </div>
@@ -897,6 +1222,8 @@
                             if(usersExtended.includes(id)){
                                 usersExtended.splice(usersExtended.indexOf(id));
                             }
+
+                            localRefreshUsers();
                         });
                     });
 
@@ -1054,6 +1381,13 @@
     document.getElementById("users_reload").addEventListener("click", function(evt){
         refreshUsers();
     
+    })
+
+    document.getElementById("users_clearfilter").addEventListener("click", function(evt){
+        document.getElementById("filter_username").value = "";
+        document.getElementById("filter_name").value = "";
+        document.getElementById("filter_email").value = "";
+        localRefreshUsers();
     })
 
     document.getElementById("permission_roleName").addEventListener("change", function(){

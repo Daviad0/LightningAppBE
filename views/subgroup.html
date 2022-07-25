@@ -12,6 +12,13 @@
             </div>
         </div>
     </div>
+    <div style="position: fixed;bottom:0;right:20px;z-index:999">
+        <div style="display:inline-flex;justify-content:center">
+            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 0px 0px 0px;border-width:2px 1px 2px 2px" data-partof="subgroup" data-num="4">
+                <span style="pointer-events: none">Subgroup Configuration</span>
+            </div>
+        </div>
+    </div>
     <div class="blockitem" data-partof="subgroup" data-num="1" style="width:100%;display:none">
         <span class="text color-d subgroup_name" style="font-size: 80px;display:block">Electrical</span>
         <span class="text color-m" id="subgroup_partof" style="font-size: 40px;display:block;font-weight:500">Part of the Lightning Robotics Group</span>
@@ -54,31 +61,45 @@
         
     </div>
     <div class="blockitem" data-partof="subgroup" data-num="3" style="width:100%;display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="width:36%;text-align:center">
-                <div style="display:block;margin:20px">
-                    <span class="text color-d" style="display:block;font-size:60px" id="subgroup_hours">2909</span>
-                    <span class="text" style="display:block">Cumulative Meeting Hours</span>
-                </div>
-                <div style="display:block;margin:20px">
-                    <span class="text color-d" style="display:block;font-size:60px" id="subgroup_rate">98%</span>
-                    <span class="text" style="display:block">Overall Attendance Rate</span>
-                </div>
-                
+        <div>
+            <div data-partof="attendance" data-num="1" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+                <span style="pointer-events: none">Meeting Schedule</span>
             </div>
-            <div style="width:60%">
-                <span class="text">Next Upcoming Meetings</span>
-                <div id="subgroup_upcoming" style="width:100%;margin:20px">
-                    
-                </div>
-
-                <span class="text">Past Meetings</span>
-                <div id="subgroup_past" style="width:100%;margin:20px">
-                    
-                </div>
-                
+            <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+                <span style="pointer-events: none">Attendance Management</span>
             </div>
         </div>
+        <div data-partof="attendance" data-num="1" class="blockitem" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="width:36%;text-align:center">
+                    <div style="display:block;margin:20px">
+                        <span class="text color-d" style="display:block;font-size:60px" id="subgroup_hours">2909</span>
+                        <span class="text" style="display:block">Cumulative Meeting Hours</span>
+                    </div>
+                    <div style="display:block;margin:20px">
+                        <span class="text color-d" style="display:block;font-size:60px" id="subgroup_rate">98%</span>
+                        <span class="text" style="display:block">Overall Attendance Rate</span>
+                    </div>
+                    
+                </div>
+                <div style="width:60%">
+                    <span class="text">Next Upcoming Meetings</span>
+                    <div id="subgroup_upcoming" style="width:100%;margin:20px">
+                        
+                    </div>
+    
+                    <span class="text">Past Meetings</span>
+                    <div id="subgroup_past" style="width:100%;margin:20px">
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <div data-partof="attendance" data-num="2" class="blockitem" style="display:none">
+            
+        </div>
+        
         
         
     </div>
@@ -86,6 +107,7 @@
 <script>
     var subgroup = undefined;
     var params = window.location.pathname.split("/");
+    var admin = false;
     var me = undefined;
     $.ajax({
         url: '/acc/verify',
@@ -105,7 +127,7 @@
             if(data["successful"]){
                 
                 if(data["admin"]){
-
+                    admin = true;
                 }
 
                 
@@ -151,7 +173,7 @@
                         
 
                         fHTML += `
-                        <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px;background-color:${me.id == m.id ? "#ceb5ff" : "white"}">
+                        <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px;background-color:${me.id == m.id ? "#ceb5ff" : "white"};border:${me.id == m.id ? "2px solid #a77aff" : "none"}">
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:40%;text-align:left;font-weight:500"><strong>${m.username}</strong> (${m.fullname})</span>
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500">${m.access.groups.length} Subgroups</span>
                             <span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px">star</span>
@@ -168,10 +190,12 @@
                         }
 
                         fHTML += `
-                        <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px;background-color:${me.id == m.id ? "#ceb5ff" : "white"}">
+                        <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px;background-color:${me.id == m.id ? "#ceb5ff" : "white"};border:${me.id == m.id ? "2px solid #a77aff" : "none"}">
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:40%;text-align:left;font-weight:500"><strong>${m.username}</strong> (${m.fullname})</span>
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500">${m.access.groups.length} Subgroups</span>
-                            <span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px">person</span>
+                            ${admin ? `<div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px;padding-right:10px">
+                                <span class="material-symbols-rounded" style="font-size:16px">delete</span>
+                            </div>` : `<span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px">person</span>`}
                         </div>`;
                     })
                     document.getElementById("subgroup_members").innerHTML = fHTML;

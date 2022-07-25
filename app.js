@@ -45,6 +45,7 @@ function isAuthenticated(req, method, permissionReq, callback) {
                         var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
                         
                         var specificRolePerms = group.roles.filter(r => r.name == u.access.role)[0].permissions;
+                        decoded.permissions = specificRolePerms;
                         var access = false;
     
                         for(var pN = 0; pN < permissionReq.length; pN++){
@@ -488,7 +489,7 @@ app.get("/group/subgroup", (req, res) => {
 
             var subgroup = group.subgroups.find(s => s.tag == subgroupid);
 
-            var admin = subgroup.managers.filter(m => m == user.id) > 0;
+            var admin = subgroup.managers.filter(m => m == user.id) > 0 || user.permissions.includes("*");
 
             res.send(JSON.stringify({successful: true, subgroup: subgroup, admin: admin}));
 
