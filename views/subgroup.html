@@ -12,9 +12,9 @@
             </div>
         </div>
     </div>
-    <div style="position: fixed;bottom:0;right:20px;z-index:999">
+    <div style="position: fixed;bottom:0;right:20px;z-index:999" id="subgroup_manage_tabButton">
         <div style="display:inline-flex;justify-content:center">
-            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 0px 0px 0px;border-width:2px 1px 2px 2px" data-partof="subgroup" data-num="4">
+            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 8px 0px 0px;border-width:2px 1px 2px 2px" data-partof="subgroup" data-num="4">
                 <span style="pointer-events: none">Subgroup Configuration</span>
             </div>
         </div>
@@ -61,12 +61,12 @@
         
     </div>
     <div class="blockitem" data-partof="subgroup" data-num="3" style="width:100%;display:none">
-        <div>
+        <div style="margin-bottom:20px">
             <div data-partof="attendance" data-num="1" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
                 <span style="pointer-events: none">Meeting Schedule</span>
             </div>
             <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
-                <span style="pointer-events: none">Attendance Management</span>
+                <span style="pointer-events: none">Meeting Management</span>
             </div>
         </div>
         <div data-partof="attendance" data-num="1" class="blockitem" style="display:none">
@@ -97,7 +97,30 @@
             </div>
         </div>
         <div data-partof="attendance" data-num="2" class="blockitem" style="display:none">
-            
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="width:36%;text-align:center">
+                    <div style="display:block;margin:20px">
+                        <span class="text color-d" style="display:block;font-size:60px" id="subgroup_manage_attendRate">50%</span>
+                        <span class="text" style="display:block">of Meetings Attended</span>
+                    </div>
+                    <div style="display:block;margin:20px">
+                        <div style="width: 100%">
+                            <span class="text color-d material-symbols-rounded" style="display:inline-block;font-size:80px;padding:10px;margin:10px;border:4px solid #2b047a;border-radius:16px" id="subgroup_manage_standing">check</span>
+                        </div>
+                        
+                        <span class="text" style="display:block">Subgroup Meeting Standing</span>
+                    </div>
+                    
+                </div>
+                <div style="width:60%">
+                    <span class="text" id="subgroup_manage_attendLabel">Select if Subgroup is Attending</span>
+                    <div id="subgroup_manage_upcoming" style="width:100%;margin:20px">
+                        
+                    </div>
+    
+                    
+                </div>
+            </div>
         </div>
         
         
@@ -128,6 +151,8 @@
                 
                 if(data["admin"]){
                     admin = true;
+                }else{
+                    document.getElementById("subgroup_manage_tabButton").remove();
                 }
 
                 
@@ -193,7 +218,7 @@
                         <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px;background-color:${me.id == m.id ? "#ceb5ff" : "white"};border:${me.id == m.id ? "2px solid #a77aff" : "none"}">
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:40%;text-align:left;font-weight:500"><strong>${m.username}</strong> (${m.fullname})</span>
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500">${m.access.groups.length} Subgroups</span>
-                            ${admin ? `<div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px;padding-right:10px">
+                            ${admin ? `<div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px;margin-right:10px">
                                 <span class="material-symbols-rounded" style="font-size:16px">delete</span>
                             </div>` : `<span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px">person</span>`}
                         </div>`;
@@ -220,6 +245,10 @@
                     var futureMeetings = meetings.filter(m => new Date(m.datetime) > now);
 
                     var fHTML = ``;
+                    var manHTML = ``;
+                    if(admin){
+                        document.getElementById("subgroup_manage_attendLabel").innerHTML = "Select if " + subgroup.name + " is Attending Each Meeting";
+                    }
                     futureMeetings.forEach(m => {
                         var date = new Date(m.datetime);
                         var day = (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear();
@@ -233,10 +262,30 @@
                            
                         </div>
                         `;
+                        if(admin){
+                            manHTML += `
+                            <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:90%;align-items:center;margin:5px">
+                                <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500"><strong>${day}</strong> @ ${time}</span>
+                                <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500;text-overflow:ellipsis">${m.title}</span>
+                                <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500;text-overflow:ellipsis">${m.subgroups.length} already attending</span>
+                            
+                                <div>
+                                    <span class="text" style="display:inline-block;vertical-align:middle;font-size:14px;margin-right:5px">Attending?</span>
+                                    <div class="checkbox transition" data-partof="attend_${m._id}" style="display:inline-block;vertical-align:middle;margin-right:10px;background-color:${m.subgroups.includes(subgroup.name) ? "#4708c4" : ""}" data-checked="${m.subgroups.includes(subgroup.name) ? "YES" : "NO"}">
+                                
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            `;
+                        }
+                        
                     })
+                    document.getElementById("subgroup_manage_upcoming").innerHTML = manHTML;
                     document.getElementById("subgroup_upcoming").innerHTML = fHTML;
 
                     var fHTML = ``;
+                    
                     var hours = 0;
                     var gmeetings = 0;
                     var gtotalmeetings = 0;
@@ -274,6 +323,7 @@
                     document.getElementById("subgroup_rate").innerHTML = (gtotalmeetings > 0 ? Math.round((gmeetings / gtotalmeetings)*100) : 0) + "%";
                     document.getElementById("subgroup_past").innerHTML = fHTML;
                 }
+                reloadAllBaseEvents();
             }
         })
     }
@@ -457,5 +507,5 @@
         });
     }
 
-    reloadAllBaseEvents();
+    
 </script>

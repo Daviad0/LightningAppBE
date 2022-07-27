@@ -63,6 +63,11 @@ function isAuthenticated(req, method, permissionReq, callback) {
                             callback(false, decoded);
                         }
                     }else{
+                        var u = (await m.getDocs('Account', {_id: decoded.id}))[0];
+                        var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
+                        
+                        var specificRolePerms = group.roles.filter(r => r.name == u.access.role)[0].permissions;
+                        decoded.permissions = specificRolePerms;
                         callback(true, decoded);
                     }
                 }catch(e){
