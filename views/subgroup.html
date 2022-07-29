@@ -19,7 +19,7 @@
             </div>
         </div>
     </div>
-    <div class="blockitem" data-partof="subgroup" data-num="1" style="width:100%;display:none">
+    <div class="blockitem" data-partof="subgroup" data-num="1" style="width:100%">
         <span class="text color-d subgroup_name" style="font-size: 80px;display:block">Electrical</span>
         <span class="text color-m" id="subgroup_partof" style="font-size: 40px;display:block;font-weight:500">Part of the Lightning Robotics Group</span>
         <div class="subgroup_tag" style="padding:8px 12px;border-radius:8px;background-color:#4708c4;color:white;font-size:24px;display:inline-block;margin:20px">
@@ -31,6 +31,9 @@
         </div>
         <div class="container c-border-red color-r c-hover-red" style="padding:10px 50px 10px 50px;margin:10px">
             Leave Subgroup
+        </div>
+        <div style="margin:20px" id="subgroup_items">
+
         </div>
     </div>
     <div class="blockitem" data-partof="subgroup" data-num="2" style="width:100%;display:none">
@@ -70,6 +73,9 @@
             </div>
             <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
                 <span style="pointer-events: none">Meeting Management</span>
+            </div>
+            <div data-partof="attendance" data-num="3" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+                <span style="pointer-events: none">Confirm Attendance</span>
             </div>
         </div>
         <div data-partof="attendance" data-num="1" class="blockitem" style="display:none">
@@ -125,7 +131,22 @@
                 </div>
             </div>
         </div>
-        
+        <div data-partof="attendance" data-num="3" class="blockitem" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="width:80%">
+                    <span class="text">Flagged Attendance Reports</span>
+                    <div id="subgroup_manage_flaggedAttendance" style="width:100%;margin:20px">
+                        
+                    </div>
+    
+                    <span class="text">Confirm User Attendance</span>
+                    <div id="subgroup_manage_confirmAttendance" style="width:100%;margin:20px">
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
         
         
     </div>
@@ -173,10 +194,110 @@
 
                 document.getElementById("contentToShow").style.opacity = "1";
                 reloadUsers();
+                reloadSubgroupItems();
             }
         }
     })
     var users = [];
+
+    function reloadSubgroupItems(){
+        $.ajax({
+            url: "/group/items",
+            type: "GET",
+            headers: {
+                "subgroup": subgroup.tag
+            },
+            success: function(data){
+                data = JSON.parse(data);
+                
+                if(data["successful"]){
+                    document.getElementById('subgroup_items').innerHTML = "";
+                    
+                    data['items'].forEach(i => {
+                        
+                        var color = i["color"] == undefined ? "#4708c4" : i["color"];
+                        document.getElementById('subgroup_items').innerHTML += `
+                        <div class="container c-slightborder item" style="width:70%;padding:20px;margin-bottom:20px">
+                            <div class="bigscreen">
+                                <div style="width:14%;display:inline-block;vertical-align:middle">
+                                    <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:${color};width:4.5vw;height:4.5vw;display:inline-block;min-width:40px;min-height:40px;border-color:${color}">
+                                        <span class="material-symbols-rounded color-w" style="margin-top:24%;font-size:2.2vw">${i["icon"]}</span>
+                                    </div>
+                                    ${
+                                        (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                            `<br/>
+                                            <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
+                                                <span class="color-w" style="font-size:1vw">3 days</span>
+                                            </div>` : ``
+                                    }
+                                    
+                                </div>
+                                <div style="width:84%;display:inline-block;vertical-align:middle">
+                                    <span class="text color-d" style="display:block;font-size:30px;margin:10px">${i["title"]}</span>
+                                    <span class="text color-d" style="display:block;font-weight:500;margin:10px;font-size:16px">${i["contents"]}</span>
+                                    ${
+                                        i["result"]["to"] == "link" ?
+                                            `<div class="container c-border c-hover link" style="padding:10px 50px 10px 50px;margin:10px" data-link="${i["result"]["data"]}">
+                                                Open Link
+                                            </div>` : ``
+                                    }
+                                    
+                                </div>
+                            </div>
+                            <div class="smallscreen">
+                                <div style="display:block;vertical-align:middle">
+                                    <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:${color}width:4.5vw;height:4.5vw;display:inline-block;min-width:40px;min-height:40px;border-color:${color}">
+                                        <span class="material-symbols-rounded color-w" style="width:50%;margin-top:24%;font-size:120%">${i["icon"]}</span>
+                                    </div>
+                                    ${
+                                        (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                            `<br/>
+                                            <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
+                                                <span class="color-w" style="font-size:1vw">3 days</span>
+                                            </div>` : ``
+                                    }
+                                    
+                                </div>
+                                <div style="display:block;vertical-align:middle">
+                                    <span class="text color-d" style="display:block;font-size:30px;margin:10px">${i["title"]}</span>
+                                    <span class="text color-d" style="display:block;font-weight:500;margin:10px;font-size:16px">${i["contents"]}</span>
+                                    ${
+                                        i["result"]["to"] == "link" ?
+                                            `<div class="container c-border c-hover link" style="padding:10px 50px 10px 50px;margin:10px" data-link="${i["result"]["data"]}">
+                                                Open Link
+                                            </div>` : ``
+                                    }
+                                    
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                        
+                        `
+                    })
+                    Array.from(document.getElementsByClassName("bounce")).forEach(e => {
+                        e.addEventListener("click", function() {
+                            if(!e.classList.contains("bounce-on")){
+                                e.classList.add("bounce-on");
+                                setTimeout(function() {
+                                    e.classList.remove("bounce-on");
+                                }, 600);
+                            }
+                            
+                        });
+                    });
+    
+                    Array.from(document.getElementsByClassName("link")).forEach(e => {
+                        e.addEventListener("click", function(evt) {
+                            window.open(evt.srcElement.dataset.link, '_blank');
+                        });
+                    });
+                }
+            }
+        })
+    }
+
     function reloadUsers(){
         $.ajax({
             url: '/group/users',
@@ -221,7 +342,7 @@
                         <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px;background-color:${me.id == m.id ? "#ceb5ff" : "white"};border:${me.id == m.id ? "2px solid #a77aff" : "none"}">
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:40%;text-align:left;font-weight:500"><strong>${m.username}</strong> (${m.fullname})</span>
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500">${m.access.groups.length} Subgroups</span>
-                            ${admin ? `<div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px;margin-right:10px">
+                            ${admin ? `<div class="container c-border-red c-hover-red color-r removeuser" style="padding:5px;margin:1px;margin-right:10px" data-id="u_${m.id}">
                                 <span class="material-symbols-rounded" style="font-size:16px">delete</span>
                             </div>` : `<span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px">person</span>`}
                         </div>`;
@@ -229,11 +350,91 @@
                     document.getElementById("subgroup_members").innerHTML = fHTML;
 
                     document.getElementById("subgroup_totalProtons").innerHTML = protons;
+
+                    Array.from(document.getElementsByClassName("removeuser")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            var id = evt.srcElement.dataset.id.split("_")[1];
+
+                            $.ajax({
+                                url: "/group/subgroup/remove",
+                                type: "POST",
+                                data: {
+                                    uid: id,
+                                    group: subgroup.name
+                                },
+                                success: function(data){
+                                    data = JSON.parse(data);
+                                    if(data["successful"]){
+                                        reloadUsers();
+                                    }
+                                }
+                            })
+                        })
+                    })
                 }
                 reloadAttendance();
             }
         })
     }
+
+    function localCalcSuspiciousUsers(){
+        var fHTML = ``;
+        users.forEach(u => {
+            var recentUH = [];
+            var totalM = 0;
+            var totalHM = 0;
+            meetings.forEach(m => {
+                var uLog = u.attendance.find(a => a.event == m._id && (a.status == "ATTEND" || a.status == "EXCUSED"));
+                if(uLog != undefined){
+                    var honest = 0;
+                    if(!uLog.overriddenstatus == "ABSENT"){
+                        honest = 1;
+                        totalHM += 1;
+                    }
+                    totalM += 1;
+                    recentUH.push(honest);
+                }
+
+                if(recentUH.length > 10){
+                    recentUH.shift();
+                }
+            })
+
+
+
+            var localHonesty = recentUH.reduce((a, b) => a + b, 0) / recentUH.length;
+            var totalHonesty = totalHM / totalM;
+
+            meetings.slice(meetings.length-2).forEach(m => {
+                if(localHonesty < 1 && totalHonesty < 0.8){
+                    fHTML += `
+                    
+                    <div class="container c-slighterborder" style="padding:20px;display:inline-block;width:200px;margin:5px">
+                        <span class="text color-d" style="font-size:28px;margin:5px;display:block">${u.username}</span>
+                        <div>
+                            <span style="pointer-events: none" style="font-size:16px;display:block">@ ${m.datetime}</span>
+                        </div>
+                        <div>
+                            <span style="pointer-events: none" style="font-size:16px;display:block"><strong>${Math.round(localHonesty*100)}%</strong> recent honesty</span>
+                        </div>
+                        
+                        <div>
+                            <div class="container c-border c-hover color" style="padding:5px;margin:1px">
+                                <span class="material-symbols-rounded" style="font-size:16px">check</span>
+                            </div>
+                            <div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px">
+                                <span class="material-symbols-rounded" style="font-size:16px">report</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    `;
+                }
+            })
+        })
+    }
+
     var meetings = [];
     function reloadAttendance(){
         $.ajax({
@@ -243,6 +444,9 @@
                 data = JSON.parse(data);
                 if(data['successful']){
                     meetings = data['meetings'].filter(m => m.subgroups.includes(subgroup.name));
+                    var ourRate = meetings.length / data["meetings"].length;
+
+                    document.getElementById("subgroup_manage_attendRate").innerHTML = `${Math.round(ourRate*100)}%`;
                     var now = new Date();
                     var prevMeetings = meetings.filter(m => new Date(m.datetime) < now);
                     var futureMeetings = meetings.filter(m => new Date(m.datetime) > now);
@@ -302,9 +506,13 @@
 
                         users.forEach(u => {
                             totalMeetings += 1;
-                            if(u.attendance.find(a => a.event == m._id) != undefined && u.attendance.find(a => a.event == m._id).status == "ATTEND"){
+                            
+                            if(u.attendance.find(a => a.event == m._id) != undefined && (u.attendance.find(a => a.event == m._id).status == "ATTEND" || u.attendance.find(a => a.event == m._id).overriddenstatus == "ATTEND")){
                                 meetings += 1;
                                 hours += m.length;
+                            }
+                            if(u.attendance.find(a => a.event == m._id) != undefined && u.attendance.find(a => a.event == m._id).overriddenstatus == "EXCUSED"){
+                                totalMeetings -= 1;
                             }
                         })
 
@@ -313,7 +521,7 @@
                         <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px">
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500"><strong>${day}</strong> @ ${time}</span>
                             <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500;text-overflow:ellipsis">${rate}% Attendance Rate</span>
-                            <span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px;opacity:${rate >= 75 ? 1 : 0.5}">${rate >= 75 ? "workplace_premium" : "thumb_up"}</span>
+                            <span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px;opacity:${rate >= 75 ? 1 : 0.5}">${rate >= 75 ? "workspace_premium" : "thumb_up"}</span>
                            
                         </div>
                         `;
@@ -326,6 +534,7 @@
                     document.getElementById("subgroup_rate").innerHTML = (gtotalmeetings > 0 ? Math.round((gmeetings / gtotalmeetings)*100) : 0) + "%";
                     document.getElementById("subgroup_past").innerHTML = fHTML;
                 }
+                localCalcSuspiciousUsers();
                 reloadAllBaseEvents();
             }
         })

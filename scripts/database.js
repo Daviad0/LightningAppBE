@@ -78,7 +78,9 @@ const models = {
             start: Date,
             end: Date
         },
-        show: Boolean
+        show: Boolean,
+        subgroups: [],
+        color: String
     })),
     'AttendanceItem' : mongoose.model('AttendanceItem', new mongoose.Schema({
         group: String,
@@ -87,7 +89,11 @@ const models = {
         datetime: Date,
         length: Number,
         code: String,
-        subgroups: [String]
+        subgroups: [String],
+        requests: [{
+            requester: String,
+            datetime: Date
+        }]
     })),
     'QuickLink' : mongoose.model('QuickLink', new mongoose.Schema({
         group: String,

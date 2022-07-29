@@ -266,6 +266,15 @@
                     }
                     data += JSON.stringify(dataObj);
                     break;
+                case "edit_attendance":
+                    var newOverride = document.getElementById("overlay_override").dataset.value;
+                    var dataObj = {
+                        uid: document.getElementById("overlay_override").dataset.uid,
+                        meeting: document.getElementById("overlay_override").dataset.meeting,
+                        override: newOverride
+                    }
+                    data += JSON.stringify(dataObj);
+                    break;
                 case "create_meeting":
                     var attending = [];
                     Array.from(document.getElementsByClassName("subgroup")).forEach(e => {
@@ -841,7 +850,29 @@
                                     var data = JSON.parse(evt.srcElement.dataset.data);
                                     document.getElementById('overlay').style.display = "";
 
+                                    
+
+                                    
+                                    
+
                                     var userReport = data.user.attendance.find(a => a.event == data.meeting._id);
+                                    var status = userReport == undefined ? "ABSENT" : userReport.status;
+
+                                    if(status == "ABSENT"){
+                                        var done = false;
+                                        for(var i = 0; i < data.meeting.subgroups.length; i++){
+                                            for(var j = 0; j < data.user.access.groups.length; j++){
+                                                
+                                                if(data.meeting.subgroups[i] == data.user.access.groups[j]){
+                                                    done = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if(!done){
+                                            status = "EXCUSED";
+                                        }
+                                    }
                                     var date = new Date(data.meeting.datetime);
                                     date = date.toLocaleDateString("en-US", {month: "short", day: "numeric", year: "numeric"});
                                     document.getElementById('overlayBox').innerHTML = `
@@ -849,11 +880,11 @@
                                         <span class="text color-m" style="font-size:14px;margin:10px;display:block">Meeting on ${date}</span>
 
                                         <div style="margin:20px">
-                                            <span style="pointer-events: none;display:block"><div style="padding:5px 8px;background-color:red;border-radius:4px;display:inline-block;color:white">ABSENT</div> originally reported by user</span>
+                                            <span style="pointer-events: none;display:block"><div style="padding:5px 8px;background-color:${status == "ATTEND" ? "#23cc39" : (status == "ABSENT" ? "#ff413b": "gray")};border-radius:4px;display:inline-block;color:white">${status}</div> originally reported by user</span>
                                         </div>
                                         <div style="display:flex;justify-content:center;align-items:center;width:100%;margin:20px 0px">
                                             <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">They actually (were) </span>
-                                            <div class="container c-border dropdown" data-partof="dropdown_attend" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-value="dropdown_attend">
+                                            <div id="overlay_override" class="container c-border dropdown" data-partof="dropdown_attend" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-uid="${data.user.id}" data-meeting="${data.meeting._id}" data-value="${userReport == undefined ? "" : userReport.overriddenstatus}">
                                                 <span class="dropdown_text" style="float:left;margin-right:20px;opacity:0.5;margin-left:5px;pointer-events:none" data-partof="dropdown_attend">Override Option</span>
                                                 <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="dropdown_attend">expand_more</span>
                                                 <option class="dropdown_option" style="display:none" data-partof="dropdown_attend" value="ATTEND">Attended</option>

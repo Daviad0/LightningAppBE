@@ -16,6 +16,14 @@
     </div>
    
     <br/>
+    <div class="blockitem" data-partof="usermanage" data-num="-1" style="width:100%">
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">
+            <img src="/images/sparkclub.png" style="height:60vh;margin:0px 40px;transition:all 1s ease-in-out;opacity:.4" class="slowlogo"/>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:5px 10px;background-color:rgba(0,0,0,0.6);border-radius:8px;opacity:0.6">
+            <span class="text color-w">Please Select an Option...</span>
+        </div>
+    </div>
     <div class="blockitem" data-partof="usermanage" data-num="1" style="width:100%;display:none">
         <div style="display:inline-flex;justify-content:space-between;width:88%">
             <div id="filter" style="width:24%">
@@ -429,6 +437,8 @@
                             var group = subgroups[num];
                             currentSubgroup = group;
                             subgroupAction = "edit";
+                            document.getElementById("subgroup_groupTag").disabled = true;
+                            document.getElementById("subgroup_groupTag").style.opacity = 0.6;
                             document.getElementById("subgroup_delete").style.display = "";
                             document.getElementById("subgroup_joinable").dataset.checked = group.joinable ? "YES" : "NO";
                             document.getElementById("subgroup_joinable").style.backgroundColor = group.joinable ? "#4708c4" : "#ffffff";
@@ -1591,6 +1601,8 @@
     });
     document.getElementById("subgroup_add").addEventListener("click", function(evt){
         subgroupAction = "create";
+        document.getElementById("subgroup_groupTag").disabled = false;
+        document.getElementById("subgroup_groupTag").style.opacity = 1;
         document.getElementById("subgroup_delete").style.display = "";
         document.getElementById("subgroup_joinable").dataset.checked = "NO";
         document.getElementById("subgroup_joinable").style.backgroundColor = "#ffffff";

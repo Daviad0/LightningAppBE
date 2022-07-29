@@ -526,7 +526,7 @@ app.post("/group/subgroup", async function(req, res){
                 var item = group.subgroups.find(r => r.name == req.body.oldName);
                 var index = group.subgroups.indexOf(item);
                 item.name = req.body.name;
-                item.tag = req.body.tag;
+                // tag editing is DISABLED
                 item.features = req.body.features;
                 item.joinable = req.body.joinable;
                 item.managers = req.body.managers;
@@ -602,6 +602,8 @@ app.post("/group/link", async function(req, res){
 app.get("/group/items", function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         var group = "";
+        var subgroup = (req.headers["subgroup"] != undefined && req.headers["subgroup"] != "") ? req.headers["subgroup"] : "*";
+
         if(status){
             group = user.group;
         }
@@ -611,12 +613,12 @@ app.get("/group/items", function(req, res){
             
         }
         var groupItem = (await m.getDocs("Group", {uniqueId: group.length == undefined ? group["uniqueId"] : group}))[0];
-        
+        console.log(subgroup)
         
         if(group != ""){
-            m.getDocs('ModuleItem', {group: group}).then(function(docs){
-                res.send(JSON.stringify({successful:true, items: docs, group: groupItem}));
-            });
+            var docs = (await m.getDocs("ModuleItem", {group: group})).filter(d => (d.subgroups.includes(subgroup.toUpperCase()) || (d.subgroups.length == 0 && subgroup == "H") || subgroup == "*") && d.show);
+
+            res.send(JSON.stringify({successful:true, items: docs, group: groupItem}));
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
         }
@@ -879,6 +881,127 @@ app.post("/group/user", async function(req, res){
 
 
 
+
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
+app.post("/group/attendance/verify", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var uid = req.body.uid;
+            var meetingId = req.body.meetingId;
+            var verified = req.body.verified;
+
+            var thatUser = (await m.getDocs('Account', {_id: uid}))[0];
+            
+            var index = thatUser.attendance.indexOf(thatUser.attendance.find(a => a.event == meetingId));
+
+            if(index != -1){
+                thatUser.attendance[index].overriddenstatus = verified ? "ATTEND" : "ABSENT";
+            }
+
+            await m.updateDoc('Account', {_id: uid}, {attendance: thatUser.attendance});
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
+app.post("/group/attendance/override", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var uid = req.body.uid;
+            var meetingId = req.body.meetingId;
+            var override = req.body.override;
+
+            var thatUser = (await m.getDocs('Account', {_id: uid}))[0];
+            
+            
+            var index = thatUser.attendance.indexOf(thatUser.attendance.find(a => a.event == meetingId));
+
+            if(index != -1){
+                thatUser.attendance[index].overriddenstatus = override;
+            }else{
+                thatUser.attendance.push({event: meetingId, overriddenstatus: override, status: "ABSENT", datetime: new Date()});
+            }
+
+
+            await m.updateDoc('Account', {_id: uid}, {attendance: thatUser.attendance});
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
+app.post("/group/subgroup/schedule", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var meetingId = req.body.meetingId;
+            var group = req.body.group;
+            var action = req.body.action;
+            var thatMeeting = (await m.getDocs('AttendanceItem', {_id: meetingId}))[0];
+
+            if(action == "add"){
+                if(!thatMeeting.subgroups.includes(group)){
+                    thatMeeting.subgroups.push(group);
+                    await m.updateDoc('AttendanceItem', {_id: uid}, {subgroups: thatMeeting.subgroups});
+                }
+            }else if(action == "remove"){
+                if(thatMeeting.subgroups.includes(group)){
+                    thatMeeting.subgroups = thatMeeting.subgroups.filter(g => g != group);
+                    await m.updateDoc('AttendanceItem', {_id: uid}, {subgroups: thatMeeting.subgroups});
+                }
+            }
+            
+
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
+app.post("/group/subgroup/add", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var uid = req.body.uid;
+            var group = req.body.group;
+            var thatUser = (await m.getDocs('Account', {_id: uid}))[0];
+
+            if(!thatUser.access.groups.includes(group)){
+                thatUser.access.groups.push(group);
+                await m.updateDoc('Account', {_id: uid}, {access: thatUser.access});
+            }
+
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
+app.post("/group/subgroup/remove", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var uid = req.body.uid;
+            var group = req.body.group;
+            var thatUser = (await m.getDocs('Account', {_id: uid}))[0];
+
+            if(thatUser.access.groups.includes(group)){
+                thatUser.access.groups = thatUser.access.groups.filter(g => g != group);
+                await m.updateDoc('Account', {_id: uid}, {access: thatUser.access});
+            }
 
             res.send(JSON.stringify({successful: true}));
         }else{

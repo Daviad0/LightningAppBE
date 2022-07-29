@@ -13,6 +13,14 @@
         </div>
     </div>
 
+    <div class="blockitem" data-partof="report" data-num="-1" style="width:100%">
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">
+            <img src="/images/sparkclub.png" style="height:60vh;margin:0px 40px;transition:all 1s ease-in-out;opacity:.4" class="slowlogo"/>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:5px 10px;background-color:rgba(0,0,0,0.6);border-radius:8px;opacity:0.6">
+            <span class="text color-w">Please Select an Option...</span>
+        </div>
+    </div>
     <div class="blockitem" data-partof="report" data-num="1" style="width:100%;display:none">
         <div>
             <div data-partof="attendance" data-num="1" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
@@ -276,6 +284,12 @@
                             
                             var present = u.attendance == undefined ? false : u.attendance.find(a => a.event == m._id && a.status == "ATTEND") != undefined;
                             var required = false;
+                            var override = u.attendance.find(a => a.event == m._id);
+                            if(override != undefined){
+                                override = override.overriddenstatus;
+                            }else{
+                                override = "";
+                            }
 
                             for(var sg = 0; sg < m.subgroups.length; sg+=1){
                                 for(var ug = 0; ug < u.access.groups.length; ug += 1){
@@ -290,6 +304,30 @@
                                 }
                             }
 
+                            
+
+                            console.log(override)
+
+                            if(override == "ATTEND"){
+                                if(present && required){
+                                    override = "";
+                                }
+                                present = true;
+                                required = true;
+                            } else if(override == "ABSENT"){
+                                if(!present && required){
+                                    override = "";
+                                }
+                                present = false;
+                                required = true;
+                            } else if(override == "EXCUSED"){
+                                if(!present && !required){
+                                    override = "";
+                                }
+                                present = false;
+                                required = false;
+                            }
+
                             if(required){
                                 totalHours += m.length;
                                 totalMeetings += 1;
@@ -299,10 +337,13 @@
                                 meetings += 1;
                             }
 
+                            
+
+
                             fhtml += `
 
                                 <div class="editattendance" style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center;cursor:pointer;background-color: ${present ? "#23cc39" : (required ? "#ff413b": "white")}" data-uid="${u.id}" data-mid="${m._id}">
-                                    <span style="pointer-events: none;color:${present || required ? "white" : "lightgray"}">${present ? m.length : (required ? "0" : "/")}</span>
+                                    <span style="pointer-events: none;color:${present || required ? "white" : "lightgray"}">${present ? m.length : (required ? "0" : "/")}${override != "" ? "*" : ""}</span>
                                 </div>
                             
                             `;
@@ -357,6 +398,30 @@
             }
         })
     }
+
+    document.getElementById("editAttendance").addEventListener('click', function(evt){
+        
+
+        var contents = JSON.parse(evt.srcElement.innerHTML);
+        console.log(contents);
+        $.ajax({
+            url: "/group/attendance/override",
+            type: "POST",
+            data: {
+                meetingId: contents.meeting,
+                uid: contents.uid,
+                override: contents.override
+            },
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    reloadAttendance();
+                }
+            }
+        })
+
+        
+    })
 
     reloadAllBaseEvents();
     reloadAttendance();

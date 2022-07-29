@@ -190,6 +190,26 @@ body{
     animation-iteration-count: 1;
 }
 
+.slowlogo{
+    animation-name: slowlogo;
+    animation-duration: 8s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+
+@keyframes slowlogo {
+    0% {
+        transform: rotate(-20deg);
+    }
+    50% {
+        transform: rotate(20deg);
+    }
+    100% {
+        transform: rotate(-20deg);
+    }
+    
+}
+
 .transition{
     transition: 0.4s ease all;
 }

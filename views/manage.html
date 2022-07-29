@@ -20,6 +20,14 @@
 
     <br/>
     <br/>
+    <div class="blockitem" data-partof="manage" data-num="-1" style="width:100%">
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">
+            <img src="/images/sparkclub.png" style="height:60vh;margin:0px 40px;transition:all 1s ease-in-out;opacity:.4" class="slowlogo"/>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:5px 10px;background-color:rgba(0,0,0,0.6);border-radius:8px;opacity:0.6">
+            <span class="text color-w">Please Select an Option...</span>
+        </div>
+    </div>
     <div class="blockitem" data-partof="manage" data-num="1" id="items" style="width:100%;display:none">
         
     </div>
@@ -645,6 +653,26 @@
                                         
                                         <span class="material-symbols-rounded iconshow color-m" data-partof="${id}" style="font-size:28px;vertical-align:middle">${i["icon"]}</span>
                                         <input type="text" class="text color-d input iconedit" data-partof="${id}" style="display:inline-block;font-size:20px;margin:10px;width:50%;padding:14px;vertical-align:middle" value="${i["icon"]}" placeholder="Icon">
+
+                                        <div style="display:flex;width:100%;justify-content:center;align-items:center">
+
+                                            <span class="text color-d" style="display:inline-block;font-size:16px;margin:10px;vertical-align:middle">Subgroups</span>
+                                            <div style="border: 2px solid #4708c4;padding:20px;margin:10px;border-radius:20px;max-height:60px;overflow-y:scroll;width:20%">
+                                                <div style="display:inline-block;vertical-align:middle">
+        
+                                                </div>
+                                                <div class="container c-border c-hover addmembership" style="padding:5px;margin:3px;vertical-align:middle;pointer-events:all">
+                                                    <span class="material-symbols-rounded" style="font-size:14px;pointer-events:none">add</span>
+                                                    
+                                                    
+                                                </div>
+                                                
+
+                                                
+                                                
+                                            </div>
+
+                                        </div>
                                     </div>
                                     <div class="blockitem" data-partof="${id}" data-num="2" style="display:none">
                                         
