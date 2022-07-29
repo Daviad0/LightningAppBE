@@ -28,8 +28,14 @@
             <span class="text color-w">Please Select an Option...</span>
         </div>
     </div>
-    <div class="blockitem" data-partof="manage" data-num="1" id="items" style="width:100%;display:none">
-        
+    <div class="blockitem" data-partof="manage" data-num="1" style="width:100%;display:none">
+        <span class="text">All Group Module Items</span>
+        <div class="container c-border c-hover" style="padding:5px;margin:5px" id="create_item">
+            <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
+        </div>
+        <div id="items" style="margin:20px">
+
+        </div>
     </div>
     <div class="blockitem" data-partof="manage" data-num="2" style="width:100%;display:none">
         <div style="margin:10px">
@@ -101,7 +107,11 @@
         </div>
     </div>
     <div class="blockitem" data-partof="manage" data-num="3" style="width:100%;display:none">
-        <div id="linkItems"></div>
+        <span class="text">All QuickLinks</span>
+        <div class="container c-border c-hover" style="padding:5px;margin:5px" id="create_quicklink">
+            <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
+        </div>
+        <div id="linkItems" style="margin:20px"></div>
     </div>
     <div class="blockitem" data-partof="manage" data-num="4" style="width:100%;display:none">
         
@@ -230,30 +240,52 @@
         });
     });
 
+    document.getElementById("create_item").addEventListener("click", function(evt){
+        item = {
+            "title": "",
+            "contents": "",
+            "show": false,
+            "icon": "favorite",
+            "result": {
+                "to": "static",
+                "data": ""
+            },
+            "subgroups": ["*"],
+            "action": "create"
+        };
+        $.ajax({
+            url: "/group/item",
+            type: "POST",
+            data: item,
+            headers: {authorization: authId},
+            success: function(data) {
+                getMenuItems();
+            }
+        })
+    });
+
+    document.getElementById("create_quicklink").addEventListener("click", function(evt){
+        item = {
+            name: "",
+            to: "/",
+            restricted: true,
+            from: "/",
+            "action": "create"
+        };
+        $.ajax({
+            url: "/group/link",
+            type: "POST",
+            data: item,
+            headers: {authorization: authId},
+            success: function(data) {
+                getLinkItems();
+            }
+        })
+    });
+
 
     function reloadAllBaseEvents(){
-        document.getElementById("create_item").addEventListener("click", function(evt){
-            item = {
-                "title": "",
-                "contents": "",
-                "show": false,
-                "icon": "favorite",
-                "result": {
-                    "to": "static",
-                    "data": ""
-                },
-                "action": "create"
-            };
-            $.ajax({
-                url: "/group/item",
-                type: "POST",
-                data: item,
-                headers: {authorization: authId},
-                success: function(data) {
-                    getMenuItems();
-                }
-            })
-        });
+        
 
         Array.from(document.getElementsByClassName("delete")).forEach(e => {
             e.addEventListener("click", function(evt){
@@ -356,29 +388,6 @@
             });
         });
 
-        Array.from(document.getElementsByClassName("generateqr")).forEach(e => {
-            e.addEventListener("click", function(evt){
-                //
-                var partof = evt.srcElement.dataset.partof;
-                var host = window.location.host;
-                    QrCreator.render({
-                        text: host + "/ql/" + document.querySelector('.form_from[data-partof="' + partof + '"]').value,
-                        radius: 0.4, // 0.0 to 0.5
-                        ecLevel: 'H', // L, M, Q, H
-                        fill: '#ffffff', // foreground color
-                        background: null, // color or null for transparent
-                        size: 200 // in pixels
-                      }, document.querySelector(`.qrcode[data-partof="${partof}"]`));
-                
-            });
-        });
-        Array.from(document.getElementsByClassName("hideqr")).forEach(e => {
-            e.addEventListener("click", function(evt){
-                var partof = evt.srcElement.dataset.partof;
-                document.querySelector(`.qrcode[data-partof="${partof}"]`).innerHTML = "";
-            });
-        });
-
         Array.from(document.getElementsByClassName("checkbox")).forEach(e => {
             e.addEventListener("click", function(evt){
                 if(evt.srcElement.dataset.checked == "NO"){
@@ -470,6 +479,7 @@
                 data = JSON.parse(data);
                 console.log(data);
                 if(data["successful"]){
+                    var host = window.location.host;
                     document.getElementById("linkItems").innerHTML = "";
                     currentLinks = data["items"];
                     var id = 0;
@@ -528,9 +538,12 @@
                                 </div>
                             </div>
                             <div class="blockitem" data-partof="${id}l" data-num="2" style="display:none">
-                                <div class="qrcode" data-partof="${id}l" style="border:6px solid #4708c4;background-color:#4708c4;padding:60px;border-radius:180px;display:inline-block;overflow:hidden;margin:20px">
-
-                                </div>
+                                
+                                    <div style='border:6px solid #4708c4;padding:20px;background-color:white;border-radius:16px;display:inline-block'>
+                                        <div class="qrcode" data-partof="${id}l" style="margin-bottom:16px"></div>
+                                        <span class="text color-w" style='font-size:12px;font-weight:500;text-overflow:ellipsis;background-color:#2b047a;padding:4px 0px;width:100%;border-radius:4 px;display:block'><i>${i["name"]}</i></span>
+                                    </div>
+                                    
                                 <br/>
                                 <div class="container c-border-gray blockcontrol color-g c-hover-gray hideqr" data-partof="${id}l" data-num="0" style="padding:10px 50px 10px 50px;margin:10px" data-partof="${id}">
                                     Done
@@ -538,8 +551,45 @@
                             </div>
                         </div>
                         `;
+                        var lid = id;
+                        setTimeout(function(){
+                            QrCreator.render({
+                                text: host + "/ql/" + i["to"],
+                                radius: 0.2, // 0.0 to 0.5
+                                ecLevel: 'H', // L, M, Q, H
+                                fill: '#2b047a', // foreground color
+                                background: null, // color or null for transparent
+                                size: 160 // in pixels
+                              }, document.querySelector(`.qrcode[data-partof="${lid}l"]`));
+                        }, 1000)
+                        
                         id+=1;
                     });
+
+                    
+                    
+
+                    Array.from(document.getElementsByClassName("deletel")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            var partof = evt.srcElement.dataset.partof.substring(0, evt.srcElement.dataset.partof.length - 1);
+                            var item =  currentLinks[parseInt(partof)];
+
+                            var deletedata = {
+                                _id: item._id,
+                                action: "delete"
+                            }
+                            $.ajax({
+                                url: "/group/link",
+                                type: "POST",
+                                data: deletedata,
+                                headers: {authorization: authId},
+                                success: function(data) {
+                                    getLinkItems();
+                                }
+                            })
+                        })
+                    })
+
                     Array.from(document.getElementsByClassName("savel")).forEach(e => {
                         e.addEventListener("click", function(evt){
                             var partof = evt.srcElement.dataset.partof.substring(0, evt.srcElement.dataset.partof.length - 1);
@@ -549,7 +599,6 @@
                             item["from"] = document.querySelector(".form_from[data-partof='" + partof + "l']").value;
                             item["restricted"] = document.querySelector(".checkbox[data-partof='" + partof + "l']").dataset.checked == "YES" ? true : false;
                             item["action"] = "edit";
-                            console.log(item);
                             $.ajax({
                                 url: "/group/link",
                                 type: "POST",
@@ -560,7 +609,6 @@
                                 }
                             })
             
-                            console.log(item);
             
                         });
                     });
@@ -577,9 +625,7 @@
             success: function(data){
                 data = JSON.parse(data);
                 if(data["successful"]){
-                    document.getElementById("items").innerHTML = `<div class="container c-border c-hover" style="padding:10px 50px 10px 50px;margin-bottom:20px;background-color:#4708c4;" id="create_item">
-                        <span style="pointer-events: none;color:white">Create New Item</span>
-                    </div><br/>`;
+                    document.getElementById("items").innerHTML = ``;
                     var id = 0;
                     currentItems = data["items"];
 

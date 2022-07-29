@@ -587,6 +587,7 @@ app.post("/group/link", async function(req, res){
                 await m.createDoc("QuickLink", {
                     name: req.body.name,
                     to: req.body.to,
+                    from: req.body.from,
                     restricted: req.body.restricted,
                     group: user.group
                 });
@@ -616,7 +617,7 @@ app.get("/group/items", function(req, res){
         console.log(subgroup)
         
         if(group != ""){
-            var docs = (await m.getDocs("ModuleItem", {group: group})).filter(d => (d.subgroups.includes(subgroup.toUpperCase()) || (d.subgroups.length == 0 && subgroup == "H") || subgroup == "*") && d.show);
+            var docs = (await m.getDocs("ModuleItem", {group: group})).filter(d => (d.subgroups.includes(subgroup.toUpperCase()) || (d.subgroups.length == 0 && subgroup == "H") || subgroup == "*") && (d.show || subgroup == "*"));
 
             res.send(JSON.stringify({successful:true, items: docs, group: groupItem}));
         }else{
@@ -719,7 +720,8 @@ app.post("/group/item", async function(req, res){
                     icon: req.body.icon,
                     result: req.body.result,
                     show: req.body.show,
-                    group: user.group
+                    group: user.group,
+                    subgroups: req.body.subgroups
                 })
             }else if(req.body.action == "delete"){
                 console.log("deleting");
@@ -1162,9 +1164,9 @@ app.use(async function(req, res, next) {
         quickLinks.forEach(e => {
             console.log(e.from);
             console.log(req.originalUrl)
-            if(req.originalUrl == "/ql/" + e.from){
+            if(req.originalUrl == "/ql/" + e.from && !sent){
                 console.log("QUICK LINK");
-                
+                sent = true;
 
                 isAuthenticated(req, "cookie",[], async function(status, user){
                     console.log(user)
@@ -1174,8 +1176,25 @@ app.use(async function(req, res, next) {
                         }else if(!e.visitors.includes(user.id)){
                             e.visitors.push(user.id);
                         }
-                        res.redirect(e.to);
-                        sent = true;
+
+
+                        if(e.to.includes("http:") || e.to.includes("https:") || e.to.includes("www.") || e.to.includes("//") || e.to.includes(".")){
+                            
+                            if(e.to.includes("https://")){
+                                e.to = e.to.replace("https://", "");
+                            }else if(e.to.includes("http://")){
+                                e.to = e.to.replace("http://", "");
+                            }
+                        
+                            res.redirect("//"+e.to);
+                        }else{
+                            var newPath = req.originalUrl.split('ql')[0]
+                            res.redirect(newPath + e.to);
+                        }
+
+                        
+                        
+                        
                         
                         await m.updateDoc('QuickLink', {_id: e._id}, {visitors: e.visitors});
                     }else{
@@ -1187,7 +1206,6 @@ app.use(async function(req, res, next) {
                             res.cookie("group", e.group);
                             res.sendFile(__dirname + "/views/tolink.html");
                             
-                            sent = true;
                         }
                     }
                     console.log(e.visitors);
@@ -1214,6 +1232,6 @@ app.use(async function(req, res, next) {
 });
 
 // start the server in the port 3000 !
-app.listen(8080, function () {
-    console.log('Example app listening on port 3000.');
+app.listen(process.env.PORT, function () {
+    console.log('Example app listening on port port.');
 });
