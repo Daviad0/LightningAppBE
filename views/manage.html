@@ -480,6 +480,7 @@
                 console.log(data);
                 if(data["successful"]){
                     var host = window.location.host;
+                    console.log(host)
                     document.getElementById("linkItems").innerHTML = "";
                     currentLinks = data["items"];
                     var id = 0;
@@ -541,7 +542,7 @@
                                 
                                     <div style='border:6px solid #4708c4;padding:20px;background-color:white;border-radius:16px;display:inline-block'>
                                         <div class="qrcode" data-partof="${id}l" style="margin-bottom:16px"></div>
-                                        <span class="text color-w" style='font-size:12px;font-weight:500;text-overflow:ellipsis;background-color:#2b047a;padding:4px 0px;width:100%;border-radius:4 px;display:block'><i>${i["name"]}</i></span>
+                                        <span class="text color-w" style='font-size:12px;font-weight:500;text-overflow:ellipsis;background-color:#2b047a;padding:4px 0px;width:100%;border-radius:4px;display:block'><i>${i["name"]}</i></span>
                                     </div>
                                     
                                 <br/>
@@ -554,7 +555,7 @@
                         var lid = id;
                         setTimeout(function(){
                             QrCreator.render({
-                                text: host + "/ql/" + i["to"],
+                                text: host + "/ql/" + i["from"],
                                 radius: 0.2, // 0.0 to 0.5
                                 ecLevel: 'H', // L, M, Q, H
                                 fill: '#2b047a', // foreground color
