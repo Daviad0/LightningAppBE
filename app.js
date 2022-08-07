@@ -487,12 +487,18 @@ app.get("/group/this", async function(req, res){
 app.get("/group/subgroup", (req, res) => {
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
-            var subgroupid = req.query.tag.toUpperCase();
+            var subgroupid = req.query.name != undefined ? req.query.name : req.query.tag.toUpperCase();
+            var name = req.query.name != undefined;
             var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
             console.log(subgroupid);
 
-
-            var subgroup = group.subgroups.find(s => s.tag == subgroupid);
+            var subgroup = undefined;
+            if(name){
+                subgroup = group.subgroups.find(s => s.name == subgroupid);
+            }else{
+                subgroup = group.subgroups.find(s => s.tag == subgroupid);
+            }
+            
 
             var admin = subgroup.managers.filter(m => m == user.id) > 0 || user.permissions.includes("*");
 
