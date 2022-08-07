@@ -749,7 +749,7 @@ function getTodaysEvent(docs){
             if(closestToNow == null){
                 closestToNow = d;
             }else{
-                if(d.datetime.getTime() < closestToNow.datetime.getTime()){
+                if(Math.abs(d.datetime.getTime()-today.getTime()) < Math.abs(closestToNow.datetime.getTime() - today.getTime())){
                     closestToNow = d;
                 }
             }
@@ -788,6 +788,8 @@ app.get("/group/today", async function(req, res){
                     datetime: closestToNow.datetime,
                     title: closestToNow.title,
                     description: closestToNow.description,
+                    length: closestToNow.length,
+                    subgroups: closestToNow.subgroups,
                     group: closestToNow.group,
                     logged : (user.attendance == undefined || user.attendance.filter(a => a.event == closestToNow._id).length == 0) ? false : true
 
