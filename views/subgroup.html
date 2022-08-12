@@ -534,7 +534,7 @@
                         gtotalmeetings += totalMeetings;
                     })
 
-                    document.getElementsByClassName("changeAttendance").forEach(e =>{
+                    Array.from(document.getElementsByClassName("changeAttendance")).forEach(e =>{
                         e.addEventListener('click', function(evt){
                             setTimeout(function(){
                                 var id = evt.srcElement.dataset.partof.split("_")[1];

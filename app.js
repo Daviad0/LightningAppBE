@@ -963,12 +963,12 @@ app.post("/group/subgroup/schedule", async function(req, res){
             if(action == "add"){
                 if(!thatMeeting.subgroups.includes(group)){
                     thatMeeting.subgroups.push(group);
-                    await m.updateDoc('AttendanceItem', {_id: uid}, {subgroups: thatMeeting.subgroups});
+                    await m.updateDoc('AttendanceItem', {_id: meetingId}, {subgroups: thatMeeting.subgroups});
                 }
             }else if(action == "remove"){
                 if(thatMeeting.subgroups.includes(group)){
                     thatMeeting.subgroups = thatMeeting.subgroups.filter(g => g != group);
-                    await m.updateDoc('AttendanceItem', {_id: uid}, {subgroups: thatMeeting.subgroups});
+                    await m.updateDoc('AttendanceItem', {_id: meetingId}, {subgroups: thatMeeting.subgroups});
                 }
             }
             
