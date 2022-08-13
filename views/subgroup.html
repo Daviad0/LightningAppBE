@@ -150,6 +150,7 @@
         
         
     </div>
+    <div id="overlayRes_add_member" style="display: none;"></div>
 </div>
 <script>
     var subgroup = undefined;
@@ -297,6 +298,36 @@
             }
         })
     }
+
+    document.getElementById("subgroup_manage_memberAdd").addEventListener("click", function(){
+        document.getElementById("externalClickAction").dataset.action = "overlay";
+        document.getElementById("externalClickAction").dataset.overlay = "add_member";
+        document.getElementById("externalClickAction").click();
+    })
+
+    document.getElementById("overlayRes_add_member").addEventListener("click", function(evt){
+        var data = evt.srcElement.innerHTML.split(";");
+        console.log(data)
+        var name = data[0].split("=")[1];
+        var id = data[1].split("=")[1];
+
+        console.log("Adding Member: " + name)
+
+        
+        $.ajax({
+            url: "/group/subgroup/add",
+            type: "POST",
+            data: {
+                "uid": id,
+                "group": subgroup.name
+            },
+            success: function(data){
+                console.log("Added Member: " + name)
+                reloadUsers();
+            }
+        })
+    });
+
 
     function reloadUsers(){
         $.ajax({
@@ -451,7 +482,7 @@
                     var now = new Date();
                     var prevMeetings = meetings.filter(m => new Date(m.datetime) < now);
                     var futureMeetings = meetings.filter(m => new Date(m.datetime) > now);
-                     var futureAdminMeetings = meetings.filter(m => new Date(m.datetime) > now && m.admin);
+                     var futureAdminMeetings = allMeetings.filter(m => new Date(m.datetime) > now && admin);
 
                     var fHTML = ``;
                     var manHTML = ``;
