@@ -710,6 +710,7 @@ app.post("/group/item", async function(req, res){
     isAuthenticated(req, "cookie",["ADMIN_LANDING", "ADMIN_LANDING_CREATE"], async function(status,user){
         // must have edit main page access
         if(status){
+            print(req.body);
             var id = req.body._id;
             if(req.body.action == "edit"){
                 await m.updateDoc('ModuleItem', {_id: id}, {
