@@ -712,12 +712,19 @@ app.post("/group/item", async function(req, res){
         if(status){
             console.log(req.body);
             var id = req.body._id;
+            var result = req.body.result;
+            if(req.body.resultdata != undefined){
+                result = {
+                    "to": req.body.resultdata[0],
+                    "data": req.body.resultdata[1]
+                }
+            }
             if(req.body.action == "edit"){
                 await m.updateDoc('ModuleItem', {_id: id}, {
                     title: req.body.title,
                     contents: req.body.contents,
                     icon: req.body.icon,
-                    result: req.body.result,
+                    result: result,
                     show: req.body.show
                 });
             }else if(req.body.action == "create"){
@@ -725,7 +732,7 @@ app.post("/group/item", async function(req, res){
                     title: req.body.title,
                     contents: req.body.contents,
                     icon: req.body.icon,
-                    result: req.body.result,
+                    result: result,
                     show: req.body.show,
                     group: user.group,
                     subgroups: req.body.subgroups
