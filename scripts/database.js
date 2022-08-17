@@ -44,14 +44,10 @@ const models = {
             joinable: Boolean,
             features: [String],
             managers: [String],
-            channels: [{
-                name: String,
-                access: [],
-                messages: [{
-                    sender: String,
-                    message: String,
-                    datetime: Date
-                }]
+            messages: [{
+                sender: String,
+                message: String,
+                datetime: Date
             }]
         }],
         roles: [{

@@ -989,6 +989,50 @@ app.post("/group/subgroup/schedule", async function(req, res){
     });
 });
 
+app.get('/group/subgroup/messages', async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var subgroup = req.headers.group;
+
+            var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
+            var messages = group.subgroups.find(g => g.name == subgroup).messages;
+
+            if(messages == undefined){
+                messages = [];
+            }
+
+            res.send(JSON.stringify({successful: true, messages: messages}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+app.post('/group/subgroup/message', async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var subgroup = req.body.group;
+            var message = req.body.message;
+
+            var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
+            var messages = group.subgroups.find(g => g.name == subgroup).messages;
+
+            messages.push({
+                message: message,
+                sender: user.id,
+                datetime: new Date()
+            });
+
+            group.subgroups.find(g => g.name == subgroup).messages = messages;
+
+            await m.updateDoc('Group', {uniqueId: user.group}, {subgroups: group.subgroups});
+
+            res.send(JSON.stringify({successful: true, messages: messages}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+})
+
 app.post("/group/subgroup/add", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
