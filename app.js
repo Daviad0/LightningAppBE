@@ -200,6 +200,34 @@ app.post('/acc/login', function (req, res){
     });
     
 });
+app.post("/acc/reset", async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var acc = (await m.getDocs('Account', {_id: req.body.id}))[0];
+            var old = req.body.oldPw;
+            var newPw = req.body.newPw;
+            crypto.pbkdf2(old, acc.pwsalt, acc.pwiterations, 64, 'sha512', async function(err, derivedKey){
+                if(acc.pwhash == derivedKey.toString('hex')){
+
+                    // can set the new password
+
+                    hashPassword(newPw, function(pwres){
+                        await m.updateDoc('Account', {_id: acc._id}, {pwsalt: pwres.salt, pwiterations: pwres.iterations, pwhash: pwres.hash});
+                        res.send(JSON.stringify({successful: true}));
+                    })
+
+                    
+                }else{
+                    res.send(JSON.stringify({successful: false}));
+                }
+            })
+        }else{
+            res.send(JSON.stringify({successful: false}));
+        }
+            
+    });
+    
+})
 
 async function createSafeUser(u, access){
     var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
