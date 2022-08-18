@@ -211,7 +211,7 @@ app.post("/acc/reset", async function(req, res){
 
                     // can set the new password
 
-                    hashPassword(newPw, function(pwres){
+                    hashPassword(newPw, async function(pwres){
                         await m.updateDoc('Account', {_id: acc._id}, {pwsalt: pwres.salt, pwiterations: pwres.iterations, pwhash: pwres.hash});
                         res.send(JSON.stringify({successful: true}));
                     })
