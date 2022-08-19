@@ -805,7 +805,7 @@ app.get("/group/meetings", async function(req, res){
         if(status){
             var group = user.group;
             var docs = await m.getDocs("AttendanceItem", {group: group});
-            
+            docs = docs.sort((a,b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime());
             res.send(JSON.stringify({successful: true, items: docs}));
         }else{
             res.status(401).send(JSON.stringify({successful: false}));
