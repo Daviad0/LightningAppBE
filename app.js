@@ -246,6 +246,7 @@ async function createSafeUser(u, access){
 
 
     }
+    console.log(safeUser.permissions);
     return safeUser;
 }
 
