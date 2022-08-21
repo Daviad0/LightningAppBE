@@ -1001,7 +1001,7 @@ app.post("/group/attendance/override", async function(req, res){
             if(index != -1){
                 thatUser.attendance[index].overriddenstatus = override.toUpperCase();
             }else{
-                thatUser.attendance.push({event: meetingId, overriddenstatus: override, status: "ABSENT", datetime: new Date()});
+                thatUser.attendance.push({event: meetingId, overriddenstatus: override.toUpperCase(), status: "ABSENT", datetime: new Date()});
             }
 
 
