@@ -241,9 +241,8 @@ async function createSafeUser(u, access){
         fullname: u.fullname,
         protonLog: u.protonLog,
         notes: u.notes,
-        email: (access > 1 ? u.email : undefined),
-        permissions: role == undefined ? [] : role.permissions,
-        notes: (access > 1 ? u.notes : undefined)
+        email: u.email,
+        permissions: role == undefined ? [] : role.permissions
 
 
     }
