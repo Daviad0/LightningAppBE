@@ -88,6 +88,7 @@ const models = {
         subgroups: [String],
         requests: [{
             requester: String,
+            final: String,
             datetime: Date
         }]
     })),

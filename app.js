@@ -960,6 +960,33 @@ app.post("/group/attendance/verify", async function(req, res){
     });
 });
 
+app.post('/group/attendance/request', async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var uid = req.body.uid;
+            var meetingId = req.body.meetingId;
+            var reqType = req.body.final;
+
+            var meeting = (await m.getDocs('AttendanceItem', {_id: meetingId}))[0];
+            
+            var requests = meeting.requests;
+            if(requests.filter(r => r.requester == uid).length == 0){
+                requests.push({
+                    requester: uid,
+                    final: reqType,
+                    datetime: new Date()
+                })
+                await m.updateDoc('AttendanceItem', {_id: meetingId}, {requests: requests});
+            }
+            
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+
+    });
+});
+
 app.post("/group/attendance/override", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
@@ -973,7 +1000,7 @@ app.post("/group/attendance/override", async function(req, res){
             var index = thatUser.attendance.indexOf(thatUser.attendance.find(a => a.event == meetingId));
 
             if(index != -1){
-                thatUser.attendance[index].overriddenstatus = override;
+                thatUser.attendance[index].overriddenstatus = override.toUpperCase();
             }else{
                 thatUser.attendance.push({event: meetingId, overriddenstatus: override, status: "ABSENT", datetime: new Date()});
             }
