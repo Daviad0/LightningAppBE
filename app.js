@@ -8,12 +8,23 @@ var m = require('./scripts/database.js');
 var app = express();
 var cookies = require("cookie-parser");
 const { moveMessagePortToContext } = require('worker_threads');
+var nodemailer = require('nodemailer');
 
 app.use(cookies());
 m.init();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+
+var mailSender = nodemailer.createTransport("SMTP",{
+  service: 'Gmail',
+  auth: {
+    user: 'sparkclub862@gmail.com',
+    clientId: '',
+    clientSecret: '',
+    refreshToken: ''
+  }
+});
 
 function hashPassword(password, callback) {
     var salt = crypto.randomBytes(128).toString('base64');
@@ -27,6 +38,38 @@ function hashPassword(password, callback) {
     });
 
     
+}
+
+function sendNotifications(emails, title, message){
+    emails.forEach(e => {
+        var mailOptions = {
+            from: 'sparkclub862@gmail.com',
+            to: e,
+            subject: title,
+            generateTextFromHTML: true,
+            html: message
+          };
+
+          mailSender.sendMail(mailOptions, function(error, info){
+            console.log(error)
+            });
+    });
+
+}
+
+function sendNotification(email, title, message){
+    var mailOptions = {
+        from: 'sparkclub862@gmail.com',
+        to: email,
+        subject: title,
+        html: message,
+        generateTextFromHTML: true
+      };
+
+      mailSender.sendMail(mailOptions, function(error, info){
+        console.log(error)
+        });
+
 }
 
 function isAuthenticated(req, method, permissionReq, callback) {
@@ -672,7 +715,6 @@ app.post("/group/meeting", async function(req, res){
                     length: req.body.length,
                     description: req.body.description,
                     subgroups: req.body.subgroups,
-                    code: req.body.code
                 });
             }else if(req.body.action == "create"){
                 console.log(req.body.subgroups);
@@ -681,7 +723,6 @@ app.post("/group/meeting", async function(req, res){
                     datetime: req.body.datetime,
                     length: req.body.length,
                     description: req.body.description,
-                    code: req.body.code,
                     group: user.group,
                     subgroups: req.body.subgroups
                 })
@@ -1075,6 +1116,13 @@ app.post('/group/subgroup/message', async function(req, res){
                 message: message,
                 sender: user.id,
                 datetime: new Date()
+            });
+
+            var users = await m.getDocs('Account', {group: user.group});
+            users.forEach(async function(u){
+                if(u.access.groups.includes(subgroup)){
+                    sendNotification(u.email, "SparkClub Announcement", "You have a new message from " + user.name + " in " + subgroup + ": " + message);
+                }
             });
 
             group.subgroups.find(g => g.name == subgroup).messages = messages;
