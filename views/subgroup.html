@@ -396,10 +396,10 @@
                         var isSender = m["sender"] == me.id;
 
                         fHTML += `
-                        <div style="width: 100%;text-align:${sender ? "right" : "left"}">
+                        <div style="width: 100%;text-align:${isSender ? "right" : "left"}">
                             <div style="margin: 10px 20px;">
                                 ${showSender ? `<span class="color-g" style="font-size: 10px;display:block;margin:2px;margin-left:5px">${sender["username"]}</span>` : ""}
-                                <div style="background-color: ${sender ? "#a77aff" : "#bbbbbb"};padding:10px;max-width:70%;border-radius:8px;display:inline-block">
+                                <div style="background-color: ${isSender ? "#a77aff" : "#bbbbbb"};padding:10px;max-width:70%;border-radius:8px;display:inline-block">
                                     <span class="color-w" style="font-size: 12px;display:block;word-wrap:break-word">${m["message"]}</span>
                                 </div>
                             </div>
