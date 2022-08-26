@@ -58,6 +58,11 @@ const models = {
         protonAssignments: [{
             assigner: String,
             protons: Number
+        }],
+        announcements: [{
+            sender: String,
+            message: String,
+            datetime: Date
         }]
     })),
     'ModuleItem' : mongoose.model('ModuleItem', new mongoose.Schema({

@@ -1,15 +1,36 @@
 // Require express and create an instance of it
+require("dotenv").config();
 var express = require('express');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
+const OneSignal = require('@onesignal/node-onesignal');
 var mongoose = require('mongoose');
 var m = require('./scripts/database.js');
+const emoji = require('node-emoji');
 var app = express();
 var cookies = require("cookie-parser");
-const { moveMessagePortToContext } = require('worker_threads');
-//var nodemailer = require('nodemailer');
+const ONESIGNAL_APP_ID = '8ec8f18d-38ef-449b-8e10-69025823a4a5';
 
+const Notif_OS = {
+    getToken() {
+        return process.env.ONESIGNAL_TOKEN;
+    }
+};
+
+
+const configuration = OneSignal.createConfiguration({
+    authMethods: {
+        app_key: {
+        	tokenProvider: Notif_OS
+        }
+    }
+});
+const client = new OneSignal.DefaultApi(configuration);
+
+const { moveMessagePortToContext } = require('worker_threads');
+
+app.set('trust proxy', true);
 app.use(cookies());
 m.init();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -25,6 +46,16 @@ app.use(express.static(__dirname + '/public'));
 //     refreshToken: ''
 //   }
 // });
+
+async function notifyUsers(users, title, subtitle, message){
+    const notification = new OneSignal.Notification();
+    notification.app_id = ONESIGNAL_APP_ID;
+    notification.include_external_user_ids = users;
+    notification.headings = { en: title };
+    notification.subtitle = subtitle;
+    notification.contents = { en: message };
+    const {id} = await client.createNotification(notification);
+}
 
 function hashPassword(password, callback) {
     var salt = crypto.randomBytes(128).toString('base64');
@@ -231,8 +262,9 @@ app.post('/acc/login', function (req, res){
                         group: req.body.group,
                         id: docs[0]._id
                     }, 'secret', {
-                        expiresIn: '24h'
+                        expiresIn: '7d'
                     });
+                    notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Sign In Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
                     res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
                 }else{
                     res.send(JSON.stringify({successful: false}));
@@ -354,7 +386,7 @@ app.post('/acc/create', function (req, res){
                             id: d._id
                             // NOTICE: CHANGE TO .ENV FILE
                         }, 'secret', {
-                            expiresIn: '2h'
+                            expiresIn: '2d'
                         });
                         d.token = token;
                         res.send(JSON.stringify({successful: true, user: await createSafeUser(d, 3), token: token}));
@@ -1085,6 +1117,65 @@ app.post("/group/subgroup/schedule", async function(req, res){
     });
 });
 
+app.get('/group/announcements', async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+
+            var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
+            var messages = group.announcements;
+
+            if(messages == undefined){
+                messages = [];
+            }
+
+            res.send(JSON.stringify({successful: true, messages: messages}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+});
+app.post('/group/announcement', async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var message = req.body.message;
+
+            var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
+            var u = (await m.getDocs('Account', {_id: user.id}))[0];
+            var messages = group.announcements;
+            if(messages == undefined){
+                messages = [];
+            }
+
+            messages.push({
+                message: message,
+                sender: user.id,
+                datetime: new Date()
+            });
+
+            var usersToSend = (await m.getDocs('Account', {group: user.group}));
+            var idsToSend = usersToSend.map(u => u._id);
+            notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
+
+
+
+            // var users = await m.getDocs('Account', {group: user.group});
+            // users.forEach(async function(u){
+            //     if(u.access.groups.includes(subgroup)){
+            //         sendNotification(u.email, "SparkClub Announcement", "You have a new message from " + user.name + " in " + subgroup + ": " + message);
+            //     }
+            // });
+
+            group.announcements = messages;
+
+            await m.updateDoc('Group', {uniqueId: user.group}, {announcements: group.announcements});
+
+            res.send(JSON.stringify({successful: true, messages: messages}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    });
+})
+
 app.get('/group/subgroup/messages', async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
@@ -1110,6 +1201,7 @@ app.post('/group/subgroup/message', async function(req, res){
             var message = req.body.message;
 
             var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
+            var u = (await m.getDocs('Account', {_id: user.id}))[0];
             var messages = group.subgroups.find(g => g.name == subgroup).messages;
 
             messages.push({
@@ -1118,12 +1210,9 @@ app.post('/group/subgroup/message', async function(req, res){
                 datetime: new Date()
             });
 
-            var users = await m.getDocs('Account', {group: user.group});
-            users.forEach(async function(u){
-                if(u.access.groups.includes(subgroup)){
-                    sendNotification(u.email, "SparkClub Announcement", "You have a new message from " + user.name + " in " + subgroup + ": " + message);
-                }
-            });
+            var usersToSend = (await m.getDocs('Account', {group: user.group})).filter(u => u.access.groups.includes(subgroup));
+            var idsToSend = usersToSend.map(u => u._id);
+            notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
 
             group.subgroups.find(g => g.name == subgroup).messages = messages;
 

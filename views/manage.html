@@ -13,7 +13,7 @@
                 <span style="pointer-events: none">Quick Links</span>
             </div>
             <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:0px 8px 0px 0px;border-width:2px 2px 2px 1px" data-partof="manage" data-num="4">
-                <span style="pointer-events: none">Group Settings</span>
+                <span style="pointer-events: none">Announcements</span>
             </div>
         </div>
     </div>
@@ -122,8 +122,24 @@
         </div>
         <div id="linkItems" style="margin:20px"></div>
     </div>
-    <div class="blockitem" data-partof="manage" data-num="4" style="width:100%;display:none">
-        
+    <div data-partof="manage" data-num="4" class="blockitem" style="display:none;padding-bottom:80px">
+        <div style="width:56%;display:inline-block">
+            <div class="container c-slightborder" style="width:90%;padding:20px" id="chatViewer">
+                <div style="width:100%;border-radius:20px;background-color:#eeeeee;height:60vh;margin-bottom:10px;padding-top:10px;overflow-y:scroll" id="messages">
+                    
+
+                </div>
+                
+                <div style="width:100%;display:flex;justify-content:space-between;align-items:center">
+                    <textarea class="input" style="width:80%;resize:none;vertical-align:center;font-size:12px" id="group_newMessage" placeholder="Your Message..."></textarea>
+                    <div class="container c-border c-hover" style="padding:5px;margin:5px;vertical-align:center;display:inline-flex;width:20px;height:20px;justify-content:center;align-items:center" id="group_sendMessage">
+                        <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">send</span>
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
     </div>
 
 
@@ -141,6 +157,19 @@
             e.classList.add("logospin");
         }
         
+    })
+
+    var me = undefined;
+    $.ajax({
+        url: '/acc/verify',
+        type: 'GET',
+        success: function(data){
+            data = JSON.parse(data);
+            if(data["successful"]){
+                me = data["user"];
+                reloadUsers();
+            }
+        }
     })
     var currentItems = [];
     var currentLinks = [];
@@ -462,6 +491,83 @@
             document.getElementById("externalClickAction").click();
         })
     })
+    var users = [];
+    
+    function reloadUsers(){
+        $.ajax({
+            url: '/group/users',
+            type: 'GET',
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    
+                    users = data["items"]
+                    reloadMessages();
+                }
+            }
+        })
+    }
+    
+
+
+    var messages = undefined;
+    document.getElementById("group_sendMessage").addEventListener('click', function(){
+        var message = document.getElementById("group_newMessage").value;
+
+        if(message != ""){
+            $.ajax({
+                url: "/group/announcement",
+                type: "POST",
+                data: {
+                    "message": message
+                },
+                success: function(data){
+                    console.log("Message Sent")
+                    document.getElementById("group_newMessage").value = "";
+                    reloadMessages();
+                }
+            })
+        }
+    })
+    function reloadMessages(){
+        $.ajax({
+            url: '/group/announcements',
+            type: 'GET',
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    messages = data["messages"];
+
+                    var fHTML = "";
+                    var lastSender = "";
+                    messages.forEach(m => {
+                        var showSender = m["sender"] != lastSender;
+                        var sender = users.find(u => u.id == m["sender"]);
+                        var isSender = m["sender"] == me.id;
+
+                        fHTML += `
+                        <div style="width: 100%;text-align:${sender ? "right" : "left"}">
+                            <div style="margin: 10px 20px;">
+                                ${showSender ? `<span class="color-g" style="font-size: 10px;display:block;margin:2px;margin-left:5px">${sender["username"]}</span>` : ""}
+                                <div style="background-color: ${sender ? "#a77aff" : "#bbbbbb"};padding:10px;max-width:70%;border-radius:8px;display:inline-block">
+                                    <span class="color-w" style="font-size: 12px;display:block;word-wrap:break-word">${m["message"]}</span>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        `;
+
+
+
+                        lastSender = m["sender"];
+                    })
+                    document.getElementById("messages").innerHTML = fHTML;
+                }
+            }
+        })
+    }
+
 
     function getMeetingItems(){
         $.ajax({
