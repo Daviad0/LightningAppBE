@@ -281,6 +281,42 @@
                 case "confirm":
                     data = overlayData["id"];
                     break;
+
+                case "create_account":
+                    document.getElementById("errormessage").style.display = "none";
+                    $.post("/acc/create", {
+                        username: $("#create_username").val(),
+                        password: $("#create_password").val(),
+                        group: "testing-env",
+                        email: $("#create_email").val(),
+                        fullname: $("#create_fullname").val(),
+                        externalId: $("#create_externalId").val()
+                    }, function(data){
+                        //console.log(data);
+                        data = JSON.parse(data);
+                        if(data["successful"] == false){
+                            if(data["error"] == "username"){
+                                flashFormError(6000, document.getElementById("create_username"));
+                            }else if(data["error"] == "password"){
+                                flashFormError(6000, document.getElementById("create_password"));
+                            }else if(data["error"] == "externalId"){
+                                flashFormError(6000, document.getElementById("create_externalId"));
+                            }else if(data["error"] == "email"){
+                                flashFormError(6000, document.getElementById("create_email"));
+                            }else if(data["error"] == "fullname"){
+                                flashFormError(6000, document.getElementById("create_fullname"));
+                            }
+                            document.getElementById("errormessage").innerHTML = data["message"];
+                            document.getElementById("errormessage").style.display = "block";
+                        }else{
+                            document.getElementById('overlay').style.display = "none";
+                            sendback.click();
+                        }
+                    });
+                    return;
+
+
+                    break;
                 case "force_reset_password":
                     document.getElementById("error_message").style.display = "none";
 
@@ -396,24 +432,31 @@
                             
                             break;
                         case "create":
+                        document.getElementById("create_error").style.display = "none";
                         $.post("/acc/create", {
                             username: $("#create_username").val(),
                             password: $("#create_password").val(),
-                            group: $("#create_groupid").val(),
-                            email: $("#create_email").val()
+                            group: "testing-env",
+                            email: $("#create_email").val(),
+                            fullname: $("#create_fullname").val(),
+                            externalId: $("#create_externalId").val()
                         }, function(data){
                             //console.log(data);
                             data = JSON.parse(data);
                             if(data["successful"] == false){
                                 if(data["error"] == "username"){
-                                    flashFormError(3000, document.getElementById("create_username"));
+                                    flashFormError(6000, document.getElementById("create_username"));
                                 }else if(data["error"] == "password"){
-                                    flashFormError(3000, document.getElementById("create_password"));
-                                }else if(data["error"] == "group"){
-                                    flashFormError(3000, document.getElementById("create_groupid"));
+                                    flashFormError(6000, document.getElementById("create_password"));
+                                }else if(data["error"] == "externalId"){
+                                    flashFormError(6000, document.getElementById("create_externalId"));
                                 }else if(data["error"] == "email"){
-                                    flashFormError(3000, document.getElementById("create_email"));
+                                    flashFormError(6000, document.getElementById("create_email"));
+                                }else if(data["error"] == "fullname"){
+                                    flashFormError(6000, document.getElementById("create_fullname"));
                                 }
+                                document.getElementById("create_error").innerHTML = data["message"];
+                                document.getElementById("create_error").style.display = "block";
                             }else{
                                 authId = data["token"];
                                 thisUser = data["user"];
@@ -917,6 +960,51 @@
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Confirm Password</span>
                                             </div>
                                             <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="confirm_password">
+                                        </div>
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+                                    
+                                    
+                                    break;
+                                case "create_account":
+                                    
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Create User Account</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block"><strong>WARNING: </strong>Please notify the user of their password, or else you must reset it afterwards!</span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Full Name</span>
+                                            </div>
+                                            <input type="text" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="John Doe" id="create_fullname">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Username</span>
+                                            </div>
+                                            <input type="text" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="JhonnyDoe" id="create_username">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Email</span>
+                                            </div>
+                                            <input type="text" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="john@doe.com" id="create_email">
+                                        </div>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">Please enter in the user's student ID</span>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">External ID</span>
+                                            </div>
+                                            <input type="text" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="20070000" id="create_externalId">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="create_password">
                                         </div>
                                         <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
                                         `;

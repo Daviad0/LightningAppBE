@@ -4,29 +4,39 @@
         <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:100px;height:100px;display:inline-block">
             <span class="material-symbols-rounded color-w" style="width:50%;margin-top:20%;font-size:56px">person_add</span>
         </div>
-        <span class="text color-d" style="line-height:100px;font-size: 40px;margin-bottom:20px;display:block">Create an Account</span>
+        <span class="text color-d" style="line-height:100px;font-size: 40px;display:block">Create an Account</span>
+        <div style="width: 60%;text-align:center;display:inline-block;margin-bottom:20px">
+            <span class="text" style="font-size: 20px;font-weight: 500;width:60%">SparkClub collects this information to allow the team to assign you a role, assign you a subgroup, and know which meetings you are signed into. Passwords are both hashed and salted in accordance to the most up to date security standards, and you are the only one who can view it. Group administrators can reset, but not see your password as a result. Your student ID is collected for the purpose of our External Sign In service, where you may sign in with your Student ID without being logged in!</span>
+        </div>
+        
     </div>
 
-    
-    <div id="create_part1" class="transition">
-        <div style="width:120px;display:inline-block;text-align:left">
-            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Group</span>
-        </div>
-        <input type="text" class="input" placeholder="lightning-robotics" style="width:30%;font-size:20px;padding:20px" id="create_groupid"/>
-    </div>
+
     <div id="create_part2" class="transition">
         <div style="width:120px;display:inline-block;text-align:left">
             <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Email</span>
         </div>
-        <input type="text" class="input" placeholder="john.doe" style="width:30%;font-size:20px;padding:20px" id="create_email"/>
+        <input type="text" class="input" placeholder="john@doe.com" style="width:30%;font-size:20px;padding:20px" id="create_email"/>
     </div>
     <div id="create_part3" class="transition">
         <div style="width:120px;display:inline-block;text-align:left">
-            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Username</span>
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Full Name</span>
         </div>
-        <input type="text" class="input" placeholder="john.doe" style="width:30%;font-size:20px;padding:20px" id="create_username"/>
+        <input type="text" class="input" placeholder="John Doe" style="width:30%;font-size:20px;padding:20px" id="create_fullname"/>
     </div>
     <div id="create_part4" class="transition">
+        <div style="width:120px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Student ID</span>
+        </div>
+        <input type="number" class="input" placeholder="20070000" style="width:30%;font-size:20px;padding:20px" id="create_externalId"/>
+    </div>
+    <div id="create_part5" class="transition">
+        <div style="width:120px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Username</span>
+        </div>
+        <input type="text" class="input" placeholder="JhonnyDoe" style="width:30%;font-size:20px;padding:20px" id="create_username"/>
+    </div>
+    <div id="create_part6" class="transition">
         <div style="width:120px;display:inline-block;text-align:left">
             <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Password</span>
         </div>
@@ -34,60 +44,18 @@
     </div>
     <br/>
     <br/>
+
+    <span class="text color-m" id="create_error" style="font-size:14px;margin:10px;display:none;color:red"></span>
+    <br/>
+
     <div class="container c-border c-hover baseaction" data-action="create" style="padding:10px 20px 10px 20px">
         Create Account
     </div>
+    <br/>
+    <br/>
     <script>
 
-        document.getElementById("create_part2").style.opacity = "0";
-        document.getElementById("create_part3").style.opacity = "0";
-        document.getElementById("create_part4").style.opacity = "0";
 
-
-        
-
-        document.getElementById("create_groupid").addEventListener("change", function(evt) {
-            if(evt.srcElement.value == ""){
-                // hide next parts
-                document.getElementById("create_groupid").style.borderColor = "#ff0000";
-                document.getElementById("create_part2").style.opacity = "0";
-                document.getElementById("create_part3").style.opacity = "0";
-                document.getElementById("create_part4").style.opacity = "0";
-            }else{
-                // show next parts
-                $.post("/check/groupExists", {
-                    group: $("#create_groupid").val(),
-                }, function(data){
-                    data = JSON.parse(data);
-                    if(data["valid"] == false){
-                        document.getElementById("create_groupid").style.borderColor = "#ff0000";
-                        document.getElementById("create_part2").style.opacity = "0";
-                        document.getElementById("create_part3").style.opacity = "0";
-                        document.getElementById("create_part4").style.opacity = "0";
-                    }else{
-                        document.getElementById("create_email").value = "";
-                        document.getElementById("create_username").value = "";
-                        document.getElementById("create_password").value = "";
-                        document.getElementById("create_groupid").style.borderColor = "";
-                        document.getElementById("create_part2").style.opacity = "1";
-                    }
-                });
-                
-            }
-        });
-
-        document.getElementById("create_email").addEventListener("change", function(evt) {
-            if(evt.srcElement.value == "" || !evt.srcElement.value.includes("@")){
-                // hide next parts
-                document.getElementById("create_email").style.borderColor = "#ff0000";
-                document.getElementById("create_part3").style.opacity = "0";
-                document.getElementById("create_part4").style.opacity = "0";
-            }else{
-                // show next parts
-                document.getElementById("create_email").style.borderColor = "";
-                document.getElementById("create_part3").style.opacity = "1";
-                document.getElementById("create_part4").style.opacity = "1";
-            }
-        });
+        document.getElementById("create_part2").style.transform = "translateY(0px)";
     </script>
 </div>

@@ -151,6 +151,7 @@
     <div style="display:none" id="deleteMeeting"></div>
 </div>
 
+<script src="/html2canvas/html2canvas.js"></script>
 <script>
     Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
         if(!e.classList.contains("logospin")){
@@ -507,7 +508,24 @@
             }
         })
     }
+
     
+    
+    function downloadURI(uri, name) {
+        var link = document.createElement("a");
+        link.download = name;
+        link.href = uri;
+        link.click();
+    }
+    
+    function printToFile(div) {
+        html2canvas(div, {
+            onrendered: function (canvas) {
+                var myImage = canvas.toDataURL();
+                downloadURI(myImage, "yourImage.png");
+            }
+        });
+    }
 
 
     var messages = undefined;
@@ -655,12 +673,15 @@
                             </div>
                             <div class="blockitem" data-partof="${id}l" data-num="2" style="display:none">
                                 
-                                    <div style='border:6px solid #4708c4;padding:20px;background-color:white;border-radius:16px;display:inline-block'>
+                                    <div style='border:6px solid #4708c4;padding:20px;background-color:white;border-radius:16px;display:inline-block' class="qrcodediv" data-partof="${id}l">
                                         <div class="qrcode" data-partof="${id}l" style="margin-bottom:16px"></div>
                                         <span class="text color-w" style='font-size:12px;font-weight:500;text-overflow:ellipsis;background-color:#2b047a;padding:4px 0px;width:100%;border-radius:4px;display:block'><i>${i["name"]}</i></span>
                                     </div>
                                     
                                 <br/>
+                                <div class="container c-border color-m c-hover downloadqr" data-partof="${id}l" data-num="0" style="padding:10px 50px 10px 50px;margin:10px" data-partof="${id}">
+                                    Download
+                                </div>
                                 <div class="container c-border-gray blockcontrol color-g c-hover-gray hideqr" data-partof="${id}l" data-num="0" style="padding:10px 50px 10px 50px;margin:10px" data-partof="${id}">
                                     Done
                                 </div>
@@ -683,7 +704,18 @@
                     });
 
                     
-                    
+                    Array.from(document.getElementsByClassName("downloadqr")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            var qrID = evt.srcElement.dataset.partof;
+
+                            
+                            var qr = document.querySelector(`.qrcodediv[data-partof="${qrID}"]`);
+                            
+                            printToFile(qr);
+
+
+                        });
+                    });
 
                     Array.from(document.getElementsByClassName("deletel")).forEach(e => {
                         e.addEventListener("click", function(evt){

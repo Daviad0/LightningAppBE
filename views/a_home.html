@@ -59,14 +59,14 @@
                         datas = JSON.parse(datas);
                         if(datas["successful"]){
                             var fHTML = "";
-                            console.log()
+                            
                             datas["items"].forEach(s => {
                                 if(data["user"]['access']['groups'].includes(s["name"])){
                                     fHTML += `
                                     <div class="container c-slightborder item" style="width:70%;padding:20px;margin-bottom:20px">
                                         <div style="width:100%;justify-content:space-between;display:flex;align-items:center">
                                             <span class="text color-d" style="font-size:20px;margin:10px">${s["name"]}</span>
-                                            <div class="container c-border c-hover link" style="padding:10px 30px 10px 30px;margin:10px" data-link="/group/sg/${s["tag"]}">
+                                            <div class="container c-border c-hover subgroup" style="padding:10px 30px 10px 30px;margin:10px" data-link="/group/sg/${s["tag"]}">
                                                 Go To
                                             </div>
                                         </div>
@@ -75,8 +75,14 @@
                                 }
                                 
                             });
+                            
 
                             document.getElementById("subgroups").innerHTML = fHTML;
+                            Array.from(document.getElementsByClassName("subgroup")).forEach(e => {
+                                e.addEventListener("click", function(evt) {
+                                    window.open(evt.srcElement.dataset.link, '_blank');
+                                });
+                            });
                         }
                     }
                 })

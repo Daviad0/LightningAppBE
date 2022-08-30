@@ -82,7 +82,7 @@ function sendNotifications(emails, title, message){
     //       };
 
     //       mailSender.sendMail(mailOptions, function(error, info){
-    //         console.log(error)
+    //         //console.log(error)
     //         });
     // });
 
@@ -98,7 +98,7 @@ function sendNotification(email, title, message){
     //   };
 
     //   mailSender.sendMail(mailOptions, function(error, info){
-    //     console.log(error)
+    //     //console.log(error)
     //     });
 
 }
@@ -169,9 +169,9 @@ app.get("/part*", function(req, res){
 
 
 app.get('/', function (req, res) {
-    console.log("A");
+    //console.log("A");
     res.sendFile(__dirname + "/views/base.html");
-    console.log("B");
+    //console.log("B");
     
     //res.end();
 });
@@ -361,11 +361,12 @@ async function createSafeUser(u, access){
         protonLog: u.protonLog,
         notes: u.notes,
         email: u.email,
+        externalId: u.externalIds == undefined ? undefined : u.externalIds[0],
         permissions: role == undefined ? [] : role.permissions
 
 
     }
-    console.log(safeUser.permissions);
+    //console.log(safeUser.permissions);
     return safeUser;
 }
 
@@ -398,19 +399,42 @@ app.post('/check/groupExists', function(req, res){
     });
 })
 
+function isSecurePassword(password){
+    return password.length >= 8 && password.match(/[a-z]/) && password.match(/[A-Z]/) && password.match(/[0-9]/) && password.match(/[^a-zA-Z0-9]/);
+}
+
 app.post('/acc/create', function (req, res){
 
 
     m.getDocs('Group', {uniqueId: req.body.group}).then(function(docs){
         if(docs.length == 0){
-            res.send(JSON.stringify({successful: false, error: "group"}));
+            res.send(JSON.stringify({successful: false, error: "group", message: "This is an invalid group to join!"}));
             return;
         }
         m.getDocs('Account', {username: req.body.username, group: req.body.group}).then(function(docs){
             if(docs.length == 0){
+                
+
+                if(!isSecurePassword(req.body.password)){
+                    res.send(JSON.stringify({successful: false, error: "password", message: "Password must be >= 8 characters, have uppercase and lowercase letters, and have at least one number and one special character!"}));
+                    return;
+                }
+                if(req.body.externalId.length != 8){
+                    res.send(JSON.stringify({successful: false, error: "externalId", message: "External ID must be 8 characters long!"}));
+                    return;
+                }
+                if(req.body.fullname.length < 1){
+                    res.send(JSON.stringify({successful: false, error: "fullname", message: "Gotta have a name!"}));
+                    return;
+                }
+
+
+
                 hashPassword(req.body.password, function(pwres){
                     m.createDoc('Account', {
                         username: req.body.username,
+                        fullname: req.body.fullname,
+                        notes: "Created on " + new Date().toLocaleString(),
                         email: req.body.email,
                         pwhash: pwres.hash,
                         pwsalt: pwres.salt,
@@ -419,9 +443,14 @@ app.post('/acc/create', function (req, res){
                         access: {
                             role: "guest",
                             restricted: false,
-                            elevated: false
+                            elevated: false,
+                            permissions: [],
+                            groups: []
                         },
-                        connections: []
+                        externalIds: [req.body.externalId],
+                        connections: [],
+                        attendance: [],
+                        protonLog: []
     
                     }).then(async function(d){
                         var token = jwt.sign({
@@ -442,7 +471,7 @@ app.post('/acc/create', function (req, res){
                 });
                 
             }else{
-                res.send(JSON.stringify({successful: false, error: "username"}));
+                res.send(JSON.stringify({successful: false, error: "username", message: "Someone with this Username already exists..."}));
             }
         });
     });
@@ -468,7 +497,7 @@ app.get("/group/presentation", async function(req, res){
     isAuthenticated(req, "cookie",["*"], async function(status, user){
         if(status){
             var pres = await m.getDocs("Presentation", {group: user.group});
-            console.log(pres);
+            //console.log(pres);
             res.send(JSON.stringify({successful: true, presentation: pres[0]}));
 
         }else{
@@ -483,8 +512,8 @@ app.get("/group/users", async function(req, res){
             var users = await m.getDocs("Account", {group: user.group});
             var group = await m.getDocs("Group", {uniqueId: user.group});
             var safeUsers = [];
-            console.log(users);
-            console.log(user.group);
+            //console.log(users);
+            //console.log(user.group);
             for(var i = 0; i < users.length; i++){
                 safeUsers.push(await createSafeUser(users[i], 2));
             }
@@ -605,9 +634,9 @@ app.post("/group/role", async function(req, res){
             }else if(req.body.action == "delete"){
                 var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
                 var item = group.roles.find(r => r.name == req.body.name);
-                console.log(group.roles);
+                //console.log(group.roles);
                 group.roles.splice(group.roles.indexOf(item), 1);
-                console.log(group.roles);
+                //console.log(group.roles);
 
                 await m.updateDoc("Group", {_id: group._id}, {roles: group.roles});
             }
@@ -637,7 +666,7 @@ app.get("/group/subgroup", (req, res) => {
             var subgroupid = req.query.name != undefined ? req.query.name : req.query.tag.toUpperCase();
             var name = req.query.name != undefined;
             var group = (await m.getDocs("Group", {uniqueId: user.group}))[0];
-            console.log(subgroupid);
+            //console.log(subgroupid);
 
             var subgroup = undefined;
             if(name){
@@ -767,7 +796,7 @@ app.get("/group/items", function(req, res){
             
         }
         var groupItem = (await m.getDocs("Group", {uniqueId: group.length == undefined ? group["uniqueId"] : group}))[0];
-        console.log(subgroup)
+        //console.log(subgroup)
         
         if(group != ""){
             var docs = (await m.getDocs("ModuleItem", {group: group})).filter(d => (d.subgroups.includes(subgroup.toUpperCase()) || (d.subgroups.length == 0 && subgroup == "H") || subgroup == "*") && (d.show || subgroup == "*"));
@@ -793,7 +822,7 @@ app.post("/group/meeting", async function(req, res){
                     subgroups: req.body.subgroups,
                 });
             }else if(req.body.action == "create"){
-                console.log(req.body.subgroups);
+                //console.log(req.body.subgroups);
                 await m.createDoc('AttendanceItem', {
                     title: req.body.title,
                     datetime: req.body.datetime,
@@ -855,7 +884,7 @@ app.post("/group/item", async function(req, res){
     isAuthenticated(req, "cookie",["ADMIN_LANDING", "ADMIN_LANDING_CREATE"], async function(status,user){
         // must have edit main page access
         if(status){
-            console.log(req.body);
+            //console.log(req.body);
             var id = req.body._id;
             var result = req.body.result;
             if(req.body.resultdata != undefined){
@@ -883,7 +912,7 @@ app.post("/group/item", async function(req, res){
                     subgroups: req.body.subgroups
                 })
             }else if(req.body.action == "delete"){
-                console.log("deleting");
+                //console.log("deleting");
                 await m.deleteDoc('ModuleItem', {_id: id});
             }
             
@@ -975,7 +1004,7 @@ app.get("/group/today", async function(req, res){
 app.get("/group/user", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
-            console.log(req.query.id);
+            //console.log(req.query.id);
             var getUser = (await m.getDocs('Account', {_id: req.query.id}))[0];
             
             var ownUser = false;
@@ -1029,9 +1058,10 @@ app.get('/group/report/attendance', (req, res) => {
 
 
 app.post("/group/user", async function(req, res){
-    isAuthenticated(req, "cookie",[], async function(status, user){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
         if(status){
             var _id = req.body.id;
+            
             var userCurrently = (await m.getDocs('Account', {_id: _id}))[0];
             if(req.body.action == "edit"){
                 
@@ -1042,6 +1072,7 @@ app.post("/group/user", async function(req, res){
                     email: req.body.email,
                     fullname: req.body.fullname,
                     access: userCurrently.access,
+                    externalIds: [req.body.externalId],
                     notes: req.body.notes
 
                 });
@@ -1369,7 +1400,7 @@ app.post("/group/today/anon", async function(req, res){
             datetime: new Date()
         });
         
-        console.log(toUpdate);
+        //console.log(toUpdate);
         await m.updateDoc('Account', {_id: user._id}, toUpdate);
     }
     res.send(JSON.stringify({successful: true}));
@@ -1381,7 +1412,7 @@ app.post("/group/today", async function(req, res){
 
             user = await m.getDocs('Account', {_id: user.id});
             user = user[0];
-            //console.log(user);
+            ////console.log(user);
             
 
             var docs = await m.getDocs('AttendanceItem', {group: user.group});
@@ -1400,7 +1431,7 @@ app.post("/group/today", async function(req, res){
                     datetime: new Date()
                 });
                 
-                console.log(toUpdate);
+                //console.log(toUpdate);
                 await m.updateDoc('Account', {_id: user._id}, toUpdate);
             }
             res.send(JSON.stringify({successful: true}));
@@ -1524,14 +1555,14 @@ app.use(async function(req, res, next) {
         var sent = false;
         
         quickLinks.forEach(e => {
-            console.log(e.from);
-            console.log(req.originalUrl)
+            //console.log(e.from);
+            //console.log(req.originalUrl)
             if(req.originalUrl == "/ql/" + e.from && !sent){
-                console.log("QUICK LINK");
+                //console.log("QUICK LINK");
                 sent = true;
 
                 isAuthenticated(req, "cookie",[], async function(status, user){
-                    console.log(user)
+                    //console.log(user)
                     if(status){
                         if(e.visitors == undefined){
                             e.visitors = [user.id];
@@ -1560,7 +1591,7 @@ app.use(async function(req, res, next) {
                         
                         await m.updateDoc('QuickLink', {_id: e._id}, {visitors: e.visitors});
                     }else{
-                        console.log("Not authenticated")
+                        //console.log("Not authenticated")
                         if(e.restricted == false){
                             res.setHeader("to", e.to);
                             res.setHeader("group", e.group);
@@ -1570,7 +1601,7 @@ app.use(async function(req, res, next) {
                             
                         }
                     }
-                    console.log(e.visitors);
+                    //console.log(e.visitors);
                 });
                 
                 
@@ -1595,5 +1626,5 @@ app.use(async function(req, res, next) {
 
 // start the server in the port 3000 !
 app.listen(process.env.PORT, function () {
-    console.log('Example app listening on port port.');
+    //console.log('Example app listening on port port.');
 });

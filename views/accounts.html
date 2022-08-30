@@ -27,6 +27,12 @@
     <div class="blockitem" data-partof="usermanage" data-num="1" style="width:100%;display:none">
         <div style="display:inline-flex;justify-content:space-between;width:88%">
             <div id="filter" style="width:24%">
+                <div style="width:100%">
+                    <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px" id="create_new_user">
+                        Create New User
+                    </div>
+                </div>
+                
                 <div class="container c-slighterborder" style="width:100%;padding:30px">
                     <span class="text" style="margin:14px">Filter Users</span>
                     <div>
@@ -211,6 +217,7 @@
     <div id="overlayRes_add_manager" style="display: none;"></div>
     <div id="resetPassword" style="display: none;"></div>
     <div id="deleteUser" style="display: none;"></div>
+    <div id="createUser" style="display: none;"></div>
 
 </div>
 <script>
@@ -414,6 +421,17 @@
         });
         reshowManagers(); 
     });
+
+    var refreshSubgroups = {};
+    document.getElementById("createUser").addEventListener("click", function(){
+        refreshUsers();
+    })
+    document.getElementById("create_new_user").addEventListener("click", function(){
+        document.getElementById("externalClickAction").dataset.action = "overlay";
+        document.getElementById("externalClickAction").dataset.overlay = "create_account";
+        document.getElementById("overlay_done").dataset.sendback = "createUser";
+        document.getElementById("externalClickAction").click();
+    });
     document.getElementById("resetPassword").addEventListener("click", function(evt){
         var data = JSON.parse(evt.srcElement.innerHTML);
 
@@ -488,7 +506,7 @@
                                         id: userObj["id"]
                                     });
                                 }catch(e){
-                                    
+
                                 }
                                 
                             })
@@ -756,16 +774,17 @@
                                     <input type="email" class="text color-d input user_email" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["email"]}" placeholder="john.doe@company.com">
                                 </div>
                                 <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                    <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">External ID</span>
+                                    <input type="email" class="text color-d input user_externalId" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["externalId"] == undefined ? "" : u["externalId"]}" placeholder="20070000">
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
                                     <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Notes</span>
                                     <textarea class="text color-d input user_notes" style="display:inline-block;font-size:12px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%;height:80px;resize:none;border-radius:20px" data-partof="u_${u.id}" placeholder="Stuffs">${u["notes"]}</textarea>
                                 </div>
+                                <div class="container c-border-red c-hover-red color-r reset_password" style="padding:10px 50px 10px 50px;margin:10px;font-size:14px" data-partof="u_${u.id}">
+                                    Reset Password
+                                </div>
                                 
-                                <div class="container c-border c-hover color-m user_protons" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
-                                    See Proton Record
-                                </div>
-                                <div class="container c-border c-hover color-m user_protons_add" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
-                                    Manual Proton Entry
-                                </div>
                             </div>
                             <div style="width:40%">
                                 
@@ -793,9 +812,13 @@
                                     
                                     
                                 </div>
-                                <div class="container c-border c-hover color-m reset_password" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
-                                    Reset Password
+                                <div class="container c-border c-hover color-m user_protons" style="padding:10px 50px 10px 50px;margin:10px;font-size:14px" data-partof="u_${u.id}">
+                                    See Proton Record
                                 </div>
+                                <div class="container c-border c-hover color-m user_protons_add" style="padding:10px 50px 10px 50px;margin:10px;font-size:14px" data-partof="u_${u.id}">
+                                    Manual Proton Entry
+                                </div>
+                                
                                
                             </div>
                             
@@ -819,7 +842,7 @@
                 existing.forEach(m => {
                     document.querySelector(`.memberships[data-partof="u_${u.id}"]`).innerHTML += `
                     <div class="container c-border subgroup" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${sN}">
-                        <div class="remove" style="display:inline-block" data-num="${sN}" data-id="${m}">
+                        <div class="remove" style="display:inline-block" data-num="${sN}" data-id="${m}" data-partof="u_${u.id}">
                             <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${sN}">cancel</span>
                             
                         </div>
@@ -950,6 +973,227 @@
                     });
                 });
             });
+
+            Array.from(document.getElementsByClassName("remove")).forEach(e => {
+                e.addEventListener("click", function(evt) {
+                    var uid = evt.srcElement.dataset.partof.split("_")[1];
+                    var name = evt.srcElement.dataset.id;
+
+
+                    let existing = document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups.split(",");
+                    if(document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups == ""){
+                        existing = [];
+                    }
+
+                    var putBack = "";
+                    existing.forEach(e => {
+                        if(e != name){
+                            putBack += `${e},`;
+                        }
+                    });
+                    if(putBack.length > 0){
+                        putBack = putBack.substring(0, putBack.length-1);
+                    }
+                    document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups = putBack;
+                    showSubgroups();
+                    
+
+
+                });
+            
+            });
+
+            Array.from(document.getElementsByClassName("user_extend")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    
+                    var id = evt.srcElement.dataset.partof.split("_")[1];
+                    if(!usersExtended.includes(id)){
+                        usersExtended.push(id);
+                    }
+                });
+            });
+
+            Array.from(document.getElementsByClassName("user_delete")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    
+                    var id = evt.srcElement.dataset.partof.split("_")[1];
+                    document.getElementById("externalClickAction").dataset.action = "overlay";
+                    document.getElementById("externalClickAction").dataset.overlay = "confirm";
+                    document.getElementById("overlay_done").dataset.sendback = "deleteUser";
+                    document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                        "id": id,
+                        "title": "Are You Sure?",
+                        "message": "You are about to delete the user "+ allUsers.find(u => u.id == id).username+ " from the system. They will not be able to log back in, and all of their data, including Attendance, Membership, and Messages will be deleted! Please confirm the action below..."
+                    })
+                    document.getElementById("externalClickAction").click();
+                });
+            });
+
+            Array.from(document.getElementsByClassName("user_protons")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    
+                    var id = evt.srcElement.dataset.partof.split("_")[1];
+                    document.getElementById("externalClickAction").dataset.action = "overlay";
+                    document.getElementById("externalClickAction").dataset.overlay = "see_protons";
+                    document.getElementById("overlay_done").dataset.sendback = "createMeeting";
+                    document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                        "id": id,
+                        "username": allUsers.find(u => u.id == id).username,
+                        "protonLog": allUsers.find(u => u.id == id).protonLog
+                    })
+                    document.getElementById("externalClickAction").click();
+                });
+            })
+
+            Array.from(document.getElementsByClassName("user_protons_add")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    
+                    var id = evt.srcElement.dataset.partof.split("_")[1];
+                    document.getElementById("externalClickAction").dataset.action = "overlay";
+                    document.getElementById("externalClickAction").dataset.overlay = "add_protons";
+                    document.getElementById("overlay_done").dataset.sendback = "createMeeting";
+                    document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                        "id": id,
+                        "username": allUsers.find(u => u.id == id).username,
+                        "protonLog": allUsers.find(u => u.id == id).protonLog
+                    })
+                    document.getElementById("externalClickAction").click();
+                });
+            })
+
+            Array.from(document.getElementsByClassName("reset_password")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    
+                    var id = evt.srcElement.dataset.partof.split("_")[1];
+                    document.getElementById("externalClickAction").dataset.action = "overlay";
+                    document.getElementById("externalClickAction").dataset.overlay = "force_reset_password";
+                    document.getElementById("overlay_done").dataset.sendback = "resetPassword";
+                    document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                        "id": id,
+                        "username": allUsers.find(u => u.id == id).username
+                    })
+                    document.getElementById("externalClickAction").click();
+                });
+            })
+
+            Array.from(document.getElementsByClassName("user_contract")).forEach(e => {
+                e.addEventListener("click", function(evt){
+                    var id = evt.srcElement.dataset.partof.split("_")[1];
+                    if(usersExtended.includes(id)){
+                        usersExtended.splice(usersExtended.indexOf(id));
+                    }
+
+                    if(!evt.srcElement.classList.contains("saveuser")){
+                        localRefreshUsers();
+                    }
+                    
+                });
+            });
+
+            Array.from(document.getElementsByClassName("saveuser")).forEach(e => {
+                e.addEventListener("click", function(evt) {
+                    var uid = evt.srcElement.dataset.partof.split("_")[1];
+                    let existing = document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups.split(",");
+                    if(document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups == ""){
+                        existing = [];
+                    }
+                    
+                    var data = {
+                        action: "edit",
+                        id: uid,
+                        username: document.querySelector(`.user_username[data-partof="u_${uid}"]`).value,
+                        email: document.querySelector(`.user_email[data-partof="u_${uid}"]`).value,
+                        fullname: document.querySelector(`.user_fullname[data-partof="u_${uid}"]`).value,
+                        externalId: document.querySelector(`.user_externalId[data-partof="u_${uid}"]`).value,
+                        notes: document.querySelector(`.user_notes[data-partof="u_${uid}"]`).value,
+                        role: document.querySelector(`.user_role[data-partof="dropdown_${uid}"]`).dataset.value,
+                        subgroups: existing
+                    }
+                    $.ajax({
+                        url: "/group/user",
+                        type: "POST",
+                        data: data,
+                        success: function(data){
+                            refreshUsers();
+                            console.log("Refreshing users")
+                        }
+                    })
+                    
+                    //usersExtended.splice(usersExtended.indexOf(uid));
+                });
+            });
+
+            
+        Array.from(document.getElementsByClassName("dropdown")).forEach(e => {
+
+                    var val = e.dataset.value;
+                    var partof = e.dataset.partof;
+                    if(val != undefined && val != null && val != ""){
+                        var option = e.querySelector(`.dropdown_option[data-partof="${partof}"][value="${val}"]`);
+                        if(option != undefined && option != null){
+                            document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = option.innerHTML;
+                            document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = 1;
+                        }
+                    }
+
+                    e.addEventListener("click", function(evt){
+                        var partof = evt.srcElement.dataset.partof;
+                        
+                        var elementLoc = evt.srcElement.getBoundingClientRect();
+                        var documentRect = document.body.getBoundingClientRect();
+                        var existing = document.querySelector(`.dropdown_option_container[data-partof="${partof}"]`)
+                        if(existing == undefined || existing == null){
+                            var newElement = document.createElement("div");
+                            newElement.classList.add("dropdown-content");
+                            newElement.dataset.partof = partof;
+                            newElement.style.position = "absolute";
+                            newElement.style.top = elementLoc.top-90+80 + "px" + window.scrollY;
+                            newElement.dataset.normY = elementLoc.top-90+80;
+                            newElement.style.left = elementLoc.left+(elementLoc.width/2)+10 + "px";
+                            
+                            newElement.style.transform = "translateX(-50%)";
+
+                            var addHTML = "";
+                            var options = Array.from(document.querySelectorAll(`.dropdown_option[data-partof="${partof}"]`));
+
+                            for(var i = 0; i < options.length; i++){
+                                var e = options[i];
+                                addHTML += `
+                                <div data-value="${e.value}" data-partof="${partof}" style="padding:5px 0px;width:100%;border-radius:8px;margin:2px 0px" class="dropdown_option_show transition">
+                                    ${e.innerHTML}
+                                </div>
+                                `;
+                            }
+
+                            newElement.innerHTML = `
+                            <div class="container c-slightborder dropdown_option_container" style="width:${(elementLoc.width-20) + "px"};border-radius:16px" data-partof="${partof}">
+                                ${addHTML}
+                            </div>
+                            `
+                            
+                            evt.srcElement.appendChild(newElement)
+                        }else{
+                            if(evt.srcElement.classList.contains("dropdown_option_show")){
+                                console.log("AAA");
+                                var newValue = evt.srcElement.dataset.value;
+                                var newText = evt.srcElement.innerHTML;
+                                document.querySelector(`.dropdown[data-partof="${partof}"]`).dataset.value = newValue;
+                                document.querySelector(`.dropdown_text[data-partof="${partof}"]`).innerHTML = newText;
+                                document.querySelector(`.dropdown_text[data-partof="${partof}"]`).style.opacity = "1";
+                            }
+                            existing.remove();
+                        }
+                    
+                        
+                    });
+                });
+
+
+            
+
+
+
+
         });
     }
 
@@ -965,6 +1209,7 @@
                     allUsers = data["items"];
                     roles = data["roles"];
                     console.log(data)
+                    refreshSubgroups = {}
                     allUsers.forEach(u => {
                         var exists = !(roles.find(r => r["name"] == u["access"]["role"]) == undefined);
                         var color = !exists ? "gray" : roles.find(r => r["name"] == u["access"]["role"])["color"];
@@ -1065,14 +1310,15 @@
                                                 <input type="email" class="text color-d input user_email" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["email"]}" placeholder="john.doe@company.com">
                                             </div>
                                             <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">External ID</span>
+                                                <input type="email" class="text color-d input user_externalId" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%" data-partof="u_${u.id}" value="${u["externalId"] == undefined ? "" : u["externalId"]}" placeholder="20070000">
+                                            </div>
+                                            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Notes</span>
                                                 <textarea class="text color-d input user_notes" style="display:inline-block;font-size:12px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%;height:80px;resize:none;border-radius:20px" data-partof="u_${u.id}" placeholder="Stuffs">${u["notes"]}</textarea>
                                             </div>
-                                            <div class="container c-border c-hover color-m user_protons" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
-                                                See Proton Record
-                                            </div>
-                                            <div class="container c-border c-hover color-m user_protons_add" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
-                                                Manual Proton Entry
+                                            <div class="container c-border-red c-hover-red color-r reset_password" style="padding:10px 50px 10px 50px;margin:10px;font-size:14px" data-partof="u_${u.id}">
+                                                Reset Password
                                             </div>
                                         </div>
                                         <div style="width:40%">
@@ -1086,6 +1332,7 @@
                                                 </div>
                                             </div>
                                             <span class="text color-d" style="font-size:16px;margin:5px;display:block">A Part of Subgroups:</span>
+                                            <div id="refreshSubgroups_${u.id}" style="display:none"></div>
                                             <div style="border: 2px solid #4708c4;padding:20px;margin:10px;border-radius:20px;max-height:60px;overflow-y:scroll">
                                                 <div style="display:inline-block;vertical-align:middle" class="memberships" data-partof="u_${u.id}">
         
@@ -1100,9 +1347,14 @@
                                                 
                                                 
                                             </div>
-                                            <div class="container c-border c-hover color-m reset_password" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
-                                                Reset Password
+                                            <div class="container c-border c-hover color-m user_protons" style="padding:10px 50px 10px 50px;margin:10px;font-size:14px" data-partof="u_${u.id}">
+                                                See Proton Record
                                             </div>
+                                            <div class="container c-border c-hover color-m user_protons_add" style="padding:10px 50px 10px 50px;margin:10px;font-size:14px" data-partof="u_${u.id}">
+                                                Manual Proton Entry
+                                            </div>
+                                            
+
                                         </div>
                                         
                                     </div>
@@ -1125,7 +1377,7 @@
                             existing.forEach(m => {
                                 document.querySelector(`.memberships[data-partof="u_${u.id}"]`).innerHTML += `
                                 <div class="container c-border subgroup" style="padding: 5px 10px;background-color:#4708c4;display:inline-flex;align-items:center;margin:3px" data-num="${sN}">
-                                    <div class="remove" style="display:inline-block" data-num="${sN}" data-id="${m}">
+                                    <div class="remove" style="display:inline-block" data-num="${sN}" data-id="${m}" data-partof="u_${u.id}">
                                         <span class="material-symbols-rounded color-m" style="color:white;font-size:14px;margin-right:5px" data-num="${sN}">cancel</span>
                                         
                                     </div>
@@ -1228,7 +1480,9 @@
                             })
                         }
                         
-                        
+                        refreshSubgroups[u.id] = showSubgroups;
+
+
                         showSubgroups();
                     });
 
@@ -1312,7 +1566,10 @@
                                 usersExtended.splice(usersExtended.indexOf(id));
                             }
 
-                            localRefreshUsers();
+                            if(!evt.srcElement.classList.contains("saveuser")){
+                                localRefreshUsers();
+                            }
+                            
                         });
                     });
 
@@ -1323,6 +1580,7 @@
                             if(document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups == ""){
                                 existing = [];
                             }
+                            
                             var data = {
                                 action: "edit",
                                 id: uid,
@@ -1339,13 +1597,44 @@
                                 data: data,
                                 success: function(data){
                                     refreshUsers();
+                                    console.log("Refreshing users")
                                 }
                             })
-                            console.log(usersExtended)
+                            
                             //usersExtended.splice(usersExtended.indexOf(uid));
                         });
                     });
 
+                    Array.from(document.getElementsByClassName("remove")).forEach(e => {
+                        e.addEventListener("click", function(evt) {
+                            var uid = evt.srcElement.dataset.partof.split("_")[1];
+                            var name = evt.srcElement.dataset.id;
+        
+        
+                            let existing = document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups.split(",");
+                            if(document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups == ""){
+                                existing = [];
+                            }
+        
+                            var putBack = "";
+                            existing.forEach(e => {
+                                if(e != name){
+                                    putBack += `${e},`;
+                                }
+                            });
+                            if(putBack.length > 0){
+                                putBack = putBack.substring(0, putBack.length-1);
+                            }
+                            document.querySelector(`.addmembership[data-partof="u_${uid}"]`).dataset.subgroups = putBack;
+
+
+                            refreshSubgroups[uid]();
+                            
+        
+        
+                        });
+                    
+                    });
                     
                 Array.from(document.getElementsByClassName("dropdown")).forEach(e => {
 
