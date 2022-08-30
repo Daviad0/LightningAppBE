@@ -210,6 +210,8 @@
     </div>
     <div id="overlayRes_add_manager" style="display: none;"></div>
     <div id="resetPassword" style="display: none;"></div>
+    <div id="deleteUser" style="display: none;"></div>
+
 </div>
 <script>
     Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
@@ -412,7 +414,7 @@
         });
         reshowManagers(); 
     });
-    document.getElementById("resetPassword").addEventListener("click", function(){
+    document.getElementById("resetPassword").addEventListener("click", function(evt){
         var data = JSON.parse(evt.srcElement.innerHTML);
 
         $.ajax({
@@ -426,7 +428,25 @@
                 refreshUsers();
             }
         })
-    }),
+    });
+
+    document.getElementById("deleteUser").addEventListener("click", function(evt){
+        var data = evt.srcElement.innerHTML
+
+        $.ajax({
+            url: "/acc/delete",
+            type: "POST",
+            data: {
+                id: data
+            },
+            success: function(data){
+                refreshUsers();
+            }
+        })
+    });
+
+
+    
 
 
 
@@ -461,11 +481,16 @@
 
                             managers_copy = [];
                             group.managers.forEach(m => {
-                                var userObj = allUsers.find(u => u.id == m);
-                                managers_copy.push({
-                                    username: userObj["username"],
-                                    id: userObj["id"]
-                                });
+                                try{
+                                    var userObj = allUsers.find(u => u.id == m);
+                                    managers_copy.push({
+                                        username: userObj["username"],
+                                        id: userObj["id"]
+                                    });
+                                }catch(e){
+                                    
+                                }
+                                
                             })
                             
                             
@@ -734,6 +759,7 @@
                                     <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Notes</span>
                                     <textarea class="text color-d input user_notes" style="display:inline-block;font-size:12px;margin:5px;padding:14px;vertical-align:middle;text-align:left;width:60%;height:80px;resize:none;border-radius:20px" data-partof="u_${u.id}" placeholder="Stuffs">${u["notes"]}</textarea>
                                 </div>
+                                
                                 <div class="container c-border c-hover color-m user_protons" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
                                     See Proton Record
                                 </div>
@@ -742,6 +768,7 @@
                                 </div>
                             </div>
                             <div style="width:40%">
+                                
                                 <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin:20px 0px">
                                     <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Role Access</span>
                                     <div class="container c-border dropdown user_role" data-partof="dropdown_${u.id}" style="cursor:pointer;style="display:inline-block;vertical-align:middle" data-value="${u.access.role}">
@@ -1005,7 +1032,7 @@
                                             <div class="container c-border c-hover blockcontrol user_extend" style="padding:5px;margin:1px" data-partof="u_${u.id}" data-num="1">
                                                 <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">edit</span>
                                             </div>
-                                            <div class="container c-border-red c-hover-red color-r" style="padding:5px;margin:1px" data-partof="u_${u.id}">
+                                            <div class="container c-border-red c-hover-red color-r user_delete" style="padding:5px;margin:1px" data-partof="u_${u.id}">
                                                 <span class="material-symbols-rounded" style="font-size:16px">delete</span>
                                             </div>
                                         </div>
@@ -1073,7 +1100,9 @@
                                                 
                                                 
                                             </div>
-                                           
+                                            <div class="container c-border c-hover color-m reset_password" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
+                                                Reset Password
+                                            </div>
                                         </div>
                                         
                                     </div>
@@ -1210,6 +1239,22 @@
                             if(!usersExtended.includes(id)){
                                 usersExtended.push(id);
                             }
+                        });
+                    });
+
+                    Array.from(document.getElementsByClassName("user_delete")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            
+                            var id = evt.srcElement.dataset.partof.split("_")[1];
+                            document.getElementById("externalClickAction").dataset.action = "overlay";
+                            document.getElementById("externalClickAction").dataset.overlay = "confirm";
+                            document.getElementById("overlay_done").dataset.sendback = "deleteUser";
+                            document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                                "id": id,
+                                "title": "Are You Sure?",
+                                "message": "You are about to delete the user "+ allUsers.find(u => u.id == id).username+ " from the system. They will not be able to log back in, and all of their data, including Attendance, Membership, and Messages will be deleted! Please confirm the action below..."
+                            })
+                            document.getElementById("externalClickAction").click();
                         });
                     });
 

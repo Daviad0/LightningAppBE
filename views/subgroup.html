@@ -26,9 +26,6 @@
             TAG
         </div>
         <br/>
-        <div class="container c-border color-d c-hover" style="padding:10px 50px 10px 50px;margin:20px;display:inline-block">
-            <span style="pointer-events: none">Join Subgroup</span>
-        </div>
         <div class="container c-border-red color-r c-hover-red" style="padding:10px 50px 10px 50px;margin:10px">
             Leave Subgroup
         </div>
@@ -244,7 +241,7 @@
                     document.getElementById('subgroup_items').innerHTML = "";
                     
                     data['items'].forEach(i => {
-                        
+                        i["icon"] = i["icon"].replace("-", "_");
                         var color = i["color"] == undefined ? "#4708c4" : i["color"];
                         document.getElementById('subgroup_items').innerHTML += `
                         <div class="container c-slightborder item" style="width:70%;padding:20px;margin-bottom:20px">

@@ -288,10 +288,11 @@ app.post('/acc/login', function (req, res){
     });
     
 });
+
 app.post("/acc/reset", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
-            var acc = (await m.getDocs('Account', {_id: req.body.id}))[0];
+            var acc = (await m.getDocs('Account', {_id: user.id}))[0];
             var old = req.body.oldPw;
             var newPw = req.body.newPw;
             crypto.pbkdf2(old, acc.pwsalt, acc.pwiterations, 64, 'sha512', async function(err, derivedKey){
@@ -326,6 +327,19 @@ app.post("/acc/forcereset", async function(req, res){
                 await m.updateDoc('Account', {_id: acc._id}, {pwsalt: pwres.salt, pwiterations: pwres.iterations, pwhash: pwres.hash});
                 res.send(JSON.stringify({successful: true}));
             })
+        }else{
+            res.send(JSON.stringify({successful: false}));
+        }
+            
+    });
+    
+})
+
+app.post("/acc/delete", async function(req, res){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
+        if(status){
+            await m.deleteDoc('Account', {_id: req.body.id});
+            res.send(JSON.stringify({successful: true}));
         }else{
             res.send(JSON.stringify({successful: false}));
         }

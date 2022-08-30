@@ -51,13 +51,10 @@
                             <div class="a container c-border c-hover goToPage" data-page="home" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
                                 Home
                             </div>
-                            <div class="a container c-border c-hover goToPage" data-page="about" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
-                                About
-                            </div>
                             <div class="a container c-border c-hover goToPage" data-page="signin" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
-                                Sign In
+                                Sign In with Student ID
                             </div>
-                            <div class="a container c-border c-hover goToPage" data-page="group/accounts" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                            <div class="a container c-border c-hover goToPage" data-page="group/accounts" style="display: none;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
                                 Accounts
                             </div>
                             <div class="a container c-border c-hover goToPage" data-page="group/manage" style="display: none;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
@@ -127,12 +124,7 @@
                 </div>
                 <input type="password" placeholder="password1" class="input color-d" id="login_password" style="width:200px;margin-top:10px"/>
             </div>
-            <div>
-                <div style="width:80px;display:inline-block">
-                    <span class="text color-m" style="font-size:12px;font-weight:500;margin-right:5px;width:80px">Group</span>
-                </div>
-                <input type="text" placeholder="group123" class="input color-m" id="login_group" style="width:200px;margin-top:10px;border:1px solid #4708c4"/>
-            </div>
+            <input type="hidden" value="testing-env" class="input color-m" id="login_group" style="width:200px;margin-top:10px;border:1px solid #4708c4"/>
             <br/>
             <div class="a container c-border c-hover baseaction" data-action="login" style="padding:10px 20px 10px 20px">
                 Login
@@ -232,6 +224,8 @@
                                 document.getElementById("ca_username").innerHTML = data["user"]["username"];
                                 document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
                                 document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
+                                document.querySelector('div[data-page="group/accounts"]').style.display = "inline-flex";
+                                document.querySelector('div[data-page="signin"]').style.display = "none";
                             }
                         }
                     });
@@ -284,16 +278,43 @@
                     }
                     data += JSON.stringify(dataObj);
                     break;
+                case "confirm":
+                    data = overlayData["id"];
+                    break;
                 case "force_reset_password":
                     document.getElementById("error_message").style.display = "none";
 
-                    if(document.getElementById("new_password").value != document.getElementById("confirm_password") && document.getElementById("new_password").value != ""){
+                    if(document.getElementById("new_password").value == ""){
+                        document.getElementById("error_message").innerHTML = "Passwords cannot be blank";
+                        document.getElementById("error_message").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("new_password").value != document.getElementById("confirm_password")){
                         document.getElementById("error_message").innerHTML = "Passwords do not match";
                         document.getElementById("error_message").style.display = "block";
                         return;
                     }
                     var dataObj = {
                         id: overlayData["id"],
+                        newPassword: document.getElementById("new_password").value,
+                        confirmPassword: document.getElementById("confirm_password").value
+                    }
+                    data += JSON.stringify(dataObj);
+                    break;
+                case "reset_password":
+                    document.getElementById("error_message").style.display = "none";
+                    if(document.getElementById("new_password").value == "" || document.getElementById("old_password").value == ""){
+                        document.getElementById("error_message").innerHTML = "Passwords cannot be blank";
+                        document.getElementById("error_message").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("new_password").value != document.getElementById("confirm_password")){
+                        document.getElementById("error_message").innerHTML = "Passwords do not match";
+                        document.getElementById("error_message").style.display = "block";
+                        return;
+                    }
+                    var dataObj = {
+                        oldPassword: document.getElementById("old_password").value,
                         newPassword: document.getElementById("new_password").value,
                         confirmPassword: document.getElementById("confirm_password").value
                     }
@@ -367,6 +388,8 @@
                                     document.getElementById("ca_username").innerHTML = data["user"]["username"];
                                     document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
                                     document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
+                                    document.querySelector('div[data-page="group/accounts"]').style.display = "inline-flex";
+                                    document.querySelector('div[data-page="signin"]').style.display = "none";
                                     load("/home");
                                 }
                             });
@@ -403,6 +426,8 @@
                                 document.getElementById("ca_username").innerHTML = data["user"]["username"];
                                 document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
                                 document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
+                                document.querySelector('div[data-page="group/accounts"]').style.display = "inline-flex";
+                                document.querySelector('div[data-page="signin"]').style.display = "none";
                                 load("/home");
                             }
                         });
@@ -428,6 +453,8 @@
                             document.getElementById("ca_username").innerHTML = "";
                             document.getElementById("ca_group").innerHTML = "";
                             document.querySelector('div[data-page="group/manage"]').style.display = "none";
+                            document.querySelector('div[data-page="group/accounts"]').style.display = "none";
+                            document.querySelector('div[data-page="signin"]').style.display = "inline-flex";
                             load("/home");
                             break;
                         case "logattendance":
@@ -864,6 +891,50 @@
                                     overlayData["username"] = data["username"];
                                     
                                     break;
+                                case "reset_password":
+                                    var data = JSON.parse(evt.srcElement.dataset.data);
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Reset Your Password</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block"><strong>WARNING: </strong>You will not be able to access your account using your old password after changing it. Once you reset your password, there is no way to read it again in plaintext, and you must contact an Administrator if it is lost.</span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Current Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="My0ldP@ssword..." id="old_password">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">New Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="new_password">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Confirm Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="confirm_password">
+                                        </div>
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+                                    
+                                    
+                                    break;
+                                case "confirm":
+                                    var data = JSON.parse(evt.srcElement.dataset.data);
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">${data["title"]}</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block"><strong>WARNING: </strong>${data["message"]}</span>
+                                        `;
+                                    overlayData["id"] = data["id"];
+                                    
+                                    break;
                                 case "add_protons":
                                     var data = JSON.parse(evt.srcElement.dataset.data);
                                     document.getElementById('overlay').style.display = "";
@@ -1261,7 +1332,12 @@
     
                     for(var i = 0; i < action.length; i++) {
                         if(action[i] == "show") {
-                            document.getElementById(targets[i]).style.display = "block";
+                            if(document.getElementById(targets[i]).style.display == "block"){
+                                document.getElementById(targets[i]).style.display = "none";
+                            }else{
+                                document.getElementById(targets[i]).style.display = "block";
+                            }
+                            
                         } else if(action[i] == "hide") {
                             document.getElementById(targets[i]).style.display = "none";
                         }

@@ -22,11 +22,8 @@
             
         </div>
         <div>
-            <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px;display:block">
-                Edit
-            </div>
-            <div class="container c-border c-hover color-m" style="padding:10px 50px 10px 50px;margin:10px;display:block">
-                Contact User
+            <div class="container c-border c-hover color-m" id="reset_password" style="padding:10px 50px 10px 50px;margin:10px;display:none">
+                Reset Password
             </div>
         </div>
 
@@ -35,9 +32,26 @@
     <br/>
     <br/>
     <br/>
+    <div id="passwordReset" style="display:none"></div>
 </div>
 <script>
     
+    
+    document.getElementById("passwordReset").addEventListener("click", function(evt){
+        var data = JSON.parse(evt.srcElement.innerHTML);
+
+        $.ajax({
+            url: "/acc/reset",
+            type: "POST",
+            data: {
+                oldPw: data["oldPassword"],
+                newPw: data["newPassword"]
+            },
+            success: function(data){
+                refreshUsers();
+            }
+        })
+    })
 
     var params = window.location.pathname.split("/");
     $.ajax({
@@ -52,6 +66,24 @@
                 document.getElementById("roleC").style.backgroundColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
                 document.getElementById("roleC").style.borderColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
                 document.getElementById("contentToShow").style.opacity = "1";
+                if(!data["ownUser"]){
+                    document.getElementById("reset_password").style.display = "none";
+                }else{
+
+
+                    document.getElementById("reset_password").style.display = "block";
+
+                    document.getElementById("reset_password").addEventListener("click", function(evt){
+                        document.getElementById("externalClickAction").dataset.action = "overlay";
+                        document.getElementById("externalClickAction").dataset.overlay = "reset_password";
+                        document.getElementById("overlay_done").dataset.sendback = "passwordReset";
+                        document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                            "hello":"there"
+                        })
+                        document.getElementById("externalClickAction").click();
+                    })
+                    
+                }
             }
         }
     })
