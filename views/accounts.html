@@ -209,6 +209,7 @@
         </div>
     </div>
     <div id="overlayRes_add_manager" style="display: none;"></div>
+    <div id="resetPassword" style="display: none;"></div>
 </div>
 <script>
     Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
@@ -411,6 +412,21 @@
         });
         reshowManagers(); 
     });
+    document.getElementById("resetPassword").addEventListener("click", function(){
+        var data = JSON.parse(evt.srcElement.innerHTML);
+
+        $.ajax({
+            url: "/acc/forcereset",
+            type: "POST",
+            data: {
+                id: data.id,
+                newPw: data["newPassword"]
+            },
+            success: function(data){
+                refreshUsers();
+            }
+        })
+    }),
 
 
 
@@ -749,6 +765,9 @@
 
                                     
                                     
+                                </div>
+                                <div class="container c-border c-hover color-m reset_password" style="padding:10px 50px 10px 50px;margin:10px" data-partof="u_${u.id}">
+                                    Reset Password
                                 </div>
                                
                             </div>
@@ -1221,6 +1240,21 @@
                                 "id": id,
                                 "username": allUsers.find(u => u.id == id).username,
                                 "protonLog": allUsers.find(u => u.id == id).protonLog
+                            })
+                            document.getElementById("externalClickAction").click();
+                        });
+                    })
+
+                    Array.from(document.getElementsByClassName("reset_password")).forEach(e => {
+                        e.addEventListener("click", function(evt){
+                            
+                            var id = evt.srcElement.dataset.partof.split("_")[1];
+                            document.getElementById("externalClickAction").dataset.action = "overlay";
+                            document.getElementById("externalClickAction").dataset.overlay = "force_reset_password";
+                            document.getElementById("overlay_done").dataset.sendback = "resetPassword";
+                            document.getElementById("externalClickAction").dataset.data = JSON.stringify({
+                                "id": id,
+                                "username": allUsers.find(u => u.id == id).username
                             })
                             document.getElementById("externalClickAction").click();
                         });

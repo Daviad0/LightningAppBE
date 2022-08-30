@@ -31,7 +31,8 @@ const models = {
             message: String,
             givenBy: String,
             protons: Number
-        }]
+        }],
+        externalIds: []
     })),
     'Group' : mongoose.model('Group', new mongoose.Schema({
         name: String,

@@ -54,6 +54,9 @@
                             <div class="a container c-border c-hover goToPage" data-page="about" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
                                 About
                             </div>
+                            <div class="a container c-border c-hover goToPage" data-page="signin" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
+                                Sign In
+                            </div>
                             <div class="a container c-border c-hover goToPage" data-page="group/accounts" style="display: inline-flex;margin:0px 10px 0px 10px;padding:10px 20px 10px 20px">
                                 Accounts
                             </div>
@@ -239,7 +242,7 @@
         }
 
         document.getElementById("overlay_done").addEventListener("click", function(evt){
-            document.getElementById('overlay').style.display = "none";
+            
             
             var sendback = document.getElementById(evt.srcElement.dataset.sendback);
             var data = "";
@@ -281,6 +284,21 @@
                     }
                     data += JSON.stringify(dataObj);
                     break;
+                case "force_reset_password":
+                    document.getElementById("error_message").style.display = "none";
+
+                    if(document.getElementById("new_password").value != document.getElementById("confirm_password") && document.getElementById("new_password").value != ""){
+                        document.getElementById("error_message").innerHTML = "Passwords do not match";
+                        document.getElementById("error_message").style.display = "block";
+                        return;
+                    }
+                    var dataObj = {
+                        id: overlayData["id"],
+                        newPassword: document.getElementById("new_password").value,
+                        confirmPassword: document.getElementById("confirm_password").value
+                    }
+                    data += JSON.stringify(dataObj);
+                    break;
                 case "create_meeting":
                     var attending = [];
                     Array.from(document.getElementsByClassName("subgroup")).forEach(e => {
@@ -300,6 +318,7 @@
                     console.log(data);
                     break;
             }
+            document.getElementById('overlay').style.display = "none";
             if(sendback != null){
                 sendback.innerHTML = data;
                 sendback.click();
@@ -818,7 +837,33 @@
                                     overlayData["username"] = data["username"];
                                     
                                     break;
+                                case "force_reset_password":
+                                    var data = JSON.parse(evt.srcElement.dataset.data);
+                                    document.getElementById('overlay').style.display = "";
 
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Reset ${data["username"]}'s Password</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block"><strong>WARNING: </strong>The user will not be able to access their account with their old password unless they know the new one. Please ensure you communicate the new password to them!</span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">New Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="new_password">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Confirm Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="confirm_password">
+                                        </div>
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+                                    overlayData["id"] = data["id"];
+                                    overlayData["username"] = data["username"];
+                                    
+                                    break;
                                 case "add_protons":
                                     var data = JSON.parse(evt.srcElement.dataset.data);
                                     document.getElementById('overlay').style.display = "";

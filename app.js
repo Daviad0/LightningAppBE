@@ -223,6 +223,19 @@ app.get('/about', function (req, res) {
     //res.end();
 });
 
+
+app.get('/signin', function (req, res) {
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            res.redirect("/home");
+        }else{
+            res.sendFile(__dirname + "/views/anonsignin.html");
+        }
+    });
+    
+    //res.end();
+});
+
 app.get('/present', function (req, res) {
     if(req.query.part != undefined){
         res.sendFile(__dirname + "/views/present.html");
@@ -264,7 +277,7 @@ app.post('/acc/login', function (req, res){
                     }, 'secret', {
                         expiresIn: '7d'
                     });
-                    notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Sign In Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
+                    notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
                     res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
                 }else{
                     res.send(JSON.stringify({successful: false}));
@@ -295,6 +308,23 @@ app.post("/acc/reset", async function(req, res){
                 }else{
                     res.send(JSON.stringify({successful: false}));
                 }
+            })
+        }else{
+            res.send(JSON.stringify({successful: false}));
+        }
+            
+    });
+    
+})
+
+app.post("/acc/forcereset", async function(req, res){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
+        if(status){
+            var acc = (await m.getDocs('Account', {_id: req.body.id}))[0];
+            var newPw = req.body.newPw;
+            hashPassword(newPw, async function(pwres){
+                await m.updateDoc('Account', {_id: acc._id}, {pwsalt: pwres.salt, pwiterations: pwres.iterations, pwhash: pwres.hash});
+                res.send(JSON.stringify({successful: true}));
             })
         }else{
             res.send(JSON.stringify({successful: false}));
@@ -421,7 +451,7 @@ app.get("/group/links", async function(req, res){
 });
 
 app.get("/group/presentation", async function(req, res){
-    isAuthenticated(req, "cookie",[], async function(status, user){
+    isAuthenticated(req, "cookie",["*"], async function(status, user){
         if(status){
             var pres = await m.getDocs("Presentation", {group: user.group});
             console.log(pres);
@@ -434,7 +464,7 @@ app.get("/group/presentation", async function(req, res){
 });
 
 app.get("/group/users", async function(req, res){
-    isAuthenticated(req, "cookie",["*"], async function(status, user){
+    isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
             var users = await m.getDocs("Account", {group: user.group});
             var group = await m.getDocs("Group", {uniqueId: user.group});
@@ -453,7 +483,7 @@ app.get("/group/users", async function(req, res){
 });
 
 app.get("/group/roles", async function(req, res){
-    isAuthenticated(req, "cookie",["*"], async function(status, user){
+    isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
             var group = await m.getDocs("Group", {uniqueId: user.group});
             
@@ -870,6 +900,15 @@ function getTodaysEvent(docs){
             }
         }
     });
+
+    // var minApart = null;
+    // if(closestToNow != null){
+    //     minApart = (closestToNow.datetime.getTime() - today.getTime()/1000)/60;
+    //     if(minApart > 90){
+    //         closestToNow = null;
+    //     }
+    // }
+
     return closestToNow;
 }
 
@@ -1117,6 +1156,36 @@ app.post("/group/subgroup/schedule", async function(req, res){
     });
 });
 
+
+app.post("/group/signinreminder",async function(req, res){
+    if(req.body.key == process.env.CRON_KEY){
+
+        var docs = await m.getDocs('AttendanceItem', {group: "testing-env"});
+        var closestToNow = getTodaysEvent(docs);
+        if(closestToNow != null){
+            var diff = ((closestToNow.datetime.getTime() - new Date().getTime())/1000)/60;
+            if(diff < 20){
+                var usersToCheck = await m.getDocs("Account", {group: "testing-env"});
+                var idsToSend = [];
+
+                for(var i = 0; i < usersToCheck.length; i++){
+                    var u = usersToCheck[i];
+                    if(u.attendance.filter(x => x.event == closestToNow._id).length == 0){
+                        idsToSend.push(u._id);
+                    }
+                }
+                notifyUsers(idsToSend, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
+
+            }
+        }
+        res.send(JSON.stringify({successful: true}));
+
+    }else{
+        res.status(401).send(JSON.stringify({successful: false}));
+    }
+});
+
+
 app.get('/group/announcements', async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
@@ -1264,7 +1333,34 @@ app.post("/group/subgroup/remove", async function(req, res){
     
     });
 });
+app.post("/group/today/anon", async function(req, res){
+    var externalId = req.body.externalId;
+    var group = req.body.group;
 
+    var docs = await m.getDocs('AttendanceItem', {group: group});
+    var closestToNow = getTodaysEvent(docs);
+
+    var user = (await m.getDocs('Account', {group: group})).find(u => u.externalIds.includes(externalId));
+
+
+    if(closestToNow != undefined && (user.attendance == undefined || user.attendance.filter(a => a.event == closestToNow._id).length == 0)){
+        // add attendance record
+        var toUpdate = {
+            attendance : user.attendance == undefined ? [] : user.attendance
+        };
+        toUpdate.attendance.push({
+            event: closestToNow._id,
+            status: "ATTEND",
+            overriddenstatus: "",
+            datetime: new Date()
+        });
+        
+        console.log(toUpdate);
+        await m.updateDoc('Account', {_id: user._id}, toUpdate);
+    }
+    res.send(JSON.stringify({successful: true}));
+
+});
 app.post("/group/today", async function(req, res){
     isAuthenticated(req, "cookie",["VIEW_SCHEDULE_SIGNIN"], async function(status, user){
         if(status){
