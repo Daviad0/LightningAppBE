@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const OneSignal = require('@onesignal/node-onesignal');
+const nodemailer = require('nodemailer');
 var mongoose = require('mongoose');
 var m = require('./scripts/database.js');
 const emoji = require('node-emoji');
@@ -32,7 +33,7 @@ const { moveMessagePortToContext } = require('worker_threads');
 
 app.set('trust proxy', true);
 app.use(cookies());
-m.init();
+m.init(process.env.DB_PASSWORD);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
@@ -46,6 +47,17 @@ app.use(express.static(__dirname + '/public'));
 //     refreshToken: ''
 //   }
 // });
+
+
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    auth: {
+      user: 'sparkclub862@gmail.com',
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+  
 
 async function notifyUsers(users, title, subtitle, message){
     const notification = new OneSignal.Notification();
@@ -69,6 +81,18 @@ function hashPassword(password, callback) {
     });
 
     
+}
+
+function sendEmail(email, title, subtitle, message){
+    transporter.sendMail({
+        from: '"SparkClub #862" <sparkclub862@gmail.com>', // sender address
+        to: email, // list of receivers
+        subject: title, // Subject line
+        
+        html: `<h1><strong>${subtitle}</strong></h1><p>${message}</p>`, // html body
+      }).then(info => {
+        console.log({info});
+      }).catch(console.error);
 }
 
 function sendNotifications(emails, title, message){
@@ -109,6 +133,7 @@ function isAuthenticated(req, method, permissionReq, callback) {
         var token = req.headers.authorization || req.cookies.session;
         jwt.verify(token, 'secret', async function (err, decoded) {
             if (err) {
+                console.log(err)
                 callback(false, undefined);
             } else {
                 var randomReqNum = Math.random()*200;
@@ -118,7 +143,7 @@ function isAuthenticated(req, method, permissionReq, callback) {
                         var u = (await m.getDocs('Account', {_id: decoded.id}))[0];
                         var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
                         
-                        var specificRolePerms = group.roles.filter(r => r.name == u.access.role)[0].permissions;
+                        var specificRolePerms = group.roles.filter(r => r.name == u.access.role).length > 0 ? group.roles.filter(r => r.name == u.access.role)[0].permissions : [];
                         decoded.permissions = specificRolePerms;
                         var access = false;
     
@@ -139,12 +164,13 @@ function isAuthenticated(req, method, permissionReq, callback) {
                     }else{
                         var u = (await m.getDocs('Account', {_id: decoded.id}))[0];
                         var group = (await m.getDocs('Group', {uniqueId: u.group}))[0];
-                        
-                        var specificRolePerms = group.roles.filter(r => r.name == u.access.role)[0].permissions;
+                        console.log("SUCCESS")
+                        var specificRolePerms = group.roles.filter(r => r.name == u.access.role).length > 0 ? group.roles.filter(r => r.name == u.access.role)[0].permissions : [];
                         decoded.permissions = specificRolePerms;
                         callback(true, decoded);
                     }
                 }catch(e){
+                    console.log(e)
                     callback(false, decoded);
                 }
                 
@@ -277,6 +303,9 @@ app.post('/acc/login', function (req, res){
                     }, 'secret', {
                         expiresIn: '7d'
                     });
+
+                    sendEmail(docs[0].email, emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you! Always remember not to share your password with anyone except for team leadership!");
+
                     notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
                     res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
                 }else{
@@ -1205,20 +1234,27 @@ app.post("/group/subgroup/schedule", async function(req, res){
 app.post("/group/signinreminder",async function(req, res){
     if(req.body.key == process.env.CRON_KEY){
 
-        var docs = await m.getDocs('AttendanceItem', {group: "testing-env"});
+        var docs = await m.getDocs('AttendanceItem', {group: "lightning-robotics"});
         var closestToNow = getTodaysEvent(docs);
         if(closestToNow != null){
             var diff = ((closestToNow.datetime.getTime() - new Date().getTime())/1000)/60;
             if(diff < 20){
-                var usersToCheck = await m.getDocs("Account", {group: "testing-env"});
+                var usersToCheck = await m.getDocs("Account", {group: "lightning-robotics"});
                 var idsToSend = [];
+                var emailsToSend = [];
 
                 for(var i = 0; i < usersToCheck.length; i++){
                     var u = usersToCheck[i];
                     if(u.attendance.filter(x => x.event == closestToNow._id).length == 0){
                         idsToSend.push(u._id);
+                        emailsToSend.push(u.email);
                     }
                 }
+
+                emailsToSend.forEach(e => {
+                    sendEmail(e, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
+                })
+                
                 notifyUsers(idsToSend, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
 
             }
@@ -1268,6 +1304,11 @@ app.post('/group/announcement', async function(req, res){
 
             var usersToSend = (await m.getDocs('Account', {group: user.group}));
             var idsToSend = usersToSend.map(u => u._id);
+            var emailsToSend = usersToSend.map(u => u.email);
+
+            emailsToSend.forEach(e => {
+                sendEmail(e, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
+            })
             notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
 
 
@@ -1326,6 +1367,11 @@ app.post('/group/subgroup/message', async function(req, res){
 
             var usersToSend = (await m.getDocs('Account', {group: user.group})).filter(u => u.access.groups.includes(subgroup));
             var idsToSend = usersToSend.map(u => u._id);
+            var emailsToSend = usersToSend.map(u => u.email);
+
+            emailsToSend.forEach(e => {
+                sendEmail(e, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
+            })
             notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
 
             group.subgroups.find(g => g.name == subgroup).messages = messages;

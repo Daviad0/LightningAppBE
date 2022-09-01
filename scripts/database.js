@@ -118,29 +118,29 @@ const models = {
     }))
 }
 
-async function init(){
-    await mongoose.connect('mongodb://23.28.58.218:19132/lightningapp', { useNewUrlParser: true, useUnifiedTopology: true });
+async function init(pw){
+    await mongoose.connect('mongodb+srv://daviado:' + pw + '@lightningapp.remhn.mongodb.net/lightningapp', { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('Connected to mongodb');
 
     
-    var groups = await getDocs('Group', {uniqueId: 'testing-env'});
+    var groups = await getDocs('Group', {uniqueId: 'lightning-robotics'});
     if(groups.length == 0){
-        await createDoc('Group', {name: 'Testing Environment', uniqueId: 'testing-env', locked: false, affiliations: []});
+        await createDoc('Group', {name: 'Testing Environment', uniqueId: 'lightning-robotics', locked: false, affiliations: []});
     }
 
-    var items = await getDocs('ModuleItem', {group: 'testing-env'});
+    var items = await getDocs('ModuleItem', {group: 'lightning-robotics'});
     if(items.length == 0){
-        await createDoc('ModuleItem', {group: 'testing-env', title: 'Test Item', contents: 'Here are some contents...', icon: 'favorite', image: '', result: {to: 'link', data: 'https://bit.ly/LRLanding'}, show: true});
+        await createDoc('ModuleItem', {group: 'lightning-robotics', title: 'Test Item', contents: 'Here are some contents...', icon: 'favorite', image: '', result: {to: 'link', data: 'https://bit.ly/LRLanding'}, show: true});
     }
 
-    var items = await getDocs('AttendanceItem', {group: 'testing-env'});
+    var items = await getDocs('AttendanceItem', {group: 'lightning-robotics'});
     if(items.length == 0){
-        await createDoc('AttendanceItem', {group: 'testing-env', title: 'Very Important Meeting', description: 'Must Attend or Die', datetime: new Date(), length: 2, code: '12345'});
+        await createDoc('AttendanceItem', {group: 'lightning-robotics', title: 'Very Important Meeting', description: 'Must Attend or Die', datetime: new Date(), length: 2, code: '12345'});
     }
 
-    var items = await getDocs('QuickLink', {group: 'testing-env'});
+    var items = await getDocs('QuickLink', {group: 'lightning-robotics'});
     if(items.length == 0){
-        await createDoc('QuickLink', {group: 'testing-env', name: 'Test Link',from: "landing", to: 'https://bit.ly/LRLanding', restricted: false});
+        await createDoc('QuickLink', {group: 'lightning-robotics', name: 'Test Link',from: "landing", to: 'https://bit.ly/LRLanding', restricted: false});
     }
 
     

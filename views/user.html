@@ -63,8 +63,14 @@
                 document.getElementById("username").innerHTML = data["user"]["username"];
                 document.getElementById("group").innerHTML = data["group"]["name"];
                 document.getElementById("role").innerHTML = data["user"]["access"]["role"].toUpperCase();
-                document.getElementById("roleC").style.backgroundColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
-                document.getElementById("roleC").style.borderColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
+                try{
+                    document.getElementById("roleC").style.backgroundColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
+                    document.getElementById("roleC").style.borderColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
+                }catch(e){
+                    document.getElementById("roleC").style.backgroundColor = "gray";
+                    document.getElementById("roleC").style.borderColor = "gray";
+                }
+                
                 document.getElementById("contentToShow").style.opacity = "1";
                 if(!data["ownUser"]){
                     document.getElementById("reset_password").style.display = "none";
