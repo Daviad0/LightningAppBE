@@ -1,15 +1,10 @@
 <div class="transition" style="display: inline-block;width:100%;opacity:0" id="contentToShow">
     <div style="position: fixed;bottom:0;left:20px;z-index:999">
         <div style="display:inline-flex;justify-content:center">
-            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 0px 0px 0px;border-width:2px 1px 2px 2px" data-partof="report" data-num="1">
+            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 8px 0px 0px;border-width:2px 1px 2px 2px" data-partof="report" data-num="1">
                 <span style="pointer-events: none">Attendance</span>
             </div>
-            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:0px;border-width:2px 1px 2px 1px" data-partof="report" data-num="2">
-                <span style="pointer-events: none">Links</span>
-            </div>
-            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:0px 8px 0px 0px;border-width:2px 2px 2px 1px" data-partof="report" data-num="2">
-                <span style="pointer-events: none">KATH :></span>
-            </div>
+            
         </div>
     </div>
 
@@ -38,10 +33,16 @@
             <div style="width: 80%;overflow-x:scroll;display:inline-block" id="attendancegrid">
 
             </div>
+            <br/>
+            <br/>
+            <div class="container c-border color-d c-hover" id="export" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+                <span style="pointer-events: none">Export to CSV</span>
+            </div>
         </div>
         
         <div class="blockitem container" data-partof="attendance" data-num="2" style="width: 100%;display:none">
             <div id="userlist" style="width:80%;display: inline-flex;flex-wrap:wrap;justify-content:center"></div>
+            
         </div>
         <div class="blockitem container" data-partof="attendance" data-num="3" style="width: 100%;display:none">
 
@@ -55,7 +56,7 @@
         document.getElementById("contentToShow").style.opacity = 1;
     },5);
 
-
+    var finalCSV = "";
     function reloadAllBaseEvents(){
         Array.from(document.getElementsByClassName("delete")).forEach(e => {
             e.addEventListener("click", function(evt){
@@ -250,16 +251,27 @@
                             
                         </div>`
                     var mN = 0;
+                    data["meetings"] = data["meetings"].sort(function(a, b){
+                        return new Date(a.datetime) - new Date(b.datetime);
+                    });
+                    var csv = 'User,';
                     data["meetings"].forEach(function(m){
                         mN += 1;
                         fhtml += `
 
-                            <div style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center" title="${m["title"]}">
-                                <span style="pointer-events: none" title="${m["title"]}">${mN}</span>
+                            <div class="expand" style="height:40px;display:inline-flex;border:1px solid black;align-items:center;justify-content:center" title="${m["title"]}" data-id="${mN}">
+                                <span class="A" style="pointer-events: none;position:relative" title="${m["title"]}">${mN}</span>
+                                <div class="B" style="pointer-events: none;position:relative">
+                                    <span style="pointer-events: none;display:block;font-size:12px" title="">${m["title"]}</span>
+                                    <span style="pointer-events: none;display:block;font-size:12px" title="">${new Date(m["datetime"]).toLocaleString()}</span>
+                                </div>
+                                
                             </div>
                         
                         `;
+                        csv += new Date(m["datetime"]).toLocaleString().replace(",", "") + ',';
                     });
+                    csv += ",Total,%";
                     fhtml += `
                     <div style="height:40px;display:inline-flex;width:100px;border:1px solid black;align-items:center;justify-content:center;margin-left:10px">
                         <span style="pointer-events: none">Total</span>
@@ -273,12 +285,16 @@
                         console.log(u)
                         fhtml += `<div style="display:flex;justify-content:left">
                             <div style="height:40px;display:inline-flex;width:200px;border:1px solid black;align-items:center;justify-content:center">
-                                <span style="pointer-events: none;font-weight:600">${u["username"]}</span>
+                                <span style="pointer-events: none;font-weight:600">${u["fullname"]}</span>
                             </div>`
                         var hours = 0;
                         var totalHours = 0;
                         var totalMeetings = 0;
                         var meetings = 0;
+                        var honestMeetings = 0;
+                        var dishonestMeetings = 0;
+                        var mN = 0;
+                        csv += '\n' + u["fullname"] + ',';
                         data["meetings"].forEach(function(m){
                             // check if user was at meeting
                             
@@ -304,9 +320,15 @@
                                 }
                             }
 
+                            if(present && override == "ABSENT"){
+                                dishonestMeetings += 1;
+                            }else if(present){
+                                honestMeetings += 1;
+                            }
+
                             
 
-                            console.log(override)
+                            
 
                             if(override == "ATTEND"){
                                 if(present && required){
@@ -338,15 +360,16 @@
                             }
 
                             
-
+                            csv += `${present ? m.length : (required ? "0" : "/")}${override != "" ? "*" : ""}` + ',';
 
                             fhtml += `
 
-                                <div class="editattendance" style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center;cursor:pointer;background-color: ${present ? "#23cc39" : (required ? "#ff413b": "white")}" data-uid="${u.id}" data-mid="${m._id}">
+                                <div class="editattendance" style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center;cursor:pointer;background-color: ${present ? "#23cc39" : (required ? "#ff413b": "white")}" data-mN="${mN}" data-uid="${u.id}" data-mid="${m._id}">
                                     <span style="pointer-events: none;color:${present || required ? "white" : "lightgray"}">${present ? m.length : (required ? "0" : "/")}${override != "" ? "*" : ""}</span>
                                 </div>
                             
                             `;
+                            mN += 1;
                         });
                         var percentage = totalMeetings > 0 ? Math.round((meetings/totalMeetings)*100) : 0;
                         uhtml += `
@@ -359,12 +382,13 @@
                                     <span style="pointer-events: none" style="font-size:16px;display:block"><strong>${percentage}%</strong> attendance rate</span>
                                 </div>
                                 <div>
-                                    <span style="pointer-events: none" style="font-size:16px;display:block"><strong>90%</strong> <span title="Student Reporting Accuracy">SRA</span></span>
+                                    <span style="pointer-events: none" style="font-size:16px;display:block"><strong>${Math.round((honestMeetings / (dishonestMeetings+honestMeetings))*100)}%</strong> <span title="Student Reporting Accuracy">SRA</span></span>
                                 </div>
                                 
                                 
                             </div>
                         `;
+                        csv += "," + hours + "," + percentage;
                         fhtml += `
                         <div style="height:40px;display:inline-flex;width:100px;border:1px solid black;align-items:center;justify-content:center;margin-left:10px">
                             <span style="pointer-events: none">${hours}</span>
@@ -374,7 +398,7 @@
                         </div>
                     </div>`;
                     })
-
+                    finalCSV = csv;
                     document.getElementById("attendancegrid").innerHTML = fhtml;
                     document.getElementById("userlist").innerHTML = uhtml;
 
@@ -394,10 +418,41 @@
                         });
                     })
 
+                    Array.from(document.getElementsByClassName("expand")).forEach(e => {
+                        e.addEventListener('mouseover', function(evt){
+                            Array.from(document.querySelectorAll(".editattendance[data-mN='" + (evt.srcElement.dataset.id-1) + "'")).forEach(e => {
+                                e.style.borderColor = "deeppink";
+                                setTimeout(() => {
+                                    e.style.borderColor = "black";
+                                }, 500);
+                            });
+                        });
+                        e.addEventListener('click', function(evt){
+                            Array.from(document.querySelectorAll(".editattendance[data-mN='" + (evt.srcElement.dataset.id-1) + "'")).forEach(e => {
+                                e.style.borderColor = "deeppink";
+                                setTimeout(() => {
+                                    e.style.borderColor = "black";
+                                }, 500);
+                            });
+                        });
+                    })
+                    
+
                 }
             }
         })
     }
+
+
+    document.getElementById("export").addEventListener('click', function(evt){
+        var csv = finalCSV;
+        var csvFile = new Blob([csv], {type: "text/csv"});
+        var csvURL = URL.createObjectURL(csvFile);
+        var tempLink = document.createElement('a');
+        tempLink.href = csvURL;
+        tempLink.setAttribute('download', 'attendance.csv');
+        tempLink.click();
+    });
 
     document.getElementById("editAttendance").addEventListener('click', function(evt){
         
