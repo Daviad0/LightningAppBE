@@ -60,14 +60,16 @@ const transporter = nodemailer.createTransport({
   
 
 async function notifyUsers(users, title, subtitle, message){
-    const notification = new OneSignal.Notification();
-    notification.app_id = ONESIGNAL_APP_ID;
-    notification.include_external_user_ids = users;
-    notification.headings = { en: title };
-    notification.subtitle = subtitle;
-    notification.contents = { en: message };
-    console.log("Notify????");
-    const {id} = await client.createNotification(notification);
+    if(users.length > 0){
+        const notification = new OneSignal.Notification();
+        notification.app_id = ONESIGNAL_APP_ID;
+        notification.include_external_user_ids = users;
+        notification.headings = { en: title };
+        notification.subtitle = subtitle;
+        notification.contents = { en: message };
+        const {id} = await client.createNotification(notification);
+    }
+    
 }
 
 function hashPassword(password, callback) {
