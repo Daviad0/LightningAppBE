@@ -1242,8 +1242,10 @@ app.post("/group/signinreminder",async function(req, res){
 
         var docs = await m.getDocs('AttendanceItem', {group: "lightning-robotics"});
         var closestToNow = getTodaysEvent(docs);
+        console.log(closestToNow);
         if(closestToNow != null){
             var diff = ((closestToNow.datetime.getTime() - new Date().getTime())/1000)/60;
+            console.log(diff);
             if(diff < 20){
                 var usersToCheck = await m.getDocs("Account", {group: "lightning-robotics"});
                 var idsToSend = [];
@@ -1256,7 +1258,7 @@ app.post("/group/signinreminder",async function(req, res){
                         emailsToSend.push(u.email);
                     }
                 }
-
+                console.log(idsToSend);
                 emailsToSend.forEach(e => {
                     sendEmail(e, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
                 })
