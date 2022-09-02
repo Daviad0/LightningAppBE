@@ -1260,6 +1260,7 @@ app.post("/group/signinreminder",async function(req, res){
                 }
                 console.log(idsToSend);
                 emailsToSend.forEach(e => {
+                    console.log("Send to " + e);
                     sendEmail(e, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
                 })
                 
