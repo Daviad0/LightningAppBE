@@ -1232,7 +1232,7 @@ app.post("/group/subgroup/schedule", async function(req, res){
 
 
 app.post("/group/signinreminder",async function(req, res){
-    if(req.body.key == process.env.CRON_KEY){
+    if(req.headers.key == process.env.CRON_KEY){
 
         var docs = await m.getDocs('AttendanceItem', {group: "lightning-robotics"});
         var closestToNow = getTodaysEvent(docs);
