@@ -89,7 +89,12 @@ function sendEmail(email, title, subtitle, message){
         to: email, // list of receivers
         subject: title, // Subject line
         
-        html: `<h1><strong>${subtitle}</strong></h1><p>${message}</p>`, // html body
+        html: `
+        <div style="width:100%;padding-top:20px;padding-bottom:20px;background-color:#4708c4;margin:20px;border-radius:16px">
+            <h1 style="color:white;text-align:center">${subtitle}</h1>
+        </div>
+        
+        <p style="font-size:20px;text-align:center">${message}</p>`, // html body
       }).then(info => {
         console.log({info});
       }).catch(console.error);
@@ -765,7 +770,8 @@ app.post("/group/subgroup", async function(req, res){
                     name: req.body.name,
                     tag: req.body.tag,
                     features: req.body.features,
-                    joinable: req.body.joinable
+                    joinable: req.body.joinable,
+                    managers: req.body.managers
                 });
                 await m.updateDoc("Group", {_id: group._id}, {subgroups: group.subgroups});
             }else if(req.body.action == "delete"){

@@ -619,6 +619,7 @@
                     var hours = 0;
                     var gmeetings = 0;
                     var gtotalmeetings = 0;
+                    var allRequests = [];
                     prevMeetings.forEach(m => {
                         var date = new Date(m.datetime);
                         var day = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
@@ -626,6 +627,15 @@
 
                         var meetings = 0;
                         var totalMeetings = 0;
+
+                        m["requests"].forEach(r => {
+                            if(users.filter(e => e.id == r.requester).length > 0){
+                                r["meetingId"] = m._id;
+                                r["meetingTitle"] = m.title;
+                                allRequests.push(r);
+                            }
+                            
+                        })
 
                         users.forEach(u => {
                             totalMeetings += 1;
@@ -652,6 +662,25 @@
                         gmeetings += meetings;
                         gtotalmeetings += totalMeetings;
                     })
+
+                    var reqHTML = '';
+                    allRequests = allRequests.sort((a, b) => {
+                        return new Date(a.datetime) - new Date(b.datetime);
+                    });
+                    allRequests.forEach(r => {
+                        var user = users.filter(e => e.id == r.requester)[0];
+                        reqHTML += `
+                        <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:90%;align-items:center;margin:5px">
+                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500">${user["fullname"]}</span>
+                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500;text-overflow:ellipsis">${r["meetingTitle"]}</span>
+                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500;text-overflow:ellipsis">Requesting <div style="padding:5px 8px;background-color:${r["final"] == "ATTEND" ? "#23cc39" : "gray"};border-radius:4px;display:inline-block;color:white">${status}</div></span>
+                        
+                        
+                        </div>
+                        
+                        `;
+                    })
+
 
                     Array.from(document.getElementsByClassName("changeAttendance")).forEach(e =>{
                         e.addEventListener('click', function(evt){

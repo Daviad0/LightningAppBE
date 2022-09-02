@@ -1587,6 +1587,7 @@
                                 username: document.querySelector(`.user_username[data-partof="u_${uid}"]`).value,
                                 email: document.querySelector(`.user_email[data-partof="u_${uid}"]`).value,
                                 fullname: document.querySelector(`.user_fullname[data-partof="u_${uid}"]`).value,
+                                externalId: document.querySelector(`.user_externalId[data-partof="u_${uid}"]`).value,
                                 notes: document.querySelector(`.user_notes[data-partof="u_${uid}"]`).value,
                                 role: document.querySelector(`.user_role[data-partof="dropdown_${uid}"]`).dataset.value,
                                 subgroups: existing
@@ -1905,6 +1906,7 @@
                 }
             })
         }else if(subgroupAction == "create"){
+            currentSubgroup = {};
             currentSubgroup.name = document.getElementById("subgroup_groupName").value;
             currentSubgroup.action = "create";
             currentSubgroup.features = [];
