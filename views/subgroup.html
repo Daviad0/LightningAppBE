@@ -129,17 +129,21 @@
             </div>
         </div>
         <div data-partof="attendance" data-num="3" class="blockitem" style="display:none">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-                <div style="width:80%">
-                    <span class="text">Flagged Attendance Reports</span>
-                    <div id="subgroup_manage_flaggedAttendance" style="width:100%;margin:20px">
-                        
-                    </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+                <div style="width:60%">
     
                     <span class="text">Confirm User Attendance</span>
                     <div id="subgroup_manage_confirmAttendance" style="width:100%;margin:20px">
                         
                     </div>
+                    
+                </div>
+                <div style="width:36%;text-align:center">
+                    <div style="display:block;margin:20px">
+                        <span class="text color-d" style="display:block;font-size:60px" id="subgroup_totalRequests">29</span>
+                        <span class="text" style="display:block">Total Requests</span>
+                    </div>
+                    
                     
                 </div>
             </div>
@@ -555,6 +559,22 @@
     }
     var allMeetings = [];
     var meetings = [];
+
+    function submitRequest(data){
+        console.log("submitRequest" + data);
+        $.ajax({
+            url: "/group/attendance/request",
+            type: "POST",
+            data: data,
+            success: function(data){
+                data = JSON.parse(data);
+                console.log(data);
+                if(data["successful"]){
+                    reloadAttendance();
+                }
+            }
+        })
+    }
     function reloadAttendance(){
         $.ajax({
             url: '/group/report/attendance',
@@ -562,10 +582,11 @@
             success: function(data){
                 data = JSON.parse(data);
                 if(data['successful']){
+                    //console.log(data['meetings'])
                     meetings = data['meetings'].filter(m => m.subgroups.includes(subgroup.name));
                     allMeetings = data['meetings'];
                     var ourRate = meetings.length / data["meetings"].length;
-
+                    //console.log(meetings)
                     document.getElementById("subgroup_manage_attendRate").innerHTML = `${Math.round(ourRate*100)}%`;
                     var now = new Date();
                     var prevMeetings = meetings.filter(m => new Date(m.datetime) < now);
@@ -597,6 +618,7 @@
                         var time = date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0") + (date.getHours() < 12 ? "AM" : "PM");
                         manHTML += `
                             <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:90%;align-items:center;margin:5px">
+                                
                                 <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500"><strong>${day}</strong> @ ${time}</span>
                                 <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500;text-overflow:ellipsis">${m.title}</span>
                                 <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500;text-overflow:ellipsis">${m.subgroups.length} already attending</span>
@@ -620,18 +642,20 @@
                     var gmeetings = 0;
                     var gtotalmeetings = 0;
                     var allRequests = [];
+                    prevMeetings = prevMeetings.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
                     prevMeetings.forEach(m => {
                         var date = new Date(m.datetime);
-                        var day = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
+                        var day = (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear();
                         var time = date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0") + (date.getHours() < 12 ? "AM" : "PM");
 
                         var meetings = 0;
                         var totalMeetings = 0;
-
+                        console.log(m.requests);
                         m["requests"].forEach(r => {
                             if(users.filter(e => e.id == r.requester).length > 0){
                                 r["meetingId"] = m._id;
                                 r["meetingTitle"] = m.title;
+                                r["meetingDate"] = m.datetime;
                                 allRequests.push(r);
                             }
                             
@@ -650,11 +674,49 @@
                         })
 
                         var rate = totalMeetings > 0 ? Math.round((meetings / totalMeetings)*100) : 0;
+                        var myAttendance = me.attendance.filter(a => a.event == m._id);
+                        var ableToRequest = allRequests.filter(a => a.requester == me.id && a["meetingId"] == m._id).length == 0;
                         fHTML += `
-                        <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:80%;align-items:center;margin:5px">
-                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500"><strong>${day}</strong> @ ${time}</span>
-                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500;text-overflow:ellipsis">${rate}% Attendance Rate</span>
-                            <span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px;opacity:${rate >= 75 ? 1 : 0.5}">${rate >= 75 ? "workspace_premium" : "thumb_up"}</span>
+                        <div class="container c-slighterborder" style="padding:20px 10px;margin:5px;width:80%;">
+                            <div class="blockitem" data-partof="${m._id}" data-num="0" style="width:100%">
+                                <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
+                                    <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500"><strong>${day}</strong> @ ${time}</span>
+                                    <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500;text-overflow:ellipsis">${rate}% Attendance Rate</span>
+                                    ${myAttendance.length == 0 || (myAttendance[0].status != "ATTEND" && myAttendance[0].overriddenstatus != "EXCUSED" && myAttendance[0].overriddenstatus != "ATTEND") ? `
+                                    <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="${m["_id"]}" data-num="1">
+                                        <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">question_mark</span>
+                                    </div>
+                                    ` : `
+                                    <span class="material-symbols-rounded" style="font-size:20px;pointer-events:none;padding-right:10px;opacity:1" title="You Attended this Meeting!">check</span>
+                                    `}
+                                    
+                                </div>
+                                
+                            </div>
+                            <div class="blockitem" data-partof="${m._id}" data-num="1" style="width:100%;display:none">
+                                <div style="display:inline-flex;justify-content:space-between;width:100%;align-items:center">
+                                    <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500"><strong>${day}</strong> @ ${time}</span>
+                                    <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:30%;text-align:left;font-weight:500;text-overflow:ellipsis">${rate}% Attendance Rate</span>
+                                    <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="${m["_id"]}" data-num="0">
+                                        <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">close</span>
+                                    </div>
+                                </div>
+                                <div style="width:100%;padding:20px 0px">
+                                    <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:18px;display:block;text-align:center;font-weight:600">${ableToRequest ? "You DIDN'T Attend this Meeting" : "You already requested an attendance change..."}</span>
+                                    ${ableToRequest ? `
+                                        <div style="margin:10px;margin-bottom:0px">
+                                            <div class="container c-border-gray color-g c-hover-gray submitExcusedRequest" data-partof="${m["_id"]}" style="padding:10px 40px 10px 40px;margin:10px;display:inline-block;font-size:12px">
+                                                <span style="pointer-events: none">Request EXCUSED</span>
+                                            </div>
+                                            <div class="container c-border color-g c-hover submitAttendedRequest" data-partof="${m["_id"]}" style="padding:10px 40px 10px 40px;margin:10px;display:inline-block;font-size:12px">
+                                                <span style="pointer-events: none">Request ATTENDED</span>
+                                            </div>
+                                        </div>
+                                        ` : ``} 
+                                    
+
+                                </div>
+                            </div>
                            
                         </div>
                         `;
@@ -671,16 +733,95 @@
                         var user = users.filter(e => e.id == r.requester)[0];
                         reqHTML += `
                         <div class="container c-slighterborder" style="padding:20px 10px;display:inline-flex;justify-content:space-between;width:90%;align-items:center;margin:5px">
-                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500">${user["fullname"]}</span>
-                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:20%;text-align:left;font-weight:500;text-overflow:ellipsis">${r["meetingTitle"]}</span>
-                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500;text-overflow:ellipsis">Requesting <div style="padding:5px 8px;background-color:${r["final"] == "ATTEND" ? "#23cc39" : "gray"};border-radius:4px;display:inline-block;color:white">${status}</div></span>
-                        
+                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:18px;display:block;width:25%;text-align:left;font-weight:500">${user["fullname"]}</span>
+                            <div style="width:20%">
+                                <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:12px;display:block;text-align:left;font-weight:500;text-overflow:ellipsis">${r["meetingTitle"]}</span>
+                                <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:12px;display:block;text-align:left;font-weight:500;text-overflow:ellipsis">${new Date(r["meetingDate"]).toLocaleString()}</span>
+                            </div>
+                            
+                            <span class="text color-d" style="pointer-events: none;margin-left:10px;font-size:14px;display:block;width:25%;text-align:left;font-weight:500;text-overflow:ellipsis">Requesting <div style="padding:5px 8px;background-color:${r["final"].toUpperCase() == "ATTEND" ? "#23cc39" : "gray"};border-radius:4px;display:inline-block;color:white">${r["final"].toUpperCase()}</div></span>
+                            <div style="width:16%;text-align:right">
+                                <div class="container c-border c-hover approve" style="padding:5px;margin:1px" data-partof="${r["meetingId"]}" data-requester="${r["requester"]}" data-num="0">
+                                    <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">check</span>
+                                </div>
+                                <div class="container c-border-red c-hover-red decline color-r" style="padding:5px;margin:1px" data-partof="${r["meetingId"]}" data-requester="${r["requester"]}" data-num="0">
+                                    <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">close</span>
+                                </div>
+                            </div>
                         
                         </div>
                         
                         `;
                     })
+                    document.getElementById("subgroup_totalRequests").innerHTML = allRequests.length;
+                    document.getElementById("subgroup_manage_confirmAttendance").innerHTML = reqHTML;
+                    
 
+                    Array.from(document.getElementsByClassName("approve")).forEach(e => {
+                        e.addEventListener("click", function(evt) {
+                            var meetingId = evt.srcElement.dataset.partof;
+                            var requester = evt.srcElement.dataset.requester;
+                            var request = {
+                                meetingId: meetingId,
+                                uid: requester
+                            }
+                            $.ajax({
+                                url: "/group/attendance/approve",
+                                type: "POST",
+                                data: request,
+                                success: function(data){
+                                    data = JSON.parse(data);
+                                    $.ajax({
+                                        url: '/acc/verify',
+                                        type: 'GET',
+                                        success: function(data){
+                                            data = JSON.parse(data);
+                                            if(data["successful"]){
+                                                me = data["user"];
+                                            }
+                                        }
+                                    })
+                                    if(data["successful"]){
+                                        reloadAttendance();
+                                    }
+                                }
+                            })
+                        })
+                    })
+
+                    Array.from(document.getElementsByClassName("decline")).forEach(e => {
+                        e.addEventListener("click", function(evt) {
+                            var meetingId = evt.srcElement.dataset.partof;
+                            var requester = evt.srcElement.dataset.requester;
+                            var request = {
+                                meetingId: meetingId,
+                                uid: requester
+                            }
+                            $.ajax({
+                                url: "/group/attendance/deny",
+                                type: "POST",
+                                data: request,
+                                success: function(data){
+                                    data = JSON.parse(data);
+                                    $.ajax({
+                                        url: '/acc/verify',
+                                        type: 'GET',
+                                        success: function(data){
+                                            data = JSON.parse(data);
+                                            if(data["successful"]){
+                                                me = data["user"];
+                                            }
+                                        }
+                                    })
+                                    if(data["successful"]){
+                                        reloadAttendance();
+                                    }
+                                }
+                            })
+                        })
+                    })
+
+                    
 
                     Array.from(document.getElementsByClassName("changeAttendance")).forEach(e =>{
                         e.addEventListener('click', function(evt){
@@ -709,6 +850,36 @@
                     document.getElementById("subgroup_hours").innerHTML = hours;
                     document.getElementById("subgroup_rate").innerHTML = (gtotalmeetings > 0 ? Math.round((gmeetings / gtotalmeetings)*100) : 0) + "%";
                     document.getElementById("subgroup_past").innerHTML = fHTML;
+
+
+                    Array.from(document.getElementsByClassName("submitExcusedRequest")).forEach(e => {
+                        
+                        e.addEventListener("click", function(evt) {
+                            
+                            var meetingId = evt.srcElement.dataset.partof;
+                            var requester = me.id;
+                            var request = {
+                                meetingId: meetingId,
+                                uid: requester,
+                                final: "EXCUSED"
+                            }
+                            submitRequest(request);
+                        })
+                    })
+
+                    Array.from(document.getElementsByClassName("submitAttendedRequest")).forEach(e => {
+                        e.addEventListener("click", function(evt) {
+                            
+                            var meetingId = evt.srcElement.dataset.partof;
+                            var requester = me.id;
+                            var request = {
+                                meetingId: meetingId,
+                                uid: requester,
+                                final: "ATTEND"
+                            }
+                            submitRequest(request);
+                        })
+                    })
                 }
                 localCalcSuspiciousUsers();
                 reloadAllBaseEvents();

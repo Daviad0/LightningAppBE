@@ -1182,6 +1182,80 @@ app.post('/group/attendance/request', async function(req, res){
     });
 });
 
+app.post('/group/attendance/approve', async function(req, res){
+    isAuthenticated(req, "cookie",["ADMIN_SCHEDULE_ATTENDENCE_CONFIRM", "ADMIN_SCHEDULE_ATTENDENCE"], async function(status, user){
+        if(status){
+            var uid = req.body.uid;
+            var meetingId = req.body.meetingId;
+            
+            var aUser = (await m.getDocs('Account', {_id: uid}))[0];
+            var meeting = (await m.getDocs('AttendanceItem', {_id: meetingId}))[0];
+            
+            var requests = meeting.requests;
+            var request = requests.filter(r => r.requester == uid)[0];
+
+            if(request != undefined){
+                var existing = aUser.attendance.find(a => a.event == meetingId);
+                if(existing == undefined){
+                    aUser.attendance.push({
+                        event: meetingId,
+                        status: "ABSENT",
+                        overriddenstatus: request.final.toUpperCase(),
+                        datetime: new Date()
+                    });
+                }else{
+                    existing.overriddenstatus = request.final.toUpperCase();
+
+                }
+                await m.updateDoc('Account', {_id: uid}, {attendance: aUser.attendance});
+
+                requests.splice(requests.indexOf(request), 1);
+                await m.updateDoc('AttendanceItem', {_id: meetingId}, {requests: requests});
+
+                sendEmail(aUser.email, emoji.get("white_check_mark")+ " #862 - Request Approved", "Your Attendance Request was APPROVED!", "You have been marked as " + request.final.toUpperCase() + " at the meeting on " + new Date(meeting.datetime).toLocaleString() + ". Please be sure to make signing in a regular part of your meeting checkin!");
+                
+                await notifyUsers([aUser._id], emoji.get("white_check_mark")+ " #862 - Request Approved", "Your Attendance Request was APPROVED!", "You have been marked as " + request.final.toUpperCase() + " at the meeting on " + new Date(meeting.datetime).toLocaleString() + ". Please be sure to make signing in a regular part of your meeting checkin!");
+            }
+            
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+
+    });
+});
+
+app.post('/group/attendance/deny', async function(req, res){
+    isAuthenticated(req, "cookie",["ADMIN_SCHEDULE_ATTENDENCE_CONFIRM", "ADMIN_SCHEDULE_ATTENDENCE"], async function(status, user){
+        if(status){
+            var uid = req.body.uid;
+            var meetingId = req.body.meetingId;
+            
+            var aUser = (await m.getDocs('Account', {_id: uid}))[0];
+            var meeting = (await m.getDocs('AttendanceItem', {_id: meetingId}))[0];
+            
+            var requests = meeting.requests;
+            var request = requests.filter(r => r.requester == uid)[0];
+
+            if(request != undefined){
+                
+
+                requests.splice(requests.indexOf(request), 1);
+                await m.updateDoc('AttendanceItem', {_id: meetingId}, {requests: requests});
+
+                sendEmail(aUser.email, emoji.get("x")+ " #862 - Request Denied", "Your Attendance Request was Denied.", "Unfortunately, your request to change your attendance for the meeting on " + new Date(meeting.datetime).toLocaleString() + " has been denied by a lead. Please be sure to make signing in a regular part of your meeting checkin!");
+                
+                await notifyUsers([aUser._id], emoji.get("x")+ " #862 - Request Denied", "Your Attendance Request was Denied.", "Unfortunately, your request to change your attendance for the meeting on " + new Date(meeting.datetime).toLocaleString() + " has been denied by a lead. Please be sure to make signing in a regular part of your meeting checkin!");
+            }
+            
+            res.send(JSON.stringify({successful: true}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+
+    });
+});
+
 app.post("/group/attendance/override", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
         if(status){
