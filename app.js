@@ -312,7 +312,7 @@ app.post('/acc/login', function (req, res){
 
                     sendEmail(docs[0].email, emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you! Always remember not to share your password with anyone except for team leadership!");
 
-                    notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
+                    await notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
                     res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
                 }else{
                     res.send(JSON.stringify({successful: false}));
@@ -1265,7 +1265,7 @@ app.post("/group/signinreminder",async function(req, res){
                     sendEmail(e, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
                 })
                 
-                notifyUsers(idsToSend, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
+                await notifyUsers(idsToSend, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
 
             }
         }
@@ -1319,7 +1319,7 @@ app.post('/group/announcement', async function(req, res){
             emailsToSend.forEach(e => {
                 sendEmail(e, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
             })
-            notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
+            await notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
 
 
 
@@ -1382,7 +1382,7 @@ app.post('/group/subgroup/message', async function(req, res){
             emailsToSend.forEach(e => {
                 sendEmail(e, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
             })
-            notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
+            await notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
 
             group.subgroups.find(g => g.name == subgroup).messages = messages;
 
