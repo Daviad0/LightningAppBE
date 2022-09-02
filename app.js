@@ -91,7 +91,7 @@ function sendEmail(email, title, subtitle, message){
         subject: title, // Subject line
         
         html: `
-        <div style="width:100%;padding-top:20px;padding-bottom:20px;background-color:#4708c4;margin:20px;border-radius:16px">
+        <div style="width:100%;padding-top:20px;padding-bottom:20px;background-color:#4708c4;margin-top:20px;margin-bottom:20px;border-radius:16px">
             <h1 style="color:white;text-align:center">${subtitle}</h1>
         </div>
         
