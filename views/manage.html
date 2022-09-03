@@ -710,8 +710,24 @@
 
                             
                             var qr = document.querySelector(`.qrcodediv[data-partof="${qrID}"]`);
+                            var canvas = qr.querySelector("canvas");
+                            console.log(canvas);
+
+                            var index = qrID.replace("l", "");
+
+                            var current = currentLinks[parseInt(index)];
+                            console.log(qrID);
+                            console.log
+
+                            var link = document.createElement("a");
+                            link.download = current["name"] + ".png";
+                            link.href = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+
+                            link.click();
                             
-                            printToFile(qr);
+                            
+                            
+                            
 
 
                         });
