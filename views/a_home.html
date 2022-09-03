@@ -39,6 +39,15 @@
         </div>
     </div>
     <br/>
+    <div id="meetingContent">
+        <span class="text" style="font-size: 3vw;display:block;font-weight:500;margin-top:10px">Your Upcoming Meetings</span>
+        <br/>
+        <br/>
+        <div id="meetings" style="width:80%;display:inline-block">
+
+        </div>
+    </div>
+    <br/>
     <br/>
     
 </div>
@@ -59,7 +68,63 @@
                         datas = JSON.parse(datas);
                         if(datas["successful"]){
                             var fHTML = "";
-                            
+
+                            $.ajax({
+                                url: "/group/meetings",
+                                type: "GET",
+                                success: function(datam){
+                                    datam = JSON.parse(datam);
+                                    if(datam["successful"]){
+                                        var fHTML = "";
+                                        var inSubgroups = data["user"]["access"]['groups'];
+                                        datam["items"] = datam["items"].filter(i => new Date(i["date"]) > new Date());
+                                        if(datam["items"].length == 0){
+                                            document.getElementById("meetingContent").style.display = "none";
+                                        }
+                                        datam["items"].forEach(m => {
+                                            var inMeeting = false;
+                                            m["subgroups"].forEach(s => {
+                                                if(inSubgroups.includes(s)){
+                                                    inMeeting = true;
+                                                }
+                                            });
+                                            if(inMeeting){
+                                                var date = new Date(m["datetime"]);
+                                                var subgroupsAttending = "";
+                                                m["subgroups"].forEach(s => {
+                                                    if(inSubgroups.includes(s)){
+                                                        subgroupsAttending += `<div class="subgroup_tag" style="padding:4px 8px;border-radius:4px;background-color:#4708c4;color:white;font-size:14px;display:inline-block;margin:2px">
+                                                            ${s}
+                                                        </div>, `;
+                                                    }
+                                                    
+                                                });
+                                                subgroupsAttending = subgroupsAttending.substring(0, subgroupsAttending.length - 2) + " attending";
+                                                fHTML += `
+                                                <div class="container c-slightborder item" style="width:300px;padding:20px;margin:10px">
+                                                    <div style="width:100%;">
+                                                        <span class="text color-d" style="font-size:24px;margin:10px;display:block;">${m["title"] == "" || m["title"] == undefined ? "A Meeting" : m["title"]}</span>
+                                                        <span class="text color-d" style="font-size:20px;margin:10px;display:block">${date.toLocaleString()}</span>
+                                                        <span class="text color-d" style="font-size:14px;margin:10px;display:block;font-weight:500">${subgroupsAttending}</span>
+                                                        
+                                                    </div>
+                                                </div>
+                                                `;
+                                            }
+            
+            
+            
+                                            
+                                            
+                                        });
+                                        
+            
+                                        document.getElementById("meetings").innerHTML = fHTML;
+                                        
+                                    }
+                                }
+                            })
+                            var count = 0;
                             datas["items"].forEach(s => {
                                 if(data["user"]['access']['groups'].includes(s["name"])){
                                     fHTML += `
@@ -72,10 +137,13 @@
                                         </div>
                                     </div>
                                     `;
+                                    count++;
                                 }
                                 
                             });
-                            
+                            if(count == 0){
+                                document.getElementById("subgroupContent").style.display = "none";
+                            }
 
                             document.getElementById("subgroups").innerHTML = fHTML;
                             Array.from(document.getElementsByClassName("subgroup")).forEach(e => {
@@ -86,8 +154,10 @@
                         }
                     }
                 })
+                
             }else{
                 document.getElementById("subgroupContent").style.display = "none";
+                document.getElementById("meetingContent").style.display = "none";
             }
 
         }

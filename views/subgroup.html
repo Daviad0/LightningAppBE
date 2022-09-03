@@ -14,7 +14,7 @@
     </div>
     <div style="position: fixed;bottom:0;right:20px;z-index:999" id="subgroup_manage_tabButton">
         <div style="display:inline-flex;justify-content:center">
-            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 8px 0px 0px;border-width:2px 1px 2px 2px" data-partof="subgroup" data-num="4">
+            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 8px 0px 0px;border-width:2px 1px 2px 2px" data-partof="subgroup" data-num="4" id="subgroupAdminButton">
                 <span style="pointer-events: none">Subgroup Admin</span>
             </div>
         </div>
@@ -26,9 +26,7 @@
             TAG
         </div>
         <br/>
-        <div class="container c-border-red color-r c-hover-red" style="padding:10px 50px 10px 50px;margin:10px">
-            Leave Subgroup
-        </div>
+        
         <div style="margin:20px" id="subgroup_items">
 
         </div>
@@ -152,7 +150,7 @@
         
     </div>
 
-    <div class="blockitem" data-partof="subgroup" data-num="4" style="width:100%;display:none">
+    <div class="blockitem" data-partof="subgroup" data-num="4" style="width:100%;display:none" id="subgroupAdmin">
         <div style="margin-bottom:20px">
             <div data-partof="admin" data-num="1" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
                 <span style="pointer-events: none">Announcements</span>
@@ -181,6 +179,7 @@
     </div>
 
     <div id="overlayRes_add_member" style="display: none;"></div>
+    <div id="createItemFinal" style="display: none;"></div>
 </div>
 <script>
     var subgroup = undefined;
@@ -244,6 +243,12 @@
                 if(data["successful"]){
                     document.getElementById('subgroup_items').innerHTML = "";
                     
+                    if(!me["access"]["permissions"].includes("*") && !me["access"]["permissions"].includes("ADMIN_SUBGROUPS_MANAGER") && !subgroup["managers"].includes(me["id"])){
+                        document.getElementById("subgroupAdminButton").remove();
+                        document.getElementById("subgroupAdmin").remove();
+                    }
+                    
+
                     data['items'].forEach(i => {
                         i["icon"] = i["icon"].replace("-", "_");
                         var color = i["color"] == undefined ? "#4708c4" : i["color"];
@@ -334,6 +339,37 @@
         document.getElementById("externalClickAction").dataset.overlay = "add_member";
         document.getElementById("externalClickAction").click();
     })
+
+    document.getElementById("createItem").addEventListener("click", function(){
+        document.getElementById("externalClickAction").dataset.action = "overlay";
+        document.getElementById("externalClickAction").dataset.overlay = "create_item";
+        document.getElementById("overlay_done").dataset.sendback = "createItemFinal";
+        document.getElementById("externalClickAction").click();
+    })
+
+    document.getElementById("createItemFinal").addEventListener("click", function(evt){
+        var data = JSON.parse(evt.srcElement.innerHTML);
+
+        var result = {
+            "to": data["link"] == "" ? "static" : "link",
+            "data": data["link"]
+        }
+        data["result"] = result;
+        data["action"] = "create";
+        data["show"] = true;
+
+        $.ajax({
+            url: "/group/item",
+            type: "POST",
+            data: data,
+            success: function(data){
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    reloadSubgroupItems();
+                }
+            }
+        })
+    });
 
     document.getElementById("overlayRes_add_member").addEventListener("click", function(evt){
         var data = evt.srcElement.innerHTML.split(";");

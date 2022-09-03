@@ -278,6 +278,22 @@
                     }
                     data += JSON.stringify(dataObj);
                     break;
+                case "create_item":
+                    
+                    if(document.getElementById("create_title").value == "" || document.getElementById("create_contents").value){
+                        document.getElementById("errormessage").innerHTML = "Please fill out the title and contents of the item.";
+                        document.getElementById("errormessage").style.display = "";
+                        return;
+                    }
+                    var dataObj = {
+                        title: document.getElementById("create_title").value,
+                        contents: document.getElementById("create_contents").value,
+                        link: document.getElementById("create_link").value,
+                        icon: document.getElementById("create_icon").value
+                        
+                    }
+                    data += JSON.stringify(dataObj);
+                    break;
                 case "confirm":
                     data = overlayData["id"];
                     break;
@@ -934,6 +950,47 @@
                                         `;
                                     overlayData["id"] = data["id"];
                                     overlayData["username"] = data["username"];
+                                    
+                                    break;
+                                case "create_item":
+                                    //var data = JSON.parse(evt.srcElement.dataset.data);
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Create Item</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">Create an item for your subgroup to show!</span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Item Title</span>
+                                            </div>
+                                            <input type="text" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="Fun Title" id="create_title">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Item Contents</span>
+                                            </div>
+                                            <textarea type="text" class="text color-d input" style="display:block;font-size:16px;margin:10px;width:100%;font-weight:500;resize:none;height:100px;border-radius:30px;padding:14px" placeholder="Contents" id="create_contents"></textarea>
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Item Icon</span>
+                                            </div>
+                                            <input type="text" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="star" id="create_icon">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Item Link</span>
+                                            </div>
+                                            <input type="text" class="text color-d input" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="google.com" id="create_link">
+                                        </div>
+                                        
+                                        
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+                                    //overlayData["id"] = data["id"];
+                                    //overlayData["username"] = data["username"];
                                     
                                     break;
                                 case "reset_password":
