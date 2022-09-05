@@ -3,6 +3,7 @@
         <link rel="stylesheet" href="/css/style.css"/>
         <link rel="stylesheet" href="https://fonts.sandbox.google.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <link rel="preconnect" href="https://fonts.googleapis.com"> 
+        <title>SparkClub</title>
         <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
         
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
@@ -340,13 +341,13 @@
                     document.getElementById("error_message").style.display = "none";
 
                     if(document.getElementById("new_password").value == ""){
-                        document.getElementById("error_message").innerHTML = "Passwords cannot be blank";
-                        document.getElementById("error_message").style.display = "block";
+                        document.getElementById("errormessage").innerHTML = "Passwords cannot be blank";
+                        document.getElementById("errormessage").style.display = "block";
                         return;
                     }
                     if(document.getElementById("new_password").value != document.getElementById("confirm_password")){
-                        document.getElementById("error_message").innerHTML = "Passwords do not match";
-                        document.getElementById("error_message").style.display = "block";
+                        document.getElementById("errormessage").innerHTML = "Passwords do not match";
+                        document.getElementById("errormessage").style.display = "block";
                         return;
                     }
                     var dataObj = {
@@ -359,13 +360,13 @@
                 case "reset_password":
                     document.getElementById("error_message").style.display = "none";
                     if(document.getElementById("new_password").value == "" || document.getElementById("old_password").value == ""){
-                        document.getElementById("error_message").innerHTML = "Passwords cannot be blank";
-                        document.getElementById("error_message").style.display = "block";
+                        document.getElementById("errormessage").innerHTML = "Passwords cannot be blank";
+                        document.getElementById("errormessage").style.display = "block";
                         return;
                     }
                     if(document.getElementById("new_password").value != document.getElementById("confirm_password")){
-                        document.getElementById("error_message").innerHTML = "Passwords do not match";
-                        document.getElementById("error_message").style.display = "block";
+                        document.getElementById("errormessage").innerHTML = "Passwords do not match";
+                        document.getElementById("errormessage").style.display = "block";
                         return;
                     }
                     var dataObj = {
