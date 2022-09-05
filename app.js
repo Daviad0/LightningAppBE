@@ -1171,16 +1171,18 @@ app.post('/group/attendance/request', async function(req, res){
             var reqType = req.body.final;
 
             var meeting = (await m.getDocs('AttendanceItem', {_id: meetingId}))[0];
-            
-            var requests = meeting.requests;
-            if(requests.filter(r => r.requester == uid).length == 0){
-                requests.push({
-                    requester: uid,
-                    final: reqType,
-                    datetime: new Date()
-                })
-                await m.updateDoc('AttendanceItem', {_id: meetingId}, {requests: requests});
+            if(meeting != undefined){
+                var requests = meeting.requests;
+                if(requests.filter(r => r.requester == uid).length == 0){
+                    requests.push({
+                        requester: uid,
+                        final: reqType,
+                        datetime: new Date()
+                    })
+                    await m.updateDoc('AttendanceItem', {_id: meetingId}, {requests: requests});
+                }
             }
+            
             
             res.send(JSON.stringify({successful: true}));
         }else{
