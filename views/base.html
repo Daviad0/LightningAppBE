@@ -338,7 +338,7 @@
 
                     break;
                 case "force_reset_password":
-                    document.getElementById("error_message").style.display = "none";
+                    document.getElementById("errormessage").style.display = "none";
 
                     if(document.getElementById("new_password").value == ""){
                         document.getElementById("errormessage").innerHTML = "Passwords cannot be blank";
@@ -358,7 +358,7 @@
                     data += JSON.stringify(dataObj);
                     break;
                 case "reset_password":
-                    document.getElementById("error_message").style.display = "none";
+                    document.getElementById("errormessage").style.display = "none";
                     if(document.getElementById("new_password").value == "" || document.getElementById("old_password").value == ""){
                         document.getElementById("errormessage").innerHTML = "Passwords cannot be blank";
                         document.getElementById("errormessage").style.display = "block";
