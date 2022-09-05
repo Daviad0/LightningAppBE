@@ -257,6 +257,14 @@ app.get('/about', function (req, res) {
     //res.end();
 });
 
+app.get('/privacy', function (req, res) {
+    if(req.query.part != undefined){
+        res.sendFile(__dirname + "/views/privacy.html");
+    }else{
+        res.sendFile(__dirname + "/views/base.html");
+    }
+    //res.end();
+});
 
 app.get('/signin', function (req, res) {
     isAuthenticated(req, "cookie",[], async function(status, user){
