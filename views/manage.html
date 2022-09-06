@@ -289,7 +289,7 @@
                 "to": "static",
                 "data": ""
             },
-            "subgroups": ["*"],
+            "subgroups": ["H"],
             "action": "create"
         };
         $.ajax({
@@ -451,6 +451,13 @@
             e.addEventListener("change", function(evt) {
                 var partof = evt.srcElement.dataset.partof;
                 document.querySelector(".iconshow[data-partof='" + partof + "']").innerHTML = evt.srcElement.value;
+            });
+        });
+
+        Array.from(document.getElementsByClassName("coloredit")).forEach(e => {
+            e.addEventListener("change", function(evt) {
+                var partof = evt.srcElement.dataset.partof;
+                document.querySelector(".colorshow[data-partof='" + partof + "']").style.backgroundColor = evt.srcElement.value;
             });
         });
 
@@ -691,7 +698,7 @@
                         var lid = id;
                         setTimeout(function(){
                             QrCreator.render({
-                                text: host + "/ql/" + i["from"],
+                                text: "https://" + host + "/ql/" + i["from"],
                                 radius: 0.2, // 0.0 to 0.5
                                 ecLevel: 'H', // L, M, Q, H
                                 fill: '#2b047a', // foreground color
@@ -860,6 +867,14 @@
                                             </div>
                                             <span class="text color-d" style="display:inline-block;font-size:16px;margin:10px;vertical-align:middle">Show Card</span>
                                         </div>
+                                        <div style="justify-content:center;align-items:center;display:flex">
+                                            <span class="colorshow color-m" data-partof="${id}" style="font-size:28px;vertical-align:middle;width:20px;height:20px;background-color:${i["color"] == undefined ? "#4708c4":i["color"]};border-radius:10px"></span>
+                                            <input type="text" class="text color-d input coloredit" data-partof="${id}" style="display:inline-block;font-size:20px;margin:10px;width:50%;padding:14px;vertical-align:middle" value="${i["color"] == undefined ? "":i["color"]}" placeholder="Color (#4708c4)">
+
+                                        </div>
+                                        <div>
+                                            <input type="number" class="text color-d input priorityedit" data-partof="${id}" style="display:inline-block;font-size:20px;margin:10px;width:50%;padding:14px;vertical-align:middle" value="${i["priority"] == undefined ? "":i["priority"]}" placeholder="Priority #">
+                                        </div>
                                         
                                         <span class="material-symbols-rounded iconshow color-m" data-partof="${id}" style="font-size:28px;vertical-align:middle">${i["icon"]}</span>
                                         <input type="text" class="text color-d input iconedit" data-partof="${id}" style="display:inline-block;font-size:20px;margin:10px;width:50%;padding:14px;vertical-align:middle" value="${i["icon"]}" placeholder="Icon">
@@ -904,6 +919,8 @@
                             item["title"] = document.querySelector(".form_title[data-partof='" + partof + "']").value;
                             item["contents"] = document.querySelector(".form_contents[data-partof='" + partof + "']").value;
                             item["icon"] = document.querySelector(".iconedit[data-partof='" + partof + "']").value;
+                            item["color"] = document.querySelector(".coloredit[data-partof='" + partof + "']").value;
+                            item["priority"] = document.querySelector(".priorityedit[data-partof='" + partof + "']").value;
                             item["result"]["data"] = document.querySelector(".form_actionto[data-partof='" + partof + "']").value;
                             item["result"]["to"] = document.querySelector(".form_actiontype[data-partof='dropdown" + partof + "']").dataset.value;
                             item["show"] = document.querySelector(".checkbox[data-partof='" + partof + "']").dataset.checked == "YES" ? true : false;

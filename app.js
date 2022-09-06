@@ -846,6 +846,7 @@ app.get("/group/items", function(req, res){
         
         if(group != ""){
             var docs = (await m.getDocs("ModuleItem", {group: group})).filter(d => (d.subgroups.includes(subgroup.toUpperCase()) || (d.subgroups.length == 0 && subgroup == "H") || subgroup == "*") && (d.show || subgroup == "*"));
+            docs = docs.sort((a, b) => ((a.priority == undefined ? 0 : a.priority) > (b.priority == undefined ? 0 : b.priority)) ? -1 : 1);
 
             res.send(JSON.stringify({successful:true, items: docs, group: groupItem}));
         }else{
@@ -945,7 +946,9 @@ app.post("/group/item", async function(req, res){
                     contents: req.body.contents,
                     icon: req.body.icon,
                     result: result,
-                    show: req.body.show
+                    show: req.body.show,
+                    color: req.body.color,
+                    priority: req.body.priority
                 });
             }else if(req.body.action == "create"){
                 await m.createDoc('ModuleItem', {

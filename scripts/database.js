@@ -82,7 +82,8 @@ const models = {
         },
         show: Boolean,
         subgroups: [],
-        color: String
+        color: String,
+        priority: Number
     })),
     'AttendanceItem' : mongoose.model('AttendanceItem', new mongoose.Schema({
         group: String,
