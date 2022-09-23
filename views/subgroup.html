@@ -26,6 +26,10 @@
             TAG
         </div>
         <br/>
+        <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover" id="createItem" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+            <span style="pointer-events: none">Create Item</span>
+        </div>
+        <br/>
         
         <div style="margin:20px" id="subgroup_items">
 
@@ -337,6 +341,7 @@
     document.getElementById("subgroup_manage_memberAdd").addEventListener("click", function(){
         document.getElementById("externalClickAction").dataset.action = "overlay";
         document.getElementById("externalClickAction").dataset.overlay = "add_member";
+        document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_member";
         document.getElementById("externalClickAction").click();
     })
 
