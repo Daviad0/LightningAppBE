@@ -456,8 +456,11 @@ app.post('/acc/create', function (req, res){
             res.send(JSON.stringify({successful: false, error: "group", message: "This is an invalid group to join!"}));
             return;
         }
-        m.getDocs('Account', {username: req.body.username, group: req.body.group}).then(function(docs){
-            if(docs.length == 0){
+        m.getDocs('Account', {group: req.body.group}).then(function(docs){
+
+
+
+            if(docs.filter(d => d.username.toLowerCase() == req.body.username.toLowerCase()).length <= 0){
                 
 
                 if(!isSecurePassword(req.body.password)){
@@ -466,6 +469,10 @@ app.post('/acc/create', function (req, res){
                 }
                 if(req.body.externalId.length != 8){
                     res.send(JSON.stringify({successful: false, error: "externalId", message: "External ID must be 8 characters long!"}));
+                    return;
+                }
+                if(docs.filter(d => d.email == req.body.email).length > 0){
+                    res.send(JSON.stringify({successful: false, error: "email", message: "Cannot use an email that has already been used!"}));
                     return;
                 }
                 if(req.body.fullname.length < 1){
