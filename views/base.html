@@ -136,6 +136,10 @@
             <div class="a container c-border-gray c-hover-gray color-g triggerDisplay" data-action="hide" data-target="accountC_login" style="padding:10px 20px 10px 20px">
                 Cancel
             </div>
+            <br/>
+            <div class="a container c-border-red c-hover-red color-r triggerDisplay" data-action="hide" data-target="accountC_forgotuser" style="padding:10px 20px 10px 20px">
+                Forgot my Username
+            </div>
             
             
             
@@ -375,6 +379,29 @@
                         confirmPassword: document.getElementById("confirm_password").value
                     }
                     data += JSON.stringify(dataObj);
+                    break;
+                case "forgot_username":
+                    document.getElementById("errormessage").style.display = "none";
+                    if(document.getElementById("form_email").value == ""){
+                        document.getElementById("errormessage").innerHTML = "Email cannot be blank...";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(!document.getElementById("form_email").value.includes("@")){
+                        document.getElementById("errormessage").innerHTML = "Email must be valid...";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    $.ajax({
+                        url: "/acc/forgotusername",
+                        type: "POST",
+                        data: {
+                            email: document.getElementById("form_email").value
+                        },
+                        success: function(data){
+                            
+                        }
+                    })
                     break;
                 case "create_meeting":
                     var attending = [];
@@ -1122,6 +1149,29 @@
                                     overlayData["username"] = data["username"];
                                     
                                     break;
+                                case "forgot_username":
+                                    
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Forgot My Username</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">It's alright, we all forget something all the time! Please type your email that you created the account with, and you will get an email from our service with your username in it! If you have any further issues, please see team leadership. <strong>Please note that we CANNOT recover passwords, and we will have to reset it if you do not remember...</strong></span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Your Email</span>
+                                            </div>
+                                            <input type="text" class="text color-d input form_email" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="john@doe.com" id="form_email">
+                                        </div>
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+
+                                    
+                                    
+                                    break;
                                 case "edit_attendance":
                                     var data = JSON.parse(evt.srcElement.dataset.data);
                                     document.getElementById('overlay').style.display = "";
@@ -1511,6 +1561,12 @@
             });
         }
 
+
+        document.getElementById("accountC_forgotuser").addEventListener("click", function(){
+            document.getElementById("externalClickAction").dataset.action = "overlay";
+            document.getElementById("externalClickAction").dataset.overlay = "forgot_username";
+            document.getElementById("externalClickAction").click();
+        });
 
         Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
             e.addEventListener("click", function(evt) {

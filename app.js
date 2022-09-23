@@ -448,6 +448,17 @@ function isSecurePassword(password){
     return password.length >= 8 && password.match(/[a-z]/) && password.match(/[A-Z]/) && password.match(/[0-9]/) && password.match(/[^a-zA-Z0-9]/);
 }
 
+app.post('/acc/forgotusername', function(req, res){
+    m.getDocs('Account', {email: req.body.email}).then(function(docs){
+        if(docs.length == 0){
+            res.send(JSON.stringify({successful: false}));
+        }else{
+            sendEmail(req.body.email, emoji.get("question_mark") + "#862 - Your Username", "Forgot Username?", "Hey " + docs[0].username + ", you apparently forgot your username! Your username is " + docs[0].username);
+            res.send(JSON.stringify({successful: true}));
+        }
+    });
+})
+
 app.post('/acc/create', function (req, res){
 
 
