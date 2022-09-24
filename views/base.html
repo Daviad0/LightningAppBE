@@ -137,7 +137,7 @@
                 Cancel
             </div>
             <br/>
-            <div class="a container c-border-red c-hover-red color-r" style="padding:10px 20px 10px 20px" id="accountC_forgotuser">
+            <div class="container c-border-red c-hover-red color-r" style="padding:10px 20px 10px 20px;pointer-events:all" id="accountC_forgotuser">
                 Forgot my Username
             </div>
             
@@ -183,7 +183,13 @@
         var overlayData = {};
         var thisUser = undefined;
 
-
+        
+        document.getElementById("accountC_forgotuser").addEventListener("click", function(evt){
+            document.getElementById("externalClickAction").dataset.action = "overlay";
+            document.getElementById("externalClickAction").dataset.overlay = "forgot_username";
+            
+            document.getElementById("externalClickAction").click();
+        });
 
         function replace(e){
             var new_element = e.cloneNode(true);
@@ -1562,11 +1568,7 @@
         }
 
 
-        document.getElementById("accountC_forgotuser").addEventListener("click", function(){
-            document.getElementById("externalClickAction").dataset.action = "overlay";
-            document.getElementById("externalClickAction").dataset.overlay = "forgot_username";
-            document.getElementById("externalClickAction").click();
-        });
+        
 
         Array.from(document.getElementsByClassName("mainlogo")).forEach(e => {
             e.addEventListener("click", function(evt) {
