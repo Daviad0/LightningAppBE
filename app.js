@@ -1755,13 +1755,18 @@ app.use(async function(req, res, next) {
                         await m.updateDoc('QuickLink', {_id: e._id}, {visitors: e.visitors});
                     }else{
                         //console.log("Not authenticated")
-                        if(e.restricted == false){
-                            res.setHeader("to", e.to);
-                            res.setHeader("group", e.group);
-                            res.cookie("to", e.to);
-                            res.cookie("group", e.group);
-                            res.sendFile(__dirname + "/views/tolink.html");
+                        if(e.to.includes("http:") || e.to.includes("https:") || e.to.includes("www.") || e.to.includes("//") || e.to.includes(".")){
                             
+                            if(e.to.includes("https://")){
+                                e.to = e.to.replace("https://", "");
+                            }else if(e.to.includes("http://")){
+                                e.to = e.to.replace("http://", "");
+                            }
+                        
+                            res.redirect("//"+e.to);
+                        }else{
+                            var newPath = req.originalUrl.split('ql')[0]
+                            res.redirect(newPath + e.to);
                         }
                     }
                     //console.log(e.visitors);
