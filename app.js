@@ -459,6 +459,8 @@ app.post('/acc/forgotusername', function(req, res){
     });
 })
 
+var validUsernameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
+
 app.post('/acc/create', function (req, res){
 
 
@@ -473,6 +475,12 @@ app.post('/acc/create', function (req, res){
 
             if(docs.filter(d => d.username.toLowerCase() == req.body.username.toLowerCase()).length <= 0){
                 
+                for(var i = 0; i < req.body.username.length; i++){
+                    if(!validUsernameCharacters.includes(req.body.username[i])){
+                        res.send(JSON.stringify({successful: false, error: "username", message: "Your username contains invalid characters (can only be a-z, A-Z, 0-9, _, -, or .)!"}));
+                        return;
+                    }
+                }
 
                 if(!isSecurePassword(req.body.password)){
                     res.send(JSON.stringify({successful: false, error: "password", message: "Password must be >= 8 characters, have uppercase and lowercase letters, and have at least one number and one special character!"}));
@@ -502,7 +510,7 @@ app.post('/acc/create', function (req, res){
                         pwhash: pwres.hash,
                         pwsalt: pwres.salt,
                         pwiterations: pwres.iterations,
-                        group: req.body.group,
+                        group: process.env.GROUP,
                         access: {
                             role: "guest",
                             restricted: false,
@@ -958,6 +966,21 @@ app.post("/group/item", async function(req, res){
                     "data": req.body.resultdata[1]
                 }
             }
+            if(req.body.title != undefined){
+                req.body.title = req.body.title.replace(">", "").replace("<", "");
+            }
+            if(req.body.contents != undefined){
+                req.body.contents = req.body.contents.replace(">", "").replace("<", "");
+            }
+            if(req.body.icon != undefined){
+                req.body.icon = req.body.icon.replace(">", "").replace("<", "");
+            }
+            if(req.body.color != undefined){
+                req.body.color = req.body.color.replace(">", "").replace("<", "");
+            }
+            if(req.body.result != undefined){
+                req.body.result["data"] = req.body.result["data"].replace(">", "").replace("<", "");
+            }
             if(req.body.action == "edit"){
                 await m.updateDoc('ModuleItem', {_id: id}, {
                     title: req.body.title,
@@ -1406,6 +1429,12 @@ app.post('/group/announcement', async function(req, res){
         if(status){
             var message = req.body.message;
 
+
+            if(message != undefined){
+                message = message.replace(">", "").replace("<", "");
+            }
+            
+
             var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
             var u = (await m.getDocs('Account', {_id: user.id}))[0];
             var messages = group.announcements;
@@ -1471,6 +1500,10 @@ app.post('/group/subgroup/message', async function(req, res){
         if(status){
             var subgroup = req.body.group;
             var message = req.body.message;
+            
+            if(message != undefined){
+                message = message.replace(">", "").replace("<", "");
+            }
 
             var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
             var u = (await m.getDocs('Account', {_id: user.id}))[0];

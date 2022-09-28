@@ -60,9 +60,9 @@
         success: function(data){
             data = JSON.parse(data);
             if(data["successful"]){
-                document.getElementById("username").innerHTML = data["user"]["username"];
-                document.getElementById("group").innerHTML = data["group"]["name"];
-                document.getElementById("role").innerHTML = data["user"]["access"]["role"].toUpperCase();
+                document.getElementById("username").textContent = data["user"]["username"];
+                document.getElementById("group").textContent = data["group"]["name"];
+                document.getElementById("role").textContent = data["user"]["access"]["role"].toUpperCase();
                 try{
                     document.getElementById("roleC").style.backgroundColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;
                     document.getElementById("roleC").style.borderColor = data["group"]["roles"].find(r => r.name == data["user"]["access"]["role"]).color;

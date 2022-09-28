@@ -231,12 +231,12 @@
                                 document.getElementById("account_login").style.display = "none";
                                 document.getElementById("account_create").style.display = "none";
                                 document.getElementById("account_me").style.display = "";
-                                document.getElementById("account_username").innerHTML = data["user"]["username"];
+                                document.getElementById("account_username").textContent = data["user"]["username"];
                                 document.getElementById("accountC_login").style.display = "none";
                                 document.getElementById("accountC_me").style.display = "none";
                                 document.getElementById("accountC_create").style.display = "none";
-                                document.getElementById("ca_username").innerHTML = data["user"]["username"];
-                                document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
+                                document.getElementById("ca_username").textContent = data["user"]["username"];
+                                document.getElementById("ca_group").textContent = "Part of " + data["user"]["group"];
                                 document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
                                 document.querySelector('div[data-page="group/accounts"]').style.display = "inline-flex";
                                 document.querySelector('div[data-page="signin"]').style.display = "none";
@@ -336,7 +336,7 @@
                             }else if(data["error"] == "fullname"){
                                 flashFormError(6000, document.getElementById("create_fullname"));
                             }
-                            document.getElementById("errormessage").innerHTML = data["message"];
+                            document.getElementById("errormessage").textContent = data["message"];
                             document.getElementById("errormessage").style.display = "block";
                         }else{
                             document.getElementById('overlay').style.display = "none";
@@ -472,10 +472,10 @@
                                     document.getElementById("account_login").style.display = "none";
                                     document.getElementById("account_create").style.display = "none";
                                     document.getElementById("account_me").style.display = "";
-                                    document.getElementById("account_username").innerHTML = data["user"]["username"];
+                                    document.getElementById("account_username").textContent = data["user"]["username"];
                                     document.getElementById("accountC_login").style.display = "none";
-                                    document.getElementById("ca_username").innerHTML = data["user"]["username"];
-                                    document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
+                                    document.getElementById("ca_username").textContent = data["user"]["username"];
+                                    document.getElementById("ca_group").textContent = "Part of " + data["user"]["group"];
                                     document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
                                     document.querySelector('div[data-page="group/report"]').style.display = "inline-flex";
                                     document.querySelector('div[data-page="group/accounts"]').style.display = "inline-flex";
@@ -509,7 +509,7 @@
                                 }else if(data["error"] == "fullname"){
                                     flashFormError(6000, document.getElementById("create_fullname"));
                                 }
-                                document.getElementById("create_error").innerHTML = data["message"];
+                                document.getElementById("create_error").textContent = data["message"];
                                 document.getElementById("create_error").style.display = "block";
                             }else{
                                 authId = data["token"];
@@ -518,10 +518,10 @@
                                 document.getElementById("account_login").style.display = "none";
                                 document.getElementById("account_create").style.display = "none";
                                 document.getElementById("account_me").style.display = "";
-                                document.getElementById("account_username").innerHTML = data["user"]["username"];
+                                document.getElementById("account_username").textContent = data["user"]["username"];
                                 document.getElementById("accountC_login").style.display = "none";
-                                document.getElementById("ca_username").innerHTML = data["user"]["username"];
-                                document.getElementById("ca_group").innerHTML = "Part of " + data["user"]["group"];
+                                document.getElementById("ca_username").textContent = data["user"]["username"];
+                                document.getElementById("ca_group").textContent = "Part of " + data["user"]["group"];
                                 document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
                                 document.querySelector('div[data-page="group/report"]').style.display = "inline-flex";
                                 document.querySelector('div[data-page="group/accounts"]').style.display = "inline-flex";
