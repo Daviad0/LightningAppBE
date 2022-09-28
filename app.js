@@ -967,19 +967,19 @@ app.post("/group/item", async function(req, res){
                 }
             }
             if(req.body.title != undefined){
-                req.body.title = req.body.title.replace(">", "").replace("<", "");
+                req.body.title = req.body.title.replaceAll(">", "").replaceAll("<", "");
             }
             if(req.body.contents != undefined){
-                req.body.contents = req.body.contents.replace(">", "").replace("<", "");
+                req.body.contents = req.body.contents.replaceAll(">", "").replaceAll("<", "");
             }
             if(req.body.icon != undefined){
-                req.body.icon = req.body.icon.replace(">", "").replace("<", "");
+                req.body.icon = req.body.icon.replaceAll(">", "").replaceAll("<", "");
             }
             if(req.body.color != undefined){
-                req.body.color = req.body.color.replace(">", "").replace("<", "");
+                req.body.color = req.body.color.replaceAll(">", "").replaceAll("<", "");
             }
             if(req.body.result != undefined){
-                req.body.result["data"] = req.body.result["data"].replace(">", "").replace("<", "");
+                req.body.result["data"] = req.body.result["data"].replaceAll(">", "").replaceAll("<", "");
             }
             if(req.body.action == "edit"){
                 await m.updateDoc('ModuleItem', {_id: id}, {
@@ -1022,6 +1022,7 @@ function getTodaysEvent(docs){
     var today = new Date();
     var closestToNow = null;
     docs.forEach(d => {
+        
         if(today.getDate() == d.datetime.getDate() && today.getMonth() == d.datetime.getMonth() && today.getFullYear() == d.datetime.getFullYear()){
             // this is TODAY
             if(closestToNow == null){
@@ -1431,7 +1432,7 @@ app.post('/group/announcement', async function(req, res){
 
 
             if(message != undefined){
-                message = message.replace(">", "").replace("<", "");
+                message = message.replaceAll(">", "").replaceAll("<", "");
             }
             
 
@@ -1502,7 +1503,7 @@ app.post('/group/subgroup/message', async function(req, res){
             var message = req.body.message;
             
             if(message != undefined){
-                message = message.replace(">", "").replace("<", "");
+                message = message.replaceAll(">", "").replaceAll("<", "");
             }
 
             var group = (await m.getDocs('Group', {uniqueId: user.group}))[0];
@@ -1770,9 +1771,9 @@ app.use(async function(req, res, next) {
                         if(e.to.includes("http:") || e.to.includes("https:") || e.to.includes("www.") || e.to.includes("//") || e.to.includes(".")){
                             
                             if(e.to.includes("https://")){
-                                e.to = e.to.replace("https://", "");
+                                e.to = e.to.replaceAll("https://", "");
                             }else if(e.to.includes("http://")){
-                                e.to = e.to.replace("http://", "");
+                                e.to = e.to.replaceAll("http://", "");
                             }
                         
                             res.redirect("//"+e.to);
@@ -1791,9 +1792,9 @@ app.use(async function(req, res, next) {
                         if(e.to.includes("http:") || e.to.includes("https:") || e.to.includes("www.") || e.to.includes("//") || e.to.includes(".")){
                             
                             if(e.to.includes("https://")){
-                                e.to = e.to.replace("https://", "");
+                                e.to = e.to.replaceAll("https://", "");
                             }else if(e.to.includes("http://")){
-                                e.to = e.to.replace("http://", "");
+                                e.to = e.to.replaceAll("http://", "");
                             }
                         
                             res.redirect("//"+e.to);
