@@ -117,13 +117,13 @@
             <span class="text color-d" style="display: block;margin-bottom:10px">Login</span>
             
             <div>
-                <div style="width:80px;display:inline-block">
-                    <span class="text color-d" style="font-size:12px;font-weight:500;margin-right:5px;">Username</span>
+                <div style="width:200px;display:inline-block">
+                    <span class="text color-d" style="font-size:12px;font-weight:500;margin-right:5px;">Username / StudentID</span>
                 </div>
                 <input type="text" placeholder="johndoe1" class="input color-d" id="login_username" style="width:200px;margin-top:10px"/>
             </div>
             <div>
-                <div style="width:80px;display:inline-block">
+                <div style="width:200px;display:inline-block">
                     <span class="text color-d" style="font-size:12px;font-weight:500;margin-right:5px">Password</span>
                 </div>
                 <input type="password" placeholder="password1" class="input color-d" id="login_password" style="width:200px;margin-top:10px"/>
@@ -137,8 +137,12 @@
                 Cancel
             </div>
             <br/>
-            <div class="container c-border-red c-hover-red color-r" style="padding:10px 20px 10px 20px;pointer-events:all" id="accountC_forgotuser">
+            <div class="container c-border-red c-hover-red color-r" style="padding:10px 20px 10px 20px;pointer-events:all;margin-top:5px" id="accountC_forgotuser">
                 Forgot my Username
+            </div>
+            <br/>
+            <div class="container c-border-red c-hover-red color-r" style="padding:10px 20px 10px 20px;pointer-events:all;margin-top:5px" id="accountC_forgotpass">
+                Forgot my Password
             </div>
             
             
@@ -187,6 +191,13 @@
         document.getElementById("accountC_forgotuser").addEventListener("click", function(evt){
             document.getElementById("externalClickAction").dataset.action = "overlay";
             document.getElementById("externalClickAction").dataset.overlay = "forgot_username";
+            
+            document.getElementById("externalClickAction").click();
+        });
+
+        document.getElementById("accountC_forgotpass").addEventListener("click", function(evt){
+            document.getElementById("externalClickAction").dataset.action = "overlay";
+            document.getElementById("externalClickAction").dataset.overlay = "forgot_password";
             
             document.getElementById("externalClickAction").click();
         });
@@ -386,6 +397,62 @@
                     }
                     data += JSON.stringify(dataObj);
                     break;
+                case "reset_code":
+                    document.getElementById("errormessage").style.display = "none";
+                    if(document.getElementById("access_code").value == ""){
+                        document.getElementById("errormessage").innerHTML = "Access Code cannot be blank";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("access_code").dataset.uid == undefined || document.getElementById("access_code").dataset.uid == ""){
+                        document.getElementById("errormessage").innerHTML = "You must reset your password properly first...";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("access_code").value.toString().length != 6){
+                        document.getElementById("errormessage").innerHTML = "Access Code must be 6 digits";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("new_password").value == ""){
+                        document.getElementById("errormessage").innerHTML = "Passwords cannot be blank";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("new_password").value != document.getElementById("confirm_password").value){
+                        document.getElementById("errormessage").innerHTML = "Passwords do not match";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    var dataObj = {
+                        code: document.getElementById("access_code").value,
+                        newPw: document.getElementById("new_password").value,
+                        uid: document.getElementById("access_code").dataset.uid
+                    }
+                    $.ajax({
+                        url: "/acc/reset",
+                        type: "POST",
+                        data: dataObj,
+                        success: function(data){
+                            data = JSON.parse(data);
+                            if(data["successful"] == false){
+                                document.getElementById("errormessage").innerHTML = "The reset was unsuccessful... Please ensure the access code is correct!";
+                                document.getElementById("errormessage").style.display = "block";
+                            }else{
+                                
+                                document.getElementById('overlay').style.display = "none";
+
+                                document.getElementById("externalClickAction").dataset.action = "overlay";
+                                document.getElementById("externalClickAction").dataset.overlay = "reset_successful";
+                                
+                                document.getElementById("externalClickAction").click();
+                                
+                            }
+                        }
+                    
+                    })
+                    return;
+                    break;
                 case "forgot_username":
                     document.getElementById("errormessage").style.display = "none";
                     if(document.getElementById("form_email").value == ""){
@@ -408,6 +475,51 @@
                             
                         }
                     })
+                    break;
+                case "forgot_password":
+                    document.getElementById("errormessage").style.display = "none";
+                    if(document.getElementById("form_email").value == ""){
+                        document.getElementById("errormessage").innerHTML = "Email cannot be blank...";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(!document.getElementById("form_email").value.includes("@")){
+                        document.getElementById("errormessage").innerHTML = "Email must be valid...";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("form_studentid").value == ""){
+                        document.getElementById("errormessage").innerHTML = "Student ID cannot be blank...";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    if(document.getElementById("form_studentid").value.toString().length != 8){
+                        document.getElementById("errormessage").innerHTML = "Student ID must be 8 digits...";
+                        document.getElementById("errormessage").style.display = "block";
+                        return;
+                    }
+                    $.ajax({
+                        url: "/acc/requestcode",
+                        type: "POST",
+                        data: {
+                            email: document.getElementById("form_email").value,
+                            studentid: document.getElementById("form_studentid").value
+                        },
+                        success: function(data){
+                            data = JSON.parse(data);
+                            document.getElementById('overlay').style.display = "none";
+                            if(data["successful"] == true){
+                                document.getElementById("externalClickAction").dataset.action = "overlay";
+                                document.getElementById("externalClickAction").dataset.overlay = "reset_code";
+                                document.getElementById("externalClickAction").dataset.data = data["userId"];
+                                document.getElementById("externalClickAction").click();
+                            }
+                            
+
+                            
+                        }
+                    })
+                    return;
                     break;
                 case "create_meeting":
                     var attending = [];
@@ -487,6 +599,13 @@
                             break;
                         case "create":
                         document.getElementById("create_error").style.display = "none";
+                        if($("#create_password").val() != $("#create_confirmPassword").val()){
+                            document.getElementById("create_error").style.display = "block";
+                            document.getElementById("create_error").innerHTML = "Passwords do not match";
+                            flashFormError(3000, document.getElementById("create_password"));
+                            flashFormError(3000, document.getElementById("create_confirm"));
+                            return;
+                        }
                         $.post("/acc/create", {
                             username: $("#create_username").val(),
                             password: $("#create_password").val(),
@@ -1033,6 +1152,24 @@
                                     //overlayData["username"] = data["username"];
                                     
                                     break;
+                                case "reset_successful":
+                                    
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Password Reset Successful</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">Please logon with the new password that you specified! Remember, we cannot recover your password, and you must reset it again if you forget it...</span>
+
+                                        <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:100px;height:100px;display:inline-block;margin:20px">
+                                            <span class="material-symbols-rounded color-w" style="width:50%;margin-top:20%;font-size:56px">check</span>
+                                        </div>
+
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+                                    
+                                    
+                                    break;
                                 case "reset_password":
                                     var data = JSON.parse(evt.srcElement.dataset.data);
                                     document.getElementById('overlay').style.display = "";
@@ -1047,6 +1184,38 @@
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Current Password</span>
                                             </div>
                                             <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="My0ldP@ssword..." id="old_password">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">New Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="new_password">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Confirm Password</span>
+                                            </div>
+                                            <input type="password" class="text color-d input form_password" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="S3cureP@ssw0rd!" id="confirm_password">
+                                        </div>
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+                                    
+                                    
+                                    break;
+                                case "reset_code":
+                                    var uid = evt.srcElement.dataset.data;
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Use Password Reset Code</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block"><strong>WARNING: </strong>You will not be able to access your account using your old password after changing it. Once you reset your password, there is no way to read it again in plaintext, and you must contact an Administrator if it is lost.</span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Access Code</span>
+                                            </div>
+                                            <input type="number" class="text color-d input form_accesscode" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="123456" id="access_code" data-uid="${uid}">
                                         </div>
                                         <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
                                             <div style="display:inline-block;text-align:left;margin:5px 30px">
@@ -1171,6 +1340,35 @@
                                                 <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Your Email</span>
                                             </div>
                                             <input type="text" class="text color-d input form_email" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="john@doe.com" id="form_email">
+                                        </div>
+                                        <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
+                                        `;
+
+                                    
+                                    
+                                    break;
+                                case "forgot_password":
+                                    
+                                    document.getElementById('overlay').style.display = "";
+
+
+                                    
+
+                                    document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px;display:block">Forgot My Password</span>
+                                        <span class="text color-m" style="font-size:14px;margin:10px;display:block">Please verify this information, and then you will be sent a code which you can use to reset your password!</span>
+
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Your Email</span>
+                                            </div>
+                                            <input type="text" class="text color-d input form_email" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="john@doe.com" id="form_email">
+                                        </div>
+                                        <div style="width:100%;display:flex;justify-content:space-around;align-items:center">
+                                            <div style="display:inline-block;text-align:left;margin:5px 30px">
+                                                <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Student ID</span>
+                                            </div>
+                                            <input type="number" class="text color-d input form_studentid" style="display:inline-block;font-size:16px;margin:5px;padding:14px;vertical-align:middle;text-align:center;width:60%" value="" placeholder="00000000" id="form_studentid">
                                         </div>
                                         <span class="text color-m" id="errormessage" style="font-size:14px;margin:10px;display:none;color:red"></span>
                                         `;

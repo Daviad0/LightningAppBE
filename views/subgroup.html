@@ -14,7 +14,7 @@
     </div>
     <div style="position: fixed;bottom:0;right:20px;z-index:999" id="subgroup_manage_tabButton">
         <div style="display:inline-flex;justify-content:center">
-            <div class="container c-border c-hover blockcontrol" style="padding:10px 50px 10px 50px;border-radius:8px 8px 0px 0px;border-width:2px 1px 2px 2px" data-partof="subgroup" data-num="4" id="subgroupAdminButton">
+            <div class="container c-border c-hover blockcontrol admincontrol" style="padding:10px 50px 10px 50px;border-radius:8px 8px 0px 0px;border-width:2px 1px 2px 2px" data-partof="subgroup" data-num="4">
                 <span style="pointer-events: none">Subgroup Admin</span>
             </div>
         </div>
@@ -26,7 +26,7 @@
             TAG
         </div>
         <br/>
-        <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover" id="createItem" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+        <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover admincontrol" id="createItem" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
             <span style="pointer-events: none">Create Item</span>
         </div>
         <br/>
@@ -54,7 +54,7 @@
 
                 </div>
                 <span class="text">Subgroup Members</span>
-                <div class="container c-border c-hover" style="padding:5px;margin:5px" id="subgroup_manage_memberAdd">
+                <div class="container c-border c-hover admincontrol" style="padding:5px;margin:5px" id="subgroup_manage_memberAdd">
                     <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">add</span>
                 </div>
                 <div id="subgroup_members" style="width:100%;margin:20px">
@@ -70,10 +70,10 @@
             <div data-partof="attendance" data-num="1" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
                 <span style="pointer-events: none">Meeting Schedule</span>
             </div>
-            <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+            <div data-partof="attendance" data-num="2" class="container c-border color-d c-hover blockcontrol admincontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
                 <span style="pointer-events: none">Meeting Management</span>
             </div>
-            <div data-partof="attendance" data-num="3" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
+            <div data-partof="attendance" data-num="3" class="container c-border color-d c-hover blockcontrol admincontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
                 <span style="pointer-events: none">Confirm Attendance</span>
             </div>
         </div>
@@ -104,7 +104,7 @@
                 </div>
             </div>
         </div>
-        <div data-partof="attendance" data-num="2" class="blockitem" style="display:none">
+        <div data-partof="attendance" data-num="2" class="blockitem admincontrol" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:center">
                 <div style="width:36%;text-align:center">
                     <div style="display:block;margin:20px">
@@ -130,7 +130,7 @@
                 </div>
             </div>
         </div>
-        <div data-partof="attendance" data-num="3" class="blockitem" style="display:none">
+        <div data-partof="attendance" data-num="3" class="blockitem admincontrol" style="display:none">
             <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
                 <div style="width:60%">
     
@@ -154,7 +154,7 @@
         
     </div>
 
-    <div class="blockitem" data-partof="subgroup" data-num="4" style="width:100%;display:none" id="subgroupAdmin">
+    <div class="blockitem admincontrol" data-partof="subgroup" data-num="4" style="width:100%;display:none" id="subgroupAdmin">
         <div style="margin-bottom:20px">
             <div data-partof="admin" data-num="1" class="container c-border color-d c-hover blockcontrol" style="padding:10px 50px 10px 50px;margin:10px;display:inline-block">
                 <span style="pointer-events: none">Announcements</span>
@@ -210,7 +210,10 @@
                 if(data["admin"]){
                     admin = true;
                 }else{
-                    document.getElementById("subgroup_manage_tabButton").remove();
+                    //document.getElementById("subgroup_manage_tabButton").remove();
+                    Array.from(document.getElementsByClassName("admincontrol")).forEach(function(item){
+                        item.remove();
+                    })
                 }
 
                 
@@ -247,10 +250,7 @@
                 if(data["successful"]){
                     document.getElementById('subgroup_items').innerHTML = "";
                     
-                    if(!me["access"]["permissions"].includes("*") && !me["access"]["permissions"].includes("ADMIN_SUBGROUPS_MANAGER") && !subgroup["managers"].includes(me["id"])){
-                        document.getElementById("subgroupAdminButton").remove();
-                        document.getElementById("subgroupAdmin").remove();
-                    }
+                
                     
 
                     data['items'].forEach(i => {
@@ -454,7 +454,12 @@
 
                         lastSender = m["sender"];
                     })
-                    document.getElementById("messages").innerHTML = fHTML;
+                    try{
+                        document.getElementById("messages").innerHTML = fHTML;
+                    }catch(e){
+                        console.log(e)
+                    }
+                    
                 }
             }
         })
@@ -628,7 +633,12 @@
                     allMeetings = data['meetings'];
                     var ourRate = meetings.length / data["meetings"].length;
                     //console.log(meetings)
-                    document.getElementById("subgroup_manage_attendRate").innerHTML = `${Math.round(ourRate*100)}%`;
+                    try{
+                        document.getElementById("subgroup_manage_attendRate").innerHTML = `${Math.round(ourRate*100)}%`;
+                    }catch(e){
+                        
+                    }
+                    
                     var now = new Date();
                     var prevMeetings = meetings.filter(m => new Date(m.datetime) < now);
                     var futureMeetings = meetings.filter(m => new Date(m.datetime) > now);
@@ -637,7 +647,12 @@
                     var fHTML = ``;
                     var manHTML = ``;
                     if(admin){
-                        document.getElementById("subgroup_manage_attendLabel").innerHTML = "Select if " + subgroup.name + " is Attending Each Meeting";
+                        try{
+                            document.getElementById("subgroup_manage_attendLabel").innerHTML = "Select if " + subgroup.name + " is Attending Each Meeting";
+                        }catch(e){
+                            
+                        }
+                        
                     }
                     futureMeetings.forEach(m => {
                         var date = new Date(m.datetime);
@@ -674,7 +689,12 @@
                             </div>
                             `;
                     })
-                    document.getElementById("subgroup_manage_upcoming").innerHTML = manHTML;
+                    try{
+                        document.getElementById("subgroup_manage_upcoming").innerHTML = manHTML;
+                    }catch(e){
+                        
+                    }
+                    
                     document.getElementById("subgroup_upcoming").innerHTML = fHTML;
 
                     var fHTML = ``;
@@ -794,8 +814,14 @@
                         
                         `;
                     })
-                    document.getElementById("subgroup_totalRequests").innerHTML = allRequests.length;
-                    document.getElementById("subgroup_manage_confirmAttendance").innerHTML = reqHTML;
+                    try{
+                        document.getElementById("subgroup_totalRequests").innerHTML = allRequests.length;
+                        document.getElementById("subgroup_manage_confirmAttendance").innerHTML = reqHTML;
+                    }
+                    catch(e){
+                        console.log(e);
+                    }
+                    
                     
 
                     Array.from(document.getElementsByClassName("approve")).forEach(e => {

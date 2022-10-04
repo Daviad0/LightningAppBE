@@ -48,7 +48,14 @@
                 newPw: data["newPassword"]
             },
             success: function(data){
-                refreshUsers();
+                data = JSON.parse(data);
+                if(data["successful"]){
+                    document.getElementById("externalClickAction").dataset.action = "overlay";
+                    document.getElementById("externalClickAction").dataset.overlay = "reset_successful";
+                    
+                    document.getElementById("externalClickAction").click();
+                }
+                //refreshUsers();
             }
         })
     })

@@ -32,7 +32,11 @@ const models = {
             givenBy: String,
             protons: Number
         }],
-        externalIds: []
+        externalIds: [],
+        resetCodes: [{
+            code: String,
+            datetime: Date
+        }]
     })),
     'Group' : mongoose.model('Group', new mongoose.Schema({
         name: String,

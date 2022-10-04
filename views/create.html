@@ -13,34 +13,46 @@
 
 
     <div id="create_part2" class="transition">
-        <div style="width:120px;display:inline-block;text-align:left">
-            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Email</span>
+        <div style="width:240px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:240px;text-align:left">Email</span>
         </div>
         <input type="text" class="input" placeholder="john@doe.com" style="width:30%;font-size:20px;padding:20px" id="create_email"/>
     </div>
     <div id="create_part3" class="transition">
-        <div style="width:120px;display:inline-block;text-align:left">
-            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Full Name</span>
+        <div style="width:240px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:240px;text-align:left">Full Name</span>
         </div>
         <input type="text" class="input" placeholder="John Doe" style="width:30%;font-size:20px;padding:20px" id="create_fullname"/>
     </div>
     <div id="create_part4" class="transition">
-        <div style="width:120px;display:inline-block;text-align:left">
-            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Student ID</span>
+        <div style="width:240px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:240px;text-align:left">Student ID</span>
         </div>
         <input type="number" class="input" placeholder="20070000" style="width:30%;font-size:20px;padding:20px" id="create_externalId"/>
     </div>
     <div id="create_part5" class="transition">
-        <div style="width:120px;display:inline-block;text-align:left">
-            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Username</span>
+        <div style="width:240px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:240px;text-align:left">Username</span>
         </div>
         <input type="text" class="input" placeholder="JhonnyDoe" style="width:30%;font-size:20px;padding:20px" id="create_username"/>
     </div>
     <div id="create_part6" class="transition">
-        <div style="width:120px;display:inline-block;text-align:left">
-            <span class="text color-m" style="font-size:18px;margin-right:5px;width:160px;text-align:left">Password</span>
+        <div style="width:240px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:240px;text-align:left">Password</span>
         </div>
-        <input type="password" class="input" placeholder="p@ssword123" style="width:30%;font-size:20px;padding:20px" id="create_password"/>
+        <input type="password" class="input" placeholder="p@ssword123" style="width:28%;font-size:20px;padding:20px" id="create_password"/>
+        <div class="container c-border c-hover showpassword" style="padding:5px;margin:1px" data-field="create_password">
+            <span class="material-symbols-rounded" style="font-size:16px">visibility</span>
+        </div>
+    </div>
+    <div id="create_part7" class="transition">
+        <div style="width:240px;display:inline-block;text-align:left">
+            <span class="text color-m" style="font-size:18px;margin-right:5px;width:240px;text-align:left">Confirm Password</span>
+        </div>
+        <input type="password" class="input" placeholder="p@ssword123" style="width:28%;font-size:20px;padding:20px" id="create_confirmPassword"/>
+        <div class="container c-border c-hover showpassword" style="padding:5px;margin:1px" data-field="create_confirmPassword">
+            <span class="material-symbols-rounded" style="font-size:16px">visibility</span>
+        </div>
     </div>
     <br/>
     <br/>
@@ -55,7 +67,20 @@
     <br/>
     <script>
 
-
+        Array.from(document.getElementsByClassName("showpassword")).forEach(e => {
+            e.addEventListener("click", () => {
+                let field = document.getElementById(e.dataset.field);
+                if (field.type == "password") {
+                    field.type = "text";
+                    e.style.backgroundColor = "#4708c4";
+                    e.style.color = "white";
+                } else {
+                    field.type = "password";
+                    e.style.backgroundColor = "";
+                    e.style.color = "";
+                }
+            });
+        })
         document.getElementById("create_part2").style.transform = "translateY(0px)";
     </script>
 </div>

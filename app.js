@@ -308,54 +308,155 @@ app.get('/create', function (req, res) {
 app.post('/acc/login', function (req, res){
     m.getDocs('Account', {username: req.body.username, group: req.body.group}).then(async function(docs){
         if(docs.length == 0){
-            res.send(JSON.stringify({successful: false}));
-        }else{
-            crypto.pbkdf2(req.body.password, docs[0].pwsalt, docs[0].pwiterations, 64, 'sha512', async function(err, derivedKey){
-                if(docs[0].pwhash == derivedKey.toString('hex')){
-                    var token = jwt.sign({
-                        username: req.body.username,
-                        group: req.body.group,
-                        id: docs[0]._id
-                    }, 'secret', {
-                        expiresIn: '7d'
-                    });
-
-                    sendEmail(docs[0].email, emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you! Always remember not to share your password with anyone except for team leadership!");
-
-                    await notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
-                    res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
-                }else{
-                    res.send(JSON.stringify({successful: false}));
+            docs = await m.getDocs('Account', {group: req.body.group});
+            var foundUser = false;
+            var i = 0;
+            for(i = 0; i < docs.length; i++){
+                if(docs[i].externalIds.includes(req.body.username)){
+                    foundUser = true;
+                    break;
                 }
-            })
+            }
+            if(!foundUser){
+                res.send(JSON.stringify({successful: false}));
+                return;
+            }else{
+                docs = [docs[i]];
+            }
+
             
+
         }
+        crypto.pbkdf2(req.body.password, docs[0].pwsalt, docs[0].pwiterations, 64, 'sha512', async function(err, derivedKey){
+            if(docs[0].pwhash == derivedKey.toString('hex')){
+                var token = jwt.sign({
+                    username: req.body.username,
+                    group: req.body.group,
+                    id: docs[0]._id
+                }, 'secret', {
+                    expiresIn: '7d'
+                });
+
+                sendEmail(docs[0].email, emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you! Always remember not to share your password with anyone except for team leadership!");
+
+                await notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
+                res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
+            }else{
+                res.send(JSON.stringify({successful: false}));
+            }
+        })
+            
+        
     });
     
 });
 
+
+
+app.post('/acc/requestcode', async function(req, res){
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(!status){
+            try{
+                var email = req.body.email;
+                var studentid = req.body.studentid;
+
+                var u = (await m.getDocs('Account', {email: email}))[0];
+                if(!u.externalIds.includes(studentid)){
+                    // DO NOT SHOW THAT IT WAS UNSUCCESSFUL
+                    res.send(JSON.stringify({successful: true, userId: u._id}));
+                    return;
+                }
+
+                // confirmed user identity, now we need to send them a code
+                if(u.resetCodes == undefined){
+                    u.resetCodes = [];
+                }
+
+                var code = Math.floor(Math.random() * 1000000).toString().padStart(6, "0");
+
+                u.resetCodes.push({
+                    code: code,
+                    datetime: new Date()
+                })
+                sendEmail(u.email, emoji.get("large_orange_diamond") + "#862 - Reset Code", "Reset Code Requested", "Hey " + u.username + ", your account has requested a reset code for your password. If this WASN'T you, please contact us ASAP to reset your details!<br/><br/>" + code);
+                notifyUsers([u._id], emoji.get("large_orange_diamond") + "#862 - Reset Code", "Reset Code Requested", "Hey " + u.username + ", " + code + " is your reset code. Please contact a team lead if this WASN'T you!");
+                await m.updateDoc('Account', {_id: u._id}, {resetCodes: u.resetCodes});
+                res.send(JSON.stringify({successful: true, userId: u._id}));
+            }catch(e){
+                res.send(JSON.stringify({successful: true, userId: "7238basda71239"}));
+            }
+            
+        }else{
+            res.send(JSON.stringify({successful: false}));
+        }
+    });
+});
+
 app.post("/acc/reset", async function(req, res){
     isAuthenticated(req, "cookie",[], async function(status, user){
-        if(status){
-            var acc = (await m.getDocs('Account', {_id: user.id}))[0];
+        try{
+            
+            var id = req.body.uid;
+            if(id == undefined){
+                if(user == undefined){
+                    res.send(JSON.stringify({successful: false}));
+                    return;
+                }
+                id = user.id;
+            }
+
+            var acc = (await m.getDocs('Account', {_id: id}))[0];
             var old = req.body.oldPw;
+            var code = req.body.code;
+            
             var newPw = req.body.newPw;
-            crypto.pbkdf2(old, acc.pwsalt, acc.pwiterations, 64, 'sha512', async function(err, derivedKey){
-                if(acc.pwhash == derivedKey.toString('hex')){
 
-                    // can set the new password
+            if(code != undefined){
+                var resetCodes = acc.resetCodes;
+                
+                if(resetCodes == undefined){
+                    res.send(JSON.stringify({successful: false}));
+                    console.log("A");
+                    return;
+                }
 
-                    hashPassword(newPw, async function(pwres){
-                        await m.updateDoc('Account', {_id: acc._id}, {pwsalt: pwres.salt, pwiterations: pwres.iterations, pwhash: pwres.hash});
-                        res.send(JSON.stringify({successful: true}));
+                var found = acc.resetCodes.find(r => r.code == code &&(new Date() - new Date(r.datetime)) < (1000 * 60 * 5));
+                if(found == undefined){
+                    res.send(JSON.stringify({successful: false}));
+                    console.log("B " + acc.resetCodes);
+                    return;
+                }
+                acc.resetCodes = acc.resetCodes.filter(r => r.code != code);
+                hashPassword(newPw, async function(pwres){
+                    await m.updateDoc('Account', {_id: acc._id}, {pwsalt: pwres.salt, pwiterations: pwres.iterations, pwhash: pwres.hash,resetCodes: acc.resetCodes});
+                    res.send(JSON.stringify({successful: true}));
+                })
+
+            }else{
+                if(status){
+                    crypto.pbkdf2(old, acc.pwsalt, acc.pwiterations, 64, 'sha512', async function(err, derivedKey){
+                        if(acc.pwhash == derivedKey.toString('hex')){
+        
+                            // can set the new password
+        
+                            hashPassword(newPw, async function(pwres){
+                                await m.updateDoc('Account', {_id: acc._id}, {pwsalt: pwres.salt, pwiterations: pwres.iterations, pwhash: pwres.hash});
+                                res.send(JSON.stringify({successful: true}));
+                            })
+        
+                            
+                        }else{
+                            res.send(JSON.stringify({successful: false}));
+                        }
                     })
-
-                    
                 }else{
                     res.send(JSON.stringify({successful: false}));
                 }
-            })
-        }else{
+                
+            }
+
+            
+        }catch(e){
             res.send(JSON.stringify({successful: false}));
         }
             
@@ -1023,8 +1124,8 @@ function getTodaysEvent(docs){
     var closestToNow = null;
     docs.forEach(d => {
         
-        if(today.getDate() == d.datetime.getDate() && today.getMonth() == d.datetime.getMonth() && today.getFullYear() == d.datetime.getFullYear()){
-            // this is TODAY
+
+        if(Math.abs(today.getTime() - new Date(d.datetime).getTime()) < (1000*60*60*d.length)){
             if(closestToNow == null){
                 closestToNow = d;
             }else{
@@ -1033,6 +1134,8 @@ function getTodaysEvent(docs){
                 }
             }
         }
+
+    
     });
 
     // var minApart = null;
@@ -1692,7 +1795,7 @@ app.get("/group/report", function(req, res){
 });
 
 app.get("/group/sg*", function(req, res){
-    isAuthenticated(req, "cookie",["*"], function(status, user){
+    isAuthenticated(req, "cookie",[], function(status, user){
         if(status){
             if(req.headers["partial"] == "YES"){
                 res.sendFile(__dirname + "/views/subgroup.html");
