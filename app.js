@@ -139,7 +139,7 @@ function isAuthenticated(req, method, permissionReq, callback) {
     if (req.headers.authorization || req.cookies.session) {
         
         var token = req.headers.authorization || req.cookies.session;
-        jwt.verify(token, 'secret', async function (err, decoded) {
+        jwt.verify(token, process.env.JWT_SECRET, async function (err, decoded) {
             if (err) {
                 console.log(err)
                 callback(false, undefined);
@@ -333,7 +333,7 @@ app.post('/acc/login', function (req, res){
                     username: req.body.username,
                     group: req.body.group,
                     id: docs[0]._id
-                }, 'secret', {
+                }, process.env.JWT_SECRET, {
                     expiresIn: '7d'
                 });
 
@@ -521,7 +521,7 @@ app.get('/acc/verify', function(req, res){
     
     try{
         var token = req.cookies.session;
-        var decoded = jwt.verify(token, 'secret');
+        var decoded = jwt.verify(token, process.env.JWT_SECRET);
         m.getDocs('Account', {_id: decoded.id}).then(async function(docs){
             if(docs.length == 0){
                 res.send(JSON.stringify({successful: false}));
@@ -630,7 +630,7 @@ app.post('/acc/create', function (req, res){
                             group: req.body.group,
                             id: d._id
                             // NOTICE: CHANGE TO .ENV FILE
-                        }, 'secret', {
+                        }, process.env.JWT_SECRET, {
                             expiresIn: '2d'
                         });
                         d.token = token;
