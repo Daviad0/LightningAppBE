@@ -1482,7 +1482,7 @@ app.post("/group/signinreminder",async function(req, res){
         if(closestToNow != null){
             var diff = ((closestToNow.datetime.getTime() - new Date().getTime())/1000)/60;
             
-            if(diff < 20){
+            if(diff < 120 || diff > -60){
                 var usersToCheck = await m.getDocs("Account", {group: "lightning-robotics"});
                 var idsToSend = [];
                 var emailsToSend = [];
