@@ -789,6 +789,27 @@
         })
     }
 
+    function getTimeInbetween(time1, time2) {
+        var time1 = new Date(time1);
+        var time2 = new Date(time2);
+        var diff = time2 - time1;
+        var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        var hours = Math.floor(diff / (1000 * 60 * 60));
+        var minutes = Math.floor(diff / (1000 * 60));
+        var seconds = Math.floor(diff / (1000));
+        if (days > 0) {
+            return days + " days";
+        } else if (hours > 0) {
+            return hours + " hours";
+        } else if (minutes > 0) {
+            return minutes + " mins";
+        } else if (seconds > 0) {
+            return seconds + " secs";
+        } else {
+            return "DONE";
+        }
+    }
+
     function getMenuItems(){
         $.ajax({
             url: "/group/items",
@@ -799,11 +820,33 @@
                     document.getElementById("items").innerHTML = ``;
                     var id = 0;
                     currentItems = data["items"];
+                    
 
                     
 
+                    var now = new Date();
+
                     data["items"].forEach(i => {
+                        var sDate = i["details"] == undefined || i["details"]["start"] == undefined ? "" : new Date(i["details"]["start"]);
+                        var sdDate = ""
+                        var sdTime = ""
+                        if(sDate != ""){
+                            sdDate = sDate.getFullYear() + "-" + (sDate.getMonth()+1).toString().padStart(2, "0") + "-" + (sDate.getDate()).toString().padStart(2, "0");
+                            sdTime = (sDate.getHours()).toString().padStart(2, "0") + ":" + (sDate.getMinutes()).toString().padStart(2, "0");
+                        }
+                        var eDate = i["details"] == undefined || i["details"]["end"] == undefined ? "" : new Date(i["details"]["end"]);
+                        var edDate = ""
+                        var edTime = ""
+                        var timeLeft = "";
                         
+                        if(eDate != ""){
+                            edDate = eDate.getFullYear() + "-" + (eDate.getMonth()+1).toString().padStart(2, "0") + "-" + (eDate.getDate()).toString().padStart(2, "0");
+                            edTime = (eDate.getHours()).toString().padStart(2, "0") + ":" + (eDate.getMinutes()).toString().padStart(2, "0");
+                            timeLeft = getTimeInbetween(now, eDate);
+                            if(sDate != "" && sDate > now){
+                                timeLeft = "WAIT";
+                            }
+                        }
                         document.getElementById('items').innerHTML += `
                         <div class="container c-slightborder item" style="width:60%;padding:20px;margin-bottom:20px">
                             <div class="blockitem" data-partof="${id}c" data-num="0">
@@ -811,24 +854,30 @@
                                     <div class="c-border bounce" style="border-radius: 60px;border-width:4px;background-color:#4708c4;width:4.5vw;height:4.5vw;display:inline-block;opacity:${i["show"] ? "1" : ".5"}">
                                         <span class="material-symbols-rounded color-w" style="width:50%;margin-top:24%;font-size:2.3vw">${i["icon"]}</span>
                                     </div>
+                                    
+                                    ${
+                                        (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                            `<br/>
+                                            <div class="c-border bounce" style="padding:6px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;margin-bottom:5px;width:4.5vw;opacity:${timeLeft == "DONE" || timeLeft == "WAIT" ? 0.5 : 1}">
+                                                <span class="color-w" style="font-size:1vw">${timeLeft}</span>
+                                            </div>` : ``
+                                    }
                                     <br/>
                                     <div class="container c-border c-hover blockcontrol" style="padding:5px;margin:1px" data-partof="${id}c" data-num="1">
                                         <span class="material-symbols-rounded" style="font-size:16px">edit</span>
                                     </div>
-                                    <div class="container c-border c-hover delete" style="padding:5px;margin:1px" data-partof="${id}" data-num="1">
+                                    <div class="container c-border-red c-hover-red color-r delete" style="padding:5px;margin:1px" data-partof="${id}" data-num="1">
                                         <span class="material-symbols-rounded" style="font-size:16px">delete</span>
                                     </div>
-                                    ${
-                                        (i["details"] != undefined && i["details"]["end"] != undefined) ?
-                                            `<br/>
-                                            <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
-                                                <span class="color-w" style="font-size:1vw">3 days</span>
-                                            </div>` : ``
-                                    }
+                                    
                                     
                                 </div>
                                 <div style="width:84%;display:inline-block;vertical-align:middle">
-                                    <span class="text color-d" style="display:block;font-size:30px;margin:10px">${i["title"]}</span>
+                                    <span class="text color-d" style="display:block;font-size:30px;margin:10px">${i["title"]} 
+                                        <a class="container c-border c-hover" style="padding:5px;margin:5px;display:${i["result"]["to"] == "link" ? "inline-block" : "none"}" href="${i["result"]["data"]}" target="_blank">
+                                            <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">open_in_new</span>
+                                        </a>
+                                    </span>
                                     <span class="text color-d" style="display:block;font-weight:500;margin:10px;font-size:16px">${i["contents"]}</span>
                                     
                                     
@@ -846,13 +895,7 @@
                                     <div class="c-border bounce blockcontrol" data-partof="${id}" data-num="2" style="border-radius: 60px;border-width:4px;background-color:transparent;width:4.5vw;height:4.5vw;display:inline-block;margin-bottom:20px">
                                         <span class="material-symbols-rounded color-m" style="width:50%;margin-top:24%;font-size:2.3vw">bolt</span>
                                     </div>
-                                    ${
-                                        (i["details"] != undefined && i["details"]["end"] != undefined) ?
-                                            `<br/>
-                                            <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
-                                                <span class="color-w" style="font-size:1vw">3 days</span>
-                                            </div>` : ``
-                                    }
+                                    
                                     
                                 </div>
                                 <div style="width:84%;display:inline-block;vertical-align:middle">
@@ -888,11 +931,35 @@
                                                 <span class="dropdown_text" style="float:left;margin-right:20px;opacity:0.5;margin-left:5px;pointer-events:none" data-partof="dropdown${id}">Select an Option</span>
                                                 <span class="material-symbols-rounded color-d dropdown_icon" style="float:right;font-size:20px" data-partof="dropdown${id}">expand_more</span>
                                                 <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="link">Link</option>
-                                                <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="action">Action</option>
                                                 <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="static">Static</option>
-                                                <option class="dropdown_option" style="display:none" data-partof="dropdown${id}" value="vote">Vote</option>
                                             </div>
                                             <input type="text" class="text color-d input form_actionto" style="display:inline-block;font-size:14px;margin:10px;width:50%;vertical-align:middle" value="${i["result"]["data"]}" placeholder="To..." data-partof="${id}">
+                                            
+
+                                        </div>
+                                        <div style="display: inline-flex;align-items: center;justify-content:center;width:100%;margin-top:10px">
+                                            <div>
+                                                <div style="display:block;text-align:center">
+                                                    <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">Start Date & Time</span>
+                                                </div>
+                                                
+                                                <input type="date" class="text color-d input form_startdate" style="display:inline-block;font-size:12px;margin:5px;width:200px;padding:14px;vertical-align:middle;text-align:center" value="${sdDate}" placeholder="6/12/20" data-partof="${id}">
+                                                <input type="time" class="text color-d input form_starttime" style="display:inline-block;font-size:12px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="${sdTime}" placeholder="12:00PM" data-partof="${id}">
+                                            </div>
+                                            <a class="container c-border c-hover form_resetdates" style="padding:5px;margin:5px;" data-partof="${id}">
+                                                <span class="material-symbols-rounded" style="font-size:16px;pointer-events:none">lock_open</span>
+                                            </a>
+                                            <div>
+                                                <div style="display:block;text-align:center">
+                                                    <span class="text color-d" style="font-size:14px;font-weight:500;margin-right:5px;">End Date & Time</span>
+                                                </div>
+                                                
+                                                <input type="date" class="text color-d input form_enddate" style="display:inline-block;font-size:12px;margin:5px;width:200px;padding:14px;vertical-align:middle;text-align:center" value="${edDate}" placeholder="6/12/20" data-partof="${id}">
+                                                <input type="time" class="text color-d input form_endtime" style="display:inline-block;font-size:12px;margin:5px;width:160px;padding:14px;vertical-align:middle;text-align:center" value="${edTime}" placeholder="12:00PM" data-partof="${id}">
+                                            </div>
+                                            
+                                            
+
                                         </div>
                                     </div>
                                     <div class="container c-border blockcontrol save color-m c-hover" data-partof="${id}c" data-num="0" style="padding:10px 50px 10px 50px;margin:10px" data-partof="${id}">
@@ -912,6 +979,17 @@
                         `
                         id+=1;
                     });
+
+                    Array.from(document.getElementsByClassName("form_resetdates")).forEach((i)=>{
+                        i.addEventListener("click",()=>{
+                            let id = i.dataset.partof;
+
+                            document.querySelector(`[data-partof="${id}"] .form_startdate`).value = ``;
+                            document.querySelector(`[data-partof="${id}"] .form_starttime`).value = ``;
+                            document.querySelector(`[data-partof="${id}"] .form_enddate`).value = ``;
+                            document.querySelector(`[data-partof="${id}"] .form_endtime`).value = ``;
+                        })
+                    })
                     Array.from(document.getElementsByClassName("save")).forEach(e => {
                         e.addEventListener("click", function(evt){
                             var partof = evt.srcElement.dataset.partof.substring(0, evt.srcElement.dataset.partof.length - 1);
@@ -920,7 +998,23 @@
                             item["contents"] = document.querySelector(".form_contents[data-partof='" + partof + "']").value;
                             item["icon"] = document.querySelector(".iconedit[data-partof='" + partof + "']").value;
                             item["color"] = document.querySelector(".coloredit[data-partof='" + partof + "']").value;
+                            if(item["color"] == ""){
+                                item["color"] = "#4708c4";
+                            }
                             item["priority"] = document.querySelector(".priorityedit[data-partof='" + partof + "']").value;
+
+                            item["details"] = {}
+                            if(document.querySelector(".form_startdate[data-partof='" + partof + "']").value != ""){
+                                item["details"]["start"] = document.querySelector(".form_startdate[data-partof='" + partof + "']").value + " " + (document.querySelector(".form_starttime[data-partof='" + partof + "']").value == "" ? "00:00" : document.querySelector(".form_starttime[data-partof='" + partof + "']").value);
+                            }
+                            if(document.querySelector(".form_enddate[data-partof='" + partof + "']").value != ""){
+                                item["details"]["end"] = document.querySelector(".form_enddate[data-partof='" + partof + "']").value + " " + (document.querySelector(".form_endtime[data-partof='" + partof + "']").value == "" ? "00:00" : document.querySelector(".form_endtime[data-partof='" + partof + "']").value);
+                            }
+                            if(item['details']['start'] == undefined && item['details']['end'] == undefined){
+                                item['details'] = undefined;
+                            }
+                            
+
                             item["result"]["data"] = document.querySelector(".form_actionto[data-partof='" + partof + "']").value;
                             item["result"]["to"] = document.querySelector(".form_actiontype[data-partof='dropdown" + partof + "']").dataset.value;
                             item["show"] = document.querySelector(".checkbox[data-partof='" + partof + "']").dataset.checked == "YES" ? true : false;

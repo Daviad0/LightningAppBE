@@ -187,6 +187,27 @@
             }
         }
     });
+
+    function getTimeInbetween(time1, time2) {
+        var time1 = new Date(time1);
+        var time2 = new Date(time2);
+        var diff = time2 - time1;
+        var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        var hours = Math.floor(diff / (1000 * 60 * 60));
+        var minutes = Math.floor(diff / (1000 * 60));
+        var seconds = Math.floor(diff / (1000));
+        if (days > 0) {
+            return days + " days";
+        } else if (hours > 0) {
+            return hours + " hours";
+        } else if (minutes > 0) {
+            return minutes + " mins";
+        } else if (seconds > 0) {
+            return seconds + " secs";
+        } else {
+            return "DONE";
+        }
+    }
     $.ajax({
         url: "/group/items",
         headers: {group : group, subgroup: "H"},
@@ -196,9 +217,33 @@
                 console.log(data)
                 document.getElementById("welcomeH").innerHTML = data["group"]["name"];
                 document.getElementById("items").innerHTML = "";
+                var now = new Date();
                 data["items"].forEach(i => {
+
+
+                    var sDate = i["details"] == undefined || i["details"]["start"] == undefined ? "" : new Date(i["details"]["start"]);
+                    var sdDate = ""
+                    var sdTime = ""
+                    if(sDate != ""){
+                        sdDate = sDate.getFullYear() + "-" + (sDate.getMonth()+1).toString().padStart(2, "0") + "-" + (sDate.getDate()).toString().padStart(2, "0");
+                        sdTime = (sDate.getHours()).toString().padStart(2, "0") + ":" + (sDate.getMinutes()).toString().padStart(2, "0");
+                    }
+                    var eDate = i["details"] == undefined || i["details"]["end"] == undefined ? "" : new Date(i["details"]["end"]);
+                    var edDate = ""
+                    var edTime = ""
+                    var timeLeft = "";
+                    
+                    if(eDate != ""){
+                        edDate = eDate.getFullYear() + "-" + (eDate.getMonth()+1).toString().padStart(2, "0") + "-" + (eDate.getDate()).toString().padStart(2, "0");
+                        edTime = (eDate.getHours()).toString().padStart(2, "0") + ":" + (eDate.getMinutes()).toString().padStart(2, "0");
+                        timeLeft = getTimeInbetween(now, eDate);
+
+                        
+                    }
+
+
                     i["icon"] = i["icon"].replace("-", "_");
-                    if(i["show"]){
+                    if(i["show"] && (sDate == "" || sDate < now) && (eDate == "" || eDate > now)){
                         var color = i["color"] == undefined ? "#4708c4" : i["color"];
                         document.getElementById('items').innerHTML += `
                         <div class="container c-slightborder item" style="width:70%;padding:20px;margin-bottom:20px">
@@ -210,8 +255,8 @@
                                     ${
                                         (i["details"] != undefined && i["details"]["end"] != undefined) ?
                                             `<br/>
-                                            <div class="c-border bounce" style="padding:5px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;width:4.5vw">
-                                                <span class="color-w" style="font-size:1vw">3 days</span>
+                                            <div class="c-border bounce${!timeLeft.includes("days") ? " pulseimportant" : "" }" style="padding:6px 0px;background-color:${color};display:inline-block;margin-top:5px;width:4.5vw;border-color:${color}">
+                                                <span class="color-w" style="font-size:1vw">${timeLeft}</span>
                                             </div>` : ``
                                     }
                                     

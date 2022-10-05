@@ -275,6 +275,22 @@ body{
     100% { transform: rotate(360deg); }
 }
 
+.pulseimportant{
+    animation: pulseimportant .5s ease-in-out infinite;
+}
+
+@keyframes pulseimportant {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
 /*
 
 COLORS:

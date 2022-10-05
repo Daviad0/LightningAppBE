@@ -1090,7 +1090,8 @@ app.post("/group/item", async function(req, res){
                     result: result,
                     show: req.body.show,
                     color: req.body.color,
-                    priority: req.body.priority
+                    priority: req.body.priority,
+                    details: req.body.details
                 });
             }else if(req.body.action == "create"){
                 await m.createDoc('ModuleItem', {
