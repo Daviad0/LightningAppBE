@@ -197,6 +197,9 @@
         var minutes = Math.floor(diff / (1000 * 60));
         var seconds = Math.floor(diff / (1000));
         if (days > 0) {
+            if(days > 100){
+                return "";
+            }
             return days + " days";
         } else if (hours > 0) {
             return hours + " hours";
@@ -253,7 +256,7 @@
                                         <span class="material-symbols-rounded color-w" style="margin-top:24%;font-size:2.2vw">${i["icon"]}</span>
                                     </div>
                                     ${
-                                        (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                        (i["details"] != undefined && i["details"]["end"] != undefined && timeLeft != "") ?
                                             `<br/>
                                             <div class="c-border bounce${!timeLeft.includes("days") ? " pulseimportant" : "" }" style="padding:6px 0px;background-color:${color};display:inline-block;margin-top:5px;width:4.5vw;border-color:${color}">
                                                 <span class="color-w" style="font-size:1vw">${timeLeft}</span>

@@ -798,6 +798,11 @@
         var minutes = Math.floor(diff / (1000 * 60));
         var seconds = Math.floor(diff / (1000));
         if (days > 0) {
+
+            if(days > 100){
+                return "";
+            }
+
             return days + " days";
         } else if (hours > 0) {
             return hours + " hours";
@@ -856,7 +861,7 @@
                                     </div>
                                     
                                     ${
-                                        (i["details"] != undefined && i["details"]["end"] != undefined) ?
+                                        (i["details"] != undefined && i["details"]["end"] != undefined && timeLeft != "") ?
                                             `<br/>
                                             <div class="c-border bounce" style="padding:6px 0px;background-color:#4708c4;display:inline-block;margin-top:5px;margin-bottom:5px;width:4.5vw;opacity:${timeLeft == "DONE" || timeLeft == "WAIT" ? 0.5 : 1}">
                                                 <span class="color-w" style="font-size:1vw">${timeLeft}</span>
