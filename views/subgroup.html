@@ -198,43 +198,44 @@
             if(data["successful"]){
                 me = data["user"];
             }
-        }
-    })
-    $.ajax({
-        url: "/group/subgroup?tag=" + params[3],
-        type: "GET",
-        success: function(data){
-            data = JSON.parse(data);
-            if(data["successful"]){
-                
-                if(data["admin"]){
-                    admin = true;
-                }else{
-                    //document.getElementById("subgroup_manage_tabButton").remove();
-                    Array.from(document.getElementsByClassName("admincontrol")).forEach(function(item){
-                        item.remove();
-                    })
+            $.ajax({
+                url: "/group/subgroup?tag=" + params[3],
+                type: "GET",
+                success: function(data){
+                    data = JSON.parse(data);
+                    if(data["successful"]){
+                        
+                        if(data["admin"] || data["subgroup"]["managers"].includes(me["id"])){
+                            admin = true;
+                        }else{
+                            //document.getElementById("subgroup_manage_tabButton").remove();
+                            Array.from(document.getElementsByClassName("admincontrol")).forEach(function(item){
+                                item.remove();
+                            })
+                        }
+        
+                        
+                        Array.from(document.getElementsByClassName("subgroup_name")).forEach(function(e){
+                            e.innerHTML = data["subgroup"]["name"];
+                        });
+        
+                        Array.from(document.getElementsByClassName("subgroup_tag")).forEach(function(e){
+                            e.innerHTML = data["subgroup"]["tag"];
+                        });
+        
+                        subgroup = data["subgroup"];
+        
+        
+        
+                        document.getElementById("contentToShow").style.opacity = "1";
+                        reloadUsers();
+                        reloadSubgroupItems();
+                    }
                 }
-
-                
-                Array.from(document.getElementsByClassName("subgroup_name")).forEach(function(e){
-                    e.innerHTML = data["subgroup"]["name"];
-                });
-
-                Array.from(document.getElementsByClassName("subgroup_tag")).forEach(function(e){
-                    e.innerHTML = data["subgroup"]["tag"];
-                });
-
-                subgroup = data["subgroup"];
-
-
-
-                document.getElementById("contentToShow").style.opacity = "1";
-                reloadUsers();
-                reloadSubgroupItems();
-            }
+            })
         }
     })
+    
     var users = [];
 
     function reloadSubgroupItems(){
