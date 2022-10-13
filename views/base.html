@@ -177,6 +177,8 @@
         <div class="baseaction" data-action="none" style="display:none" id="showErrorMessage"></div>
     </body>
 
+    
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qr-creator/dist/qr-creator.min.js"></script>
 
@@ -186,6 +188,8 @@
         var group = "";
         var overlayData = {};
         var thisUser = undefined;
+
+        var overlayCache = {};
 
         
         document.getElementById("accountC_forgotuser").addEventListener("click", function(evt){
@@ -249,6 +253,7 @@
                                 document.getElementById("ca_username").textContent = data["user"]["username"];
                                 document.getElementById("ca_group").textContent = "Part of " + data["user"]["group"];
                                 document.querySelector('div[data-page="group/manage"]').style.display = "inline-flex";
+                                document.querySelector('div[data-page="group/report"]').style.display = "inline-flex";
                                 document.querySelector('div[data-page="group/accounts"]').style.display = "inline-flex";
                                 document.querySelector('div[data-page="signin"]').style.display = "none";
                             }
@@ -1555,52 +1560,101 @@
                                             })
                                         })
                                     }
-                                    $.ajax({
-                                        url : "/group/users",
-                                        type : "GET",
-                                        success: function(data){
-                                            data = JSON.parse(data);
-                                            if(data["successful"]){
-                                                overlayData["users"] = data["items"];
-                                                document.getElementById("overlay_done").style.opacity = "0.5";
-                                                document.getElementById("overlay_done").style.pointerEvents = "none";
-                                                document.getElementById("overlay_done").style.cursor = "not-allowed";
-                                                document.getElementById('overlay').style.display = "";
-                                                document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_manager";
-                                                document.getElementById('overlayBox').innerHTML = `
-                                                <span class="text color-d" style="font-size:28px;margin:10px">Add a Subgroup Manager</span>
-                                                <div style="margin:20px" id="place_suggestion">
-                                                    <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
-                                                </div>
-                                                
-                                                `;
-                                                document.getElementById("overlay_username").addEventListener("change", function(evt){
-                                                    handleAddManager(evt);
-                                                    
-
-                                                });
-                                                document.getElementById("overlay_username").addEventListener("keyup", function(evt){
-                                                    handleAddManager(evt);
+                                    if(overlayCache["users"] == undefined){
+                                        document.getElementById('overlayBox').innerHTML = `
+                                            <span class="text color-d" style="font-size:28px;margin:10px">Hold On...</span>
+                                            
+                                            
+                                            `;
+                                        document.getElementById('overlay').style.display = "";
+                                        document.getElementById("overlay_done").style.display = "none";
+                                        $.ajax({
+                                            url : "/group/users",
+                                            type : "GET",
+                                            success: function(data){
+                                                data = JSON.parse(data);
+                                                if(data["successful"]){
+                                                    overlayData["users"] = data["items"];
+                                                    overlayCache["users"] = overlayData["users"];
                                                     document.getElementById("overlay_done").style.opacity = "0.5";
                                                     document.getElementById("overlay_done").style.pointerEvents = "none";
+                                                    document.getElementById("overlay_done").style.display = "";
                                                     document.getElementById("overlay_done").style.cursor = "not-allowed";
-                                                });
-                                                document.getElementById("overlay_username").addEventListener("click", function(evt){
-                                                    handleAddManager(evt);
+                                                    document.getElementById('overlay').style.display = "";
+                                                    document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_member";
+                                                    document.getElementById('overlayBox').innerHTML = `
+                                                    <span class="text color-d" style="font-size:28px;margin:10px">Add Subgroup Member</span>
+                                                    <div style="margin:20px" id="place_suggestion">
+                                                        <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
+                                                    </div>
                                                     
-                                                });
-                                                document.getElementById("overlay_username").addEventListener("focusout", function(evt){
-                                                    setTimeout(function(){
-                                                        var oldContent = document.querySelector(".overlay_usernameComplete");
-                                                        if(oldContent != null){
-                                                            oldContent.remove();
-                                                        }
-                                                    },500);
-                                                    
-                                                })
+                                                    `;
+                                                    document.getElementById("overlay_username").addEventListener("change", function(evt){
+                                                        handleAddManager(evt);
+                                                        
+    
+                                                    });
+                                                    document.getElementById("overlay_username").addEventListener("keyup", function(evt){
+                                                        handleAddManager(evt);
+                                                        document.getElementById("overlay_done").style.opacity = "0.5";
+                                                        document.getElementById("overlay_done").style.pointerEvents = "none";
+                                                        document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                                    });
+                                                    document.getElementById("overlay_username").addEventListener("click", function(evt){
+                                                        handleAddManager(evt);
+                                                        
+                                                    });
+                                                    document.getElementById("overlay_username").addEventListener("focusout", function(evt){
+                                                        setTimeout(function(){
+                                                            var oldContent = document.querySelector(".overlay_usernameComplete");
+                                                            if(oldContent != null){
+                                                                oldContent.remove();
+                                                            }
+                                                        },500);
+                                                        
+                                                    })
+                                                }
                                             }
-                                        }
-                                    })
+                                        })
+                                    }else{
+                                        overlayData["users"] = overlayCache["users"];
+                                        document.getElementById("overlay_done").style.opacity = "0.5";
+                                        document.getElementById("overlay_done").style.pointerEvents = "none";
+                                        document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                        document.getElementById('overlay').style.display = "";
+                                        document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_member";
+                                        document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px">Add Subgroup Member</span>
+                                        <div style="margin:20px" id="place_suggestion">
+                                            <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
+                                        </div>
+                                        
+                                        `;
+                                        document.getElementById("overlay_username").addEventListener("change", function(evt){
+                                            handleAddManager(evt);
+                                            
+
+                                        });
+                                        document.getElementById("overlay_username").addEventListener("keyup", function(evt){
+                                            handleAddManager(evt);
+                                            document.getElementById("overlay_done").style.opacity = "0.5";
+                                            document.getElementById("overlay_done").style.pointerEvents = "none";
+                                            document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                        });
+                                        document.getElementById("overlay_username").addEventListener("click", function(evt){
+                                            handleAddManager(evt);
+                                            
+                                        });
+                                        document.getElementById("overlay_username").addEventListener("focusout", function(evt){
+                                            setTimeout(function(){
+                                                var oldContent = document.querySelector(".overlay_usernameComplete");
+                                                if(oldContent != null){
+                                                    oldContent.remove();
+                                                }
+                                            },500);
+                                            
+                                        })
+                                    }
                                     
                                     break;
                                 case "add_member":
@@ -1666,52 +1720,102 @@
                                             })
                                         })
                                     }
-                                    $.ajax({
-                                        url : "/group/users",
-                                        type : "GET",
-                                        success: function(data){
-                                            data = JSON.parse(data);
-                                            if(data["successful"]){
-                                                overlayData["users"] = data["items"];
-                                                document.getElementById("overlay_done").style.opacity = "0.5";
-                                                document.getElementById("overlay_done").style.pointerEvents = "none";
-                                                document.getElementById("overlay_done").style.cursor = "not-allowed";
-                                                document.getElementById('overlay').style.display = "";
-                                                document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_member";
-                                                document.getElementById('overlayBox').innerHTML = `
-                                                <span class="text color-d" style="font-size:28px;margin:10px">Add Subgroup Member</span>
-                                                <div style="margin:20px" id="place_suggestion">
-                                                    <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
-                                                </div>
-                                                
-                                                `;
-                                                document.getElementById("overlay_username").addEventListener("change", function(evt){
-                                                    handleAddManager(evt);
-                                                    
-
-                                                });
-                                                document.getElementById("overlay_username").addEventListener("keyup", function(evt){
-                                                    handleAddManager(evt);
+                                    if(overlayCache["users"] == undefined){
+                                        document.getElementById('overlayBox').innerHTML = `
+                                            <span class="text color-d" style="font-size:28px;margin:10px">Hold On...</span>
+                                            
+                                            
+                                            `;
+                                        document.getElementById('overlay').style.display = "";
+                                        document.getElementById("overlay_done").style.display = "none";
+                                        $.ajax({
+                                            url : "/group/users",
+                                            type : "GET",
+                                            success: function(data){
+                                                data = JSON.parse(data);
+                                                if(data["successful"]){
+                                                    overlayData["users"] = data["items"];
+                                                    overlayCache["users"] = overlayData["users"];
                                                     document.getElementById("overlay_done").style.opacity = "0.5";
                                                     document.getElementById("overlay_done").style.pointerEvents = "none";
+                                                    document.getElementById("overlay_done").style.display = "";
                                                     document.getElementById("overlay_done").style.cursor = "not-allowed";
-                                                });
-                                                document.getElementById("overlay_username").addEventListener("click", function(evt){
-                                                    handleAddManager(evt);
+                                                    document.getElementById('overlay').style.display = "";
+                                                    document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_member";
+                                                    document.getElementById('overlayBox').innerHTML = `
+                                                    <span class="text color-d" style="font-size:28px;margin:10px">Add Subgroup Member</span>
+                                                    <div style="margin:20px" id="place_suggestion">
+                                                        <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
+                                                    </div>
                                                     
-                                                });
-                                                document.getElementById("overlay_username").addEventListener("focusout", function(evt){
-                                                    setTimeout(function(){
-                                                        var oldContent = document.querySelector(".overlay_usernameComplete");
-                                                        if(oldContent != null){
-                                                            oldContent.remove();
-                                                        }
-                                                    },500);
-                                                    
-                                                })
+                                                    `;
+                                                    document.getElementById("overlay_username").addEventListener("change", function(evt){
+                                                        handleAddManager(evt);
+                                                        
+    
+                                                    });
+                                                    document.getElementById("overlay_username").addEventListener("keyup", function(evt){
+                                                        handleAddManager(evt);
+                                                        document.getElementById("overlay_done").style.opacity = "0.5";
+                                                        document.getElementById("overlay_done").style.pointerEvents = "none";
+                                                        document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                                    });
+                                                    document.getElementById("overlay_username").addEventListener("click", function(evt){
+                                                        handleAddManager(evt);
+                                                        
+                                                    });
+                                                    document.getElementById("overlay_username").addEventListener("focusout", function(evt){
+                                                        setTimeout(function(){
+                                                            var oldContent = document.querySelector(".overlay_usernameComplete");
+                                                            if(oldContent != null){
+                                                                oldContent.remove();
+                                                            }
+                                                        },500);
+                                                        
+                                                    })
+                                                }
                                             }
-                                        }
-                                    })
+                                        })
+                                    }else{
+                                        overlayData["users"] = overlayCache["users"];
+                                        document.getElementById("overlay_done").style.opacity = "0.5";
+                                        document.getElementById("overlay_done").style.pointerEvents = "none";
+                                        document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                        document.getElementById('overlay').style.display = "";
+                                        document.getElementById("overlay_done").dataset.sendback = "overlayRes_add_member";
+                                        document.getElementById('overlayBox').innerHTML = `
+                                        <span class="text color-d" style="font-size:28px;margin:10px">Add Subgroup Member</span>
+                                        <div style="margin:20px" id="place_suggestion">
+                                            <input class="input" type="text" placeholder="Type a Username" style="width:50%;font-size:16px" id="overlay_username"/>
+                                        </div>
+                                        
+                                        `;
+                                        document.getElementById("overlay_username").addEventListener("change", function(evt){
+                                            handleAddManager(evt);
+                                            
+
+                                        });
+                                        document.getElementById("overlay_username").addEventListener("keyup", function(evt){
+                                            handleAddManager(evt);
+                                            document.getElementById("overlay_done").style.opacity = "0.5";
+                                            document.getElementById("overlay_done").style.pointerEvents = "none";
+                                            document.getElementById("overlay_done").style.cursor = "not-allowed";
+                                        });
+                                        document.getElementById("overlay_username").addEventListener("click", function(evt){
+                                            handleAddManager(evt);
+                                            
+                                        });
+                                        document.getElementById("overlay_username").addEventListener("focusout", function(evt){
+                                            setTimeout(function(){
+                                                var oldContent = document.querySelector(".overlay_usernameComplete");
+                                                if(oldContent != null){
+                                                    oldContent.remove();
+                                                }
+                                            },500);
+                                            
+                                        })
+                                    }
+                                    
                                     
                                     break;
                                 

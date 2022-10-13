@@ -1719,7 +1719,7 @@ app.post("/group/today", async function(req, res){
             var docs = await m.getDocs('AttendanceItem', {group: user.group});
             var closestToNow = getTodaysEvent(docs);
             
-
+            
             if(user.attendance == undefined || user.attendance.filter(a => a.event == closestToNow._id).length == 0){
                 // add attendance record
                 var toUpdate = {

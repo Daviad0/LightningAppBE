@@ -236,6 +236,8 @@
         });
     }
 
+    var meetings = [];
+    var users = [];
     function reloadAttendance(){
         $.ajax({
             url: "/group/report/attendance",
@@ -251,8 +253,14 @@
                             
                         </div>`
                     var mN = 0;
+                    meetings = data["meetings"];
+                    users = data["users"];
                     data["meetings"] = data["meetings"].sort(function(a, b){
                         return new Date(a.datetime) - new Date(b.datetime);
+                    });
+                    var now = new Date();
+                    data["meetings"] = data["meetings"].filter(function(a){
+                        return new Date(a.datetime) < now;
                     });
                     var csv = 'User,';
                     data["meetings"].forEach(function(m){
@@ -364,8 +372,8 @@
 
                             fhtml += `
 
-                                <div class="editattendance" style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center;cursor:pointer;background-color: ${present ? "#23cc39" : (required ? "#ff413b": "white")}" data-mN="${mN}" data-uid="${u.id}" data-mid="${m._id}">
-                                    <span style="pointer-events: none;color:${present || required ? "white" : "lightgray"}">${present ? m.length : (required ? "0" : "/")}${override != "" ? "*" : ""}</span>
+                                <div class="editattendance" style="height:40px;display:inline-flex;width:40px;border:1px solid black;align-items:center;justify-content:center;cursor:pointer;background-color: ${present ? "#23cc39" : (required ? "#ff413b": "white")};color:${present || required ? "white" : "lightgray"}" data-mN="${mN}" data-uid="${u.id}" data-mid="${m._id}">
+                                    <span style="pointer-events: none">${present ? m.length : (required ? "0" : "/")}${override != "" ? "*" : ""}</span>
                                 </div>
                             
                             `;
@@ -459,6 +467,43 @@
 
         var contents = JSON.parse(evt.srcElement.innerHTML);
         console.log(contents);
+
+        var divToEdit = document.querySelector(".editattendance[data-mid='" + contents.meeting + "'][data-uid='" + contents.uid + "']");
+        var divChild = divToEdit.children[0];
+        var meeting = meetings.find(m => m._id == contents.meeting);
+        var user = users.find(u => u.id == contents.uid);
+
+        var required = false;
+        var present = contents.override == "ATTEND";
+
+        for(var sg = 0; sg < meeting.subgroups.length; sg+=1){
+            for(var ug = 0; ug < user.access.groups.length; ug += 1){
+                if(meeting.subgroups[sg] == user.access.groups[ug]){
+                    required = true;
+                    break;
+                }
+            
+            }
+            if(required){
+                break;
+            }
+        }
+
+
+        
+        divToEdit.style.backgroundColor = contents.override == "ATTEND" ? "#23cc39" : (required ? "#ff413b" : "white");
+        if(contents.override == "ABSENT"){
+            divToEdit.style.backgroundColor = "#ff413b";
+        }
+
+        
+        divToEdit.style.color = contents.override == "ATTEND" ? "white" : (required ? "white" : "lightgray");
+        if(contents.override == "ABSENT"){
+            divToEdit.style.color = "white";
+        }
+
+        divChild.innerHTML = contents.override == "ATTEND" ? meeting.length + "*" : (contents.override == "ABSENT" ? "0*" : "/*");
+
         $.ajax({
             url: "/group/attendance/override",
             type: "POST",
@@ -470,7 +515,7 @@
             success: function(data){
                 data = JSON.parse(data);
                 if(data["successful"]){
-                    reloadAttendance();
+                    
                 }
             }
         })
