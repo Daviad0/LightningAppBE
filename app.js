@@ -18,16 +18,22 @@ const Notif_OS = {
         return process.env.ONESIGNAL_TOKEN;
     }
 };
-
-
-const configuration = OneSignal.createConfiguration({
-    authMethods: {
-        app_key: {
-        	tokenProvider: Notif_OS
+var configuration = undefined;
+var client = undefined;
+try{
+    configuration = OneSignal.createConfiguration({
+        authMethods: {
+            app_key: {
+                tokenProvider: Notif_OS
+            }
         }
-    }
-});
-const client = new OneSignal.DefaultApi(configuration);
+    });
+    client = new OneSignal.DefaultApi(configuration);
+}
+catch(e){
+
+}
+
 
 const { moveMessagePortToContext } = require('worker_threads');
 
@@ -60,7 +66,8 @@ const transporter = nodemailer.createTransport({
   
 
 async function notifyUsers(users, title, subtitle, message){
-    if(users.length > 0){
+
+    if(users.length > 0 && client != undefined){
         const notification = new OneSignal.Notification();
         notification.app_id = ONESIGNAL_APP_ID;
         notification.include_external_user_ids = users;
