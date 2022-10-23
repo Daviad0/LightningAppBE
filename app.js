@@ -346,7 +346,7 @@ app.post('/acc/login', function (req, res){
 
                 sendEmail(docs[0].email, emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you! Always remember not to share your password with anyone except for team leadership!");
 
-                await notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
+                //await notifyUsers([docs[0]._id],emoji.get("large_orange_diamond") + "#862 - Notice", "New Login Detected", "Hey " + docs[0].username + ", a new device just signed into your account. Please let us know if this was NOT you!");
                 res.send(JSON.stringify({successful: true, user: await createSafeUser(docs[0], 3), token: token}));
             }else{
                 res.send(JSON.stringify({successful: false}));
@@ -386,7 +386,7 @@ app.post('/acc/requestcode', async function(req, res){
                     datetime: new Date()
                 })
                 sendEmail(u.email, emoji.get("large_orange_diamond") + "#862 - Reset Code", "Reset Code Requested", "Hey " + u.username + ", your account has requested a reset code for your password. If this WASN'T you, please contact us ASAP to reset your details!<br/><br/>" + code);
-                notifyUsers([u._id], emoji.get("large_orange_diamond") + "#862 - Reset Code", "Reset Code Requested", "Hey " + u.username + ", " + code + " is your reset code. Please contact a team lead if this WASN'T you!");
+                //notifyUsers([u._id], emoji.get("large_orange_diamond") + "#862 - Reset Code", "Reset Code Requested", "Hey " + u.username + ", " + code + " is your reset code. Please contact a team lead if this WASN'T you!");
                 await m.updateDoc('Account', {_id: u._id}, {resetCodes: u.resetCodes});
                 res.send(JSON.stringify({successful: true, userId: u._id}));
             }catch(e){
@@ -1380,7 +1380,7 @@ app.post('/group/attendance/approve', async function(req, res){
 
                 sendEmail(aUser.email, emoji.get("white_check_mark")+ " #862 - Request Approved", "Your Attendance Request was APPROVED!", "You have been marked as " + request.final.toUpperCase() + " at the meeting on " + new Date(meeting.datetime).toLocaleString() + ". Please be sure to make signing in a regular part of your meeting checkin!");
                 
-                await notifyUsers([aUser._id], emoji.get("white_check_mark")+ " #862 - Request Approved", "Your Attendance Request was APPROVED!", "You have been marked as " + request.final.toUpperCase() + " at the meeting on " + new Date(meeting.datetime).toLocaleString() + ". Please be sure to make signing in a regular part of your meeting checkin!");
+                //await notifyUsers([aUser._id], emoji.get("white_check_mark")+ " #862 - Request Approved", "Your Attendance Request was APPROVED!", "You have been marked as " + request.final.toUpperCase() + " at the meeting on " + new Date(meeting.datetime).toLocaleString() + ". Please be sure to make signing in a regular part of your meeting checkin!");
             }
             
             res.send(JSON.stringify({successful: true}));
@@ -1411,7 +1411,7 @@ app.post('/group/attendance/deny', async function(req, res){
 
                 sendEmail(aUser.email, emoji.get("x")+ " #862 - Request Denied", "Your Attendance Request was Denied.", "Unfortunately, your request to change your attendance for the meeting on " + new Date(meeting.datetime).toLocaleString() + " has been denied by a lead. Please be sure to make signing in a regular part of your meeting checkin!");
                 
-                await notifyUsers([aUser._id], emoji.get("x")+ " #862 - Request Denied", "Your Attendance Request was Denied.", "Unfortunately, your request to change your attendance for the meeting on " + new Date(meeting.datetime).toLocaleString() + " has been denied by a lead. Please be sure to make signing in a regular part of your meeting checkin!");
+                //await notifyUsers([aUser._id], emoji.get("x")+ " #862 - Request Denied", "Your Attendance Request was Denied.", "Unfortunately, your request to change your attendance for the meeting on " + new Date(meeting.datetime).toLocaleString() + " has been denied by a lead. Please be sure to make signing in a regular part of your meeting checkin!");
             }
             
             res.send(JSON.stringify({successful: true}));
@@ -1507,7 +1507,7 @@ app.post("/group/signinreminder",async function(req, res){
                     sendEmail(e, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
                 })
                 
-                await notifyUsers(idsToSend, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
+                //await notifyUsers(idsToSend, emoji.get("lightning_cloud")+ " #862 - Reminder", "Sign In!", "At the meeting: " + closestToNow.title + "? Don't forget to sign in on the landing page!");
 
             }
         }
@@ -1567,7 +1567,7 @@ app.post('/group/announcement', async function(req, res){
             emailsToSend.forEach(e => {
                 sendEmail(e, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
             })
-            await notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
+            //await notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", "Team Wide Announcement", message + " (" + u.username + ")");
 
 
 
@@ -1634,7 +1634,7 @@ app.post('/group/subgroup/message', async function(req, res){
             emailsToSend.forEach(e => {
                 sendEmail(e, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
             })
-            await notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
+            //await notifyUsers(idsToSend, emoji.get("red_circle")+ " #862 - Announcement", subgroup + "Announcement", message + " (" + u.username + ")");
 
             group.subgroups.find(g => g.name == subgroup).messages = messages;
 
