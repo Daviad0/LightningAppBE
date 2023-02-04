@@ -56,7 +56,8 @@
                 url: "/group/today/anon",
                 type: "POST",
                 data: {
-                    "externalId": document.getElementById("externalId").value
+                    "externalId": document.getElementById("externalId").value,
+                    "group": "lightning-robotics"
                 },
                 success: function(data){
                     window.location.href = "/home";
