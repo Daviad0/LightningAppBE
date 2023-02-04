@@ -1258,6 +1258,47 @@ app.get('/group/report/attendance', (req, res) => {
     });
 });
 
+app.get('/group/report/attendance/you', (req, res) => {
+    isAuthenticated(req, "cookie",[], async function(status, user){
+        if(status){
+            var meetingRecords = await m.getDocs('AttendanceItem', {group: user.group});
+            var userRecord = await m.getDocs('Account', {group: user.group, _id: user.id});
+
+            if(userRecord.length == 0){
+                res.status(401).send(JSON.stringify({successful: false}));
+                return;
+            }
+            userRecord = userRecord[0];
+
+            var hours = 0;
+            var meetings = [];
+            for (var i = 0; i < userRecord.attendance.length; i++) {
+                var meetingRecord = meetingRecords.filter(m => m._id == userRecord.attendance[i].event);
+                if(meetingRecord.length > 0){
+                    meetings.push(meetingRecord[0]);
+                    hours += meetingRecord[0].length;
+                }
+            }
+
+
+           
+
+
+
+            
+           
+
+
+
+
+            res.send(JSON.stringify({successful: true, meetings: meetings, hours: hours}));
+        }else{
+            res.status(401).send(JSON.stringify({successful: false}));
+        }
+    
+    });
+});
+
 
 app.post("/group/user", async function(req, res){
     isAuthenticated(req, "cookie",["*"], async function(status, user){
